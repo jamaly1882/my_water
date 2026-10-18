@@ -1,3 +1,8 @@
+// ============================================================
+// ocr_web.dart
+// صفحة قراءة عداد المياه للويب مع فحص جودة الصورة ومراجعة الخانات السبع
+// ============================================================
+
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:js_util' as js_util;
@@ -5,8 +10,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'image_quality_analyzer.dart';
+import 'meter_analysis.dart';
+import 'ocr_quality_widgets.dart';
+
 class OcrWebPage extends StatefulWidget {
-  const OcrWebPage({super.key});
+  final int? previousReading;
+
+  const OcrWebPage({
+    super.key,
+    this.previousReading,
+  });
 
   @override
   State<OcrWebPage> createState() => _OcrWebPageState();
@@ -19,10 +33,13 @@ class _OcrWebPageState extends State<OcrWebPage> {
   String _reading = '';
   String _rawText = '';
 
+  ImageQualityReport? _qualityReport;
+  MeterAnalysisResult? _analysisResult;
+
   bool _isCropping = false;
   bool _isRecognizing = false;
 
-  String _status = 'اختر صورة عداد الماء';
+  String _status = 'اختر أو صوّر عداد الماء للبدء';
 
   html.FileUploadInputElement? _fileInput;
 
@@ -33,13 +50,17 @@ class _OcrWebPageState extends State<OcrWebPage> {
   }
 
   // ------------------------------------------------------------
-  // اختيار الصورة
+  // اختيار أو تصوير الصورة
   // ------------------------------------------------------------
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage({bool useCamera = false}) async {
     final input = html.FileUploadInputElement()
       ..accept = 'image/*'
       ..multiple = false;
+
+    if (useCamera) {
+      input.setAttribute('capture', 'environment');
+    }
 
     _fileInput?.remove();
     _fileInput = input;
@@ -64,10 +85,11 @@ class _OcrWebPageState extends State<OcrWebPage> {
           _reading = '';
           _rawText = '';
           _croppedImageData = null;
+          _qualityReport = null;
+          _analysisResult = null;
         });
 
         final reader = html.FileReader();
-
         final completer = Completer<String>();
 
         reader.onLoad.listen((_) {
@@ -96,10 +118,10 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
         setState(() {
           _imageData = dataUrl;
-          _status = 'حدد منطقة أرقام العداد';
+          _status = 'حدد منطقة أرقام العداد السبعة';
         });
 
-        // فتح القص تلقائياً بعد اختيار الصورة.
+        // فتح القص تلقائياً بعد اختيار الصورة
         await _openCropper();
       } catch (e) {
         if (!mounted) return;
@@ -112,9 +134,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       }
     });
 
-    // إضافة العنصر مؤقتاً إلى الصفحة.
     html.document.body?.append(input);
-
     input.click();
   }
 
@@ -131,7 +151,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
     try {
       setState(() {
         _isCropping = true;
-        _status = 'حدد منطقة شاشة العداد';
+        _status = 'حدد منطقة شاشة العداد (7 أرقام)';
       });
 
       final result = await _callJsPromise(
@@ -151,30 +171,37 @@ class _OcrWebPageState extends State<OcrWebPage> {
         return;
       }
 
+      // فحص جودة الصورة المقصوصة مباشرة
+      final Uint8List croppedBytes = _dataUrlToBytes(cropped);
+      final ImageQualityReport? report = croppedBytes.isNotEmpty
+          ? ImageQualityAnalyzer.analyzeBytes(croppedBytes)
+          : null;
+
       setState(() {
         _croppedImageData = cropped;
+        _qualityReport = report;
         _isCropping = false;
-        _status = 'تم تحديد المنطقة. اضغط قراءة العداد';
+        _status = 'تم تحديد المنطقة وفحص الجودة. جاري قراءة الأرقام...';
       });
+
+      // بدء القراءة تلقائياً بعد تأكيد القص
+      await _recognizeMeter();
     } catch (e) {
       if (!mounted) return;
 
       setState(() {
         _isCropping = false;
-        _status = 'حدث خطأ أثناء تحديد المنطقة';
+        _status = 'تم إلغاء القص أو حدث خطأ أثناء تحديد المنطقة';
       });
-
-      _showMessage('خطأ في القص: $e');
     }
   }
 
   // ------------------------------------------------------------
-  // تشغيل OCR
+  // تشغيل OCR وتحليل النتائج
   // ------------------------------------------------------------
 
   Future<void> _recognizeMeter() async {
-    if (_croppedImageData == null ||
-        _croppedImageData!.isEmpty) {
+    if (_croppedImageData == null || _croppedImageData!.isEmpty) {
       _showMessage('حدد منطقة شاشة العداد أولاً');
       return;
     }
@@ -188,7 +215,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _isRecognizing = true;
         _reading = '';
         _rawText = '';
-        _status = 'جاري قراءة أرقام العداد...';
+        _status = 'جاري قراءة أرقام العداد وتحليل الخانات السبع...';
       });
 
       await _callJsPromise(
@@ -198,24 +225,54 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
       if (!mounted) return;
 
-      final reading = _getJsString(
-        'getLastMeterOCRReading',
+      final String jsReading = _getJsString('getLastMeterOCRReading');
+      final String rawText = _getJsString('getLastMeterOCRText');
+
+      final List<String> rawParts = rawText
+          .split('|')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+
+      final List<WeightedOcrCandidate> weighted = <WeightedOcrCandidate>[];
+      if (jsReading.trim().isNotEmpty) {
+        weighted.add(
+          WeightedOcrCandidate(
+            text: jsReading.trim(),
+            weight: 2.5,
+            source: 'js-solver',
+          ),
+        );
+      }
+
+      final MeterAnalysisResult analysis = MeterAnalyzer.analyze(
+        rawParts,
+        previousReading: widget.previousReading,
+        weightedCandidates: weighted,
       );
 
-      final rawText = _getJsString(
-        'getLastMeterOCRText',
-      );
+      String finalReading = '';
+      if (analysis.isValid) {
+        finalReading = analysis.reading;
+      } else if (MeterAnalyzer.isValid(MeterAnalyzer.normalize(jsReading))) {
+        finalReading = MeterAnalyzer.normalize(jsReading);
+      } else if (analysis.partialReading.isNotEmpty) {
+        finalReading = analysis.partialReading.padLeft(7, '0');
+      } else {
+        finalReading = '0000000';
+      }
 
       setState(() {
         _isRecognizing = false;
-        _reading = _normalizeDigits(reading);
+        _reading = finalReading;
         _rawText = rawText;
+        _analysisResult = analysis;
 
-        if (_reading.isNotEmpty) {
-          _status = 'تم التعرف على قراءة العداد';
+        if (analysis.isValid) {
+          _status = analysis.message;
         } else {
           _status =
-              'لم يتم التعرف على القراءة بوضوح. حاول تحديد الشاشة بدقة أكبر';
+              'تعذر قراءة الخانات السبع تلقائياً بوضوح؛ يمكنك ضبط الخانات أدناه أو إعادة القص.';
         }
       });
     } catch (e) {
@@ -223,11 +280,24 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
       setState(() {
         _isRecognizing = false;
-        _status = 'فشل التعرف على الأرقام';
+        _status = 'فشل التعرف التلقائي على الأرقام';
       });
 
       _showMessage('خطأ OCR: $e');
     }
+  }
+
+  // ------------------------------------------------------------
+  // اعتماد القراءة وإرجاعها للشاشة السابقة
+  // ------------------------------------------------------------
+
+  void _confirmAndReturn() {
+    final String clean = MeterAnalyzer.normalize(_reading);
+    if (!MeterAnalyzer.isValid(clean)) {
+      _showMessage('القراءة يجب أن تتكون من 7 خانات بالضبط');
+      return;
+    }
+    Navigator.of(context).pop(clean);
   }
 
   // ------------------------------------------------------------
@@ -275,15 +345,13 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   Uint8List _dataUrlToBytes(String dataUrl) {
     try {
-      final comma = dataUrl.indexOf(',');
-
+      final int comma = dataUrl.indexOf(',');
       if (comma < 0) {
         return Uint8List(0);
       }
 
-      final encoded = dataUrl.substring(comma + 1);
-
-      final binary = html.window.atob(encoded);
+      final String encoded = dataUrl.substring(comma + 1);
+      final String binary = html.window.atob(encoded);
 
       return Uint8List.fromList(
         List<int>.generate(
@@ -294,38 +362,6 @@ class _OcrWebPageState extends State<OcrWebPage> {
     } catch (_) {
       return Uint8List(0);
     }
-  }
-
-  // ------------------------------------------------------------
-  // تطبيع الأرقام العربية والفارسية إلى الإنجليزية
-  // ------------------------------------------------------------
-
-  String _normalizeDigits(String value) {
-    return value
-        .replaceAllMapped(
-          RegExp(r'[٠-٩]'),
-          (match) {
-            final char = match.group(0)!;
-            final code = char.codeUnitAt(0);
-
-            final normalized =
-                code - '٠'.codeUnitAt(0);
-
-            return normalized.toString();
-          },
-        )
-        .replaceAllMapped(
-          RegExp(r'[۰-۹]'),
-          (match) {
-            final char = match.group(0)!;
-            final code = char.codeUnitAt(0);
-
-            final normalized =
-                code - '۰'.codeUnitAt(0);
-
-            return normalized.toString();
-          },
-        );
   }
 
   // ------------------------------------------------------------
@@ -353,9 +389,11 @@ class _OcrWebPageState extends State<OcrWebPage> {
       _croppedImageData = null;
       _reading = '';
       _rawText = '';
+      _qualityReport = null;
+      _analysisResult = null;
       _isCropping = false;
       _isRecognizing = false;
-      _status = 'اختر صورة عداد الماء';
+      _status = 'اختر أو صوّر عداد الماء للبدء';
     });
   }
 
@@ -365,38 +403,45 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.water),
-            SizedBox(width: 8),
-            Text('قراءة عداد الماء'),
-          ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.water),
+              SizedBox(width: 8),
+              Text('قراءة عداد الماء وفحص الجودة'),
+            ],
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 850,
-              ),
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 24),
-                  _buildImageArea(),
-                  const SizedBox(height: 20),
-                  _buildControls(),
-                  const SizedBox(height: 24),
-                  _buildResult(),
-                  const SizedBox(height: 16),
-                  _buildStatus(),
-                ],
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 850),
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: 18),
+                    _buildImageArea(),
+                    const SizedBox(height: 16),
+                    _buildControls(),
+                    if (_qualityReport != null) ...[
+                      const SizedBox(height: 18),
+                      ImageQualityCard(report: _qualityReport!),
+                    ],
+                    if (_reading.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      _buildResult(),
+                    ],
+                    const SizedBox(height: 16),
+                    _buildStatus(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -408,29 +453,33 @@ class _OcrWebPageState extends State<OcrWebPage> {
   Widget _buildHeader() {
     return Card(
       elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Column(
           children: [
             const Icon(
-              Icons.water,
-              size: 52,
+              Icons.document_scanner,
+              size: 46,
+              color: Colors.blue,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             const Text(
-              'التعرف على قراءة عداد الماء',
+              'التعرف الإلكتروني على قراءة عداد الماء (7 خانات)',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 21,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'اختر صورة العداد، ثم حدد شاشة الأرقام وسيتم استخراج القراءة تلقائياً.',
+              'صوّر أو اختر صورة العداد، ثم حدد شاشة الأرقام السبعة ليتم فحص جودة الصورة واستخراج القراءة تلقائياً.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 color: Colors.grey.shade700,
               ),
             ),
@@ -444,7 +493,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
     if (_imageData == null) {
       return Container(
         width: double.infinity,
-        height: 260,
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -457,13 +506,24 @@ class _OcrWebPageState extends State<OcrWebPage> {
           children: [
             Icon(
               Icons.image_outlined,
-              size: 70,
+              size: 64,
+              color: Colors.blueGrey,
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 10),
             Text(
-              'لم يتم اختيار صورة',
+              'لم يتم اختيار صورة بعد',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'احرص على نظافة زجاج العداد وتجنب انعكاس الفلاش المباشر',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
               ),
             ),
           ],
@@ -471,7 +531,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       );
     }
 
-    final bytes = _dataUrlToBytes(
+    final Uint8List bytes = _dataUrlToBytes(
       _croppedImageData ?? _imageData!,
     );
 
@@ -482,6 +542,9 @@ class _OcrWebPageState extends State<OcrWebPage> {
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         children: [
           Padding(
@@ -489,14 +552,13 @@ class _OcrWebPageState extends State<OcrWebPage> {
             child: Row(
               children: [
                 Icon(
-                  _croppedImageData != null
-                      ? Icons.crop
-                      : Icons.image,
+                  _croppedImageData != null ? Icons.crop : Icons.image,
+                  color: Colors.blue,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   _croppedImageData != null
-                      ? 'منطقة OCR المحددة'
+                      ? 'منطقة الأرقام المحددة (OCR)'
                       : 'الصورة الأصلية',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -506,9 +568,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
           ),
           ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxHeight: 450,
-            ),
+            constraints: const BoxConstraints(maxHeight: 320),
             child: Image.memory(
               bytes,
               fit: BoxFit.contain,
@@ -521,109 +581,160 @@ class _OcrWebPageState extends State<OcrWebPage> {
   }
 
   Widget _buildControls() {
+    final bool busy = _isRecognizing || _isCropping;
+
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       alignment: WrapAlignment.center,
       children: [
         ElevatedButton.icon(
-          onPressed: _isRecognizing || _isCropping
-              ? null
-              : _pickImage,
-          icon: const Icon(Icons.upload_file),
-          label: Text(
-            _imageData == null
-                ? 'اختيار صورة'
-                : 'اختيار صورة أخرى',
+          onPressed: busy ? null : () => _pickImage(useCamera: true),
+          icon: const Icon(Icons.camera_alt),
+          label: const Text('تصوير بالكاميرا'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
           ),
         ),
-
+        ElevatedButton.icon(
+          onPressed: busy ? null : () => _pickImage(useCamera: false),
+          icon: const Icon(Icons.upload_file),
+          label: Text(
+            _imageData == null ? 'اختيار صورة من الجهاز' : 'تغيير الصورة',
+          ),
+        ),
         if (_imageData != null)
           OutlinedButton.icon(
-            onPressed:
-                _isRecognizing || _isCropping
-                    ? null
-                    : _openCropper,
+            onPressed: busy ? null : _openCropper,
             icon: const Icon(Icons.crop),
-            label: const Text(
-              'تحديد منطقة العداد',
-            ),
+            label: const Text('إعادة قص منطقة الأرقام'),
           ),
-
         if (_croppedImageData != null)
           FilledButton.icon(
-            onPressed:
-                _isRecognizing || _isCropping
-                    ? null
-                    : _recognizeMeter,
+            onPressed: busy ? null : _recognizeMeter,
             icon: _isRecognizing
                 ? const SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
+                      color: Colors.white,
                     ),
                   )
                 : const Icon(Icons.document_scanner),
             label: Text(
-              _isRecognizing
-                  ? 'جاري القراءة...'
-                  : 'قراءة العداد',
+              _isRecognizing ? 'جاري القراءة...' : 'إعادة قراءة الأرقام',
             ),
           ),
-
         if (_imageData != null)
           TextButton.icon(
-            onPressed:
-                _isRecognizing || _isCropping
-                    ? null
-                    : _reset,
+            onPressed: busy ? null : _reset,
             icon: const Icon(Icons.refresh),
-            label: const Text('إعادة'),
+            label: const Text('مسح وإعادة'),
           ),
       ],
     );
   }
 
   Widget _buildResult() {
-    if (_reading.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
     return Card(
       elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Icon(
-              Icons.check_circle,
-              size: 50,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _analysisResult?.isValid == true
+                      ? Icons.check_circle
+                      : Icons.edit_note,
+                  color: _analysisResult?.isValid == true
+                      ? Colors.green
+                      : Colors.orange,
+                  size: 28,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'قراءة العداد المستخرجة',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (_analysisResult != null && _analysisResult!.isValid) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _analysisResult!.isHighConfidence
+                          ? Colors.green.shade100
+                          : Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'ثقة ${_analysisResult!.confidence.round()}%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _analysisResult!.isHighConfidence
+                            ? Colors.green.shade900
+                            : Colors.orange.shade900,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'قراءة العداد',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            const SizedBox(height: 14),
+            SevenDigitRollerEditor(
+              reading: _reading,
+              digitConfidences:
+                  _analysisResult?.digitConfidences ?? const <double>[],
+              alternatives:
+                  _analysisResult?.alternatives ?? const <String>[],
+              previousReading: widget.previousReading,
+              onChanged: (val) {
+                setState(() {
+                  _reading = val;
+                });
+              },
             ),
-            const SizedBox(height: 12),
-            SelectableText(
-              _reading,
-              textDirection: TextDirection.ltr,
-              style: const TextStyle(
-                fontSize: 42,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 6,
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: _confirmAndReturn,
+                icon: const Icon(Icons.check_circle),
+                label: Text(
+                  'اعتماد القراءة ($_reading)',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade700,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
               ),
             ),
             if (_rawText.isNotEmpty) ...[
               const SizedBox(height: 12),
               ExpansionTile(
-                title: const Text(
-                  'النص الخام من OCR',
-                ),
+                title: const Text('النص الخام من محرك OCR'),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),
@@ -650,9 +761,10 @@ class _OcrWebPageState extends State<OcrWebPage> {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 15,
+          fontWeight: FontWeight.w600,
           color: _isRecognizing
               ? Theme.of(context).colorScheme.primary
-              : Colors.grey.shade700,
+              : Colors.grey.shade800,
         ),
       ),
     );

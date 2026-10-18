@@ -1,8 +1,12 @@
-
 import 'package:flutter/material.dart';
 
 class OcrWebPage extends StatelessWidget {
-  const OcrWebPage({super.key});
+  final int? previousReading;
+
+  const OcrWebPage({
+    super.key,
+    this.previousReading,
+  });
 
   @override
   Widget build(BuildContext context) {

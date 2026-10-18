@@ -1,16 +1,20 @@
 // ============================================================
 // ai_meter_ocr.dart
+// قراءة عداد المياه عبر نموذج الرؤية الذكي مع فحص جودة الصورة
 // ============================================================
 
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import 'image_quality_analyzer.dart';
+import 'meter_analysis.dart';
+
 class AIMeterOCR {
-  static const String _apiKey =
-      String.fromEnvironment(
+  static const String _apiKey = String.fromEnvironment(
     'OPENAI_API_KEY',
   );
 
@@ -18,7 +22,7 @@ class AIMeterOCR {
   // نموذج الرؤية
   // ==========================================================
 
-  static const String _model = 'gpt-5.6';
+  static const String _model = 'gpt-4o';
 
   // ==========================================================
   // قراءة العداد
@@ -27,109 +31,57 @@ class AIMeterOCR {
   static Future<String?> readMeter() async {
     try {
       if (_apiKey.isEmpty) {
-        throw Exception(
-          'OPENAI_API_KEY غير موجود',
-        );
+        throw Exception('OPENAI_API_KEY غير موجود');
       }
 
-      print('========================================');
-      print('AI METER OCR');
-      print('بدء تصوير العداد');
-      print('========================================');
+      debugPrint('========================================');
+      debugPrint('AI METER OCR - بدء تصوير العداد');
+      debugPrint('========================================');
 
-      final ImagePicker picker =
-          ImagePicker();
+      final ImagePicker picker = ImagePicker();
 
-      // ======================================================
-      // التقاط الصورة
-      // ======================================================
-
-      final XFile? pickedImage =
-          await picker.pickImage(
+      final XFile? pickedImage = await picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 100,
-        preferredCameraDevice:
-            CameraDevice.rear,
+        preferredCameraDevice: CameraDevice.rear,
       );
 
       if (pickedImage == null) {
-        print(
-          'المستخدم ألغى التصوير',
-        );
-
+        debugPrint('المستخدم ألغى التصوير');
         return null;
       }
 
-      // ======================================================
-      // قراءة الصورة
-      // ======================================================
-
-      final Uint8List bytes =
-          await pickedImage.readAsBytes();
-
+      final Uint8List bytes = await pickedImage.readAsBytes();
       if (bytes.isEmpty) {
-        throw Exception(
-          'الصورة فارغة',
-        );
+        throw Exception('الصورة فارغة');
       }
 
-      print(
-        'حجم الصورة: ${bytes.length} bytes',
-      );
+      // فحص جودة الصورة قبل الإرسال
+      final ImageQualityReport quality =
+          ImageQualityAnalyzer.analyzeBytes(bytes);
+      debugPrint('AI OCR Image Quality: ${quality.summaryMessage}');
 
-      // ======================================================
-      // Base64
-      // ======================================================
-
-      final String base64Image =
-          base64Encode(bytes);
-
-      final String mimeType =
-          _getMimeType(
-        pickedImage.name,
-      );
-
-      final String dataUrl =
-          'data:$mimeType;base64,$base64Image';
-
-      // ======================================================
-      // التعليمات للنموذج
-      // ======================================================
+      final String base64Image = base64Encode(bytes);
+      final String mimeType = _getMimeType(pickedImage.name);
+      final String dataUrl = 'data:$mimeType;base64,$base64Image';
 
       const String prompt = '''
-اقرأ رقم عداد المياه الظاهر في نافذة الأرقام فقط.
+اقرأ رقم عداد المياه الظاهر في نافذة الأرقام السبعة فقط.
 
 مهم جداً:
-- اقرأ الخانات الظاهرة داخل نافذة العداد.
-- لا تقرأ أرقام الملصقات أو جسم العداد.
-- لا تحذف أول رقم.
-- لا تضف أي رقم.
-- لا تغير ترتيب الأرقام.
-- إذا كان الرقم يبدأ بصفر، احتفظ به.
-- أرجع الرقم فقط.
-- بدون شرح.
-- بدون مسافات.
-- بدون علامات اقتباس.
+- اقرأ الخانات السبع الظاهرة داخل نافذة العداد من اليسار إلى اليمين.
+- لا تقرأ أرقام الملصقات أو الرقم التسلسلي على جسم العداد.
+- لا تحذف الصفر الأول في بداية القراءة.
+- لا تضف أي رقم ولا تغير ترتيب الأرقام.
+- أرجع الرقم المكون من 7 خانات فقط بدون شرح وبدون مسافات.
 
 مثال:
-إذا كان الرقم الظاهر:
-9142037
-
-فالنتيجة يجب أن تكون:
-9142037
+0650040
 ''';
 
-      // ======================================================
-      // الطلب
-      // ======================================================
+      final Uri uri = Uri.parse('https://api.openai.com/v1/responses');
 
-      final Uri uri =
-          Uri.parse(
-        'https://api.openai.com/v1/responses',
-      );
-
-      final Map<String, dynamic>
-          body = {
+      final Map<String, dynamic> body = {
         'model': _model,
         'input': [
           {
@@ -149,182 +101,59 @@ class AIMeterOCR {
         ],
       };
 
-      print(
-        'إرسال الصورة إلى OpenAI...',
-      );
-
-      final http.Response response =
-          await http.post(
+      final http.Response response = await http.post(
         uri,
         headers: {
-          'Authorization':
-              'Bearer $_apiKey',
-          'Content-Type':
-              'application/json',
+          'Authorization': 'Bearer $_apiKey',
+          'Content-Type': 'application/json',
         },
         body: jsonEncode(body),
       );
 
-      // ======================================================
-      // طباعة الاستجابة للتشخيص
-      // ======================================================
-
-      print('========================================');
-
-      print(
-        'HTTP STATUS: ${response.statusCode}',
-      );
-
-      print('OPENAI RESPONSE:');
-
-      print(response.body);
-
-      print('========================================');
-
-      // ======================================================
-      // فشل API
-      // ======================================================
-
-      if (response.statusCode < 200 ||
-          response.statusCode >= 300) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw Exception(
-          'OpenAI API Error ${response.statusCode}: '
-          '${response.body}',
+          'OpenAI API Error ${response.statusCode}: ${response.body}',
         );
       }
 
-      // ======================================================
-      // JSON
-      // ======================================================
-
-      final dynamic decoded =
-          jsonDecode(
-        response.body,
-      );
-
-      // ======================================================
-      // استخراج النص
-      // ======================================================
-
-      final String rawText =
-          _extractOutputText(
-        decoded,
-      );
-
-      print('========================================');
-
-      print(
-        'AI RAW TEXT: $rawText',
-      );
-
-      print('========================================');
-
-      // ======================================================
-      // تنظيف
-      // ======================================================
-
-      final String number =
-          _normalizeNumber(
-        rawText,
-      );
-
-      print(
-        'AI FINAL NUMBER: $number',
-      );
-
-      // ======================================================
-      // لا توجد نتيجة
-      // ======================================================
+      final dynamic decoded = jsonDecode(response.body);
+      final String rawText = _extractOutputText(decoded);
+      final String number = _normalizeNumber(rawText);
 
       if (number.isEmpty) {
-        print(
-          'لم يتم العثور على رقم العداد',
-        );
-
         return null;
       }
 
       return number;
-    } catch (
-      e,
-      stackTrace
-    ) {
-      print(
-        '========================================',
-      );
-
-      print(
-        'AI OCR ERROR:',
-      );
-
-      print(e);
-
-      print(stackTrace);
-
-      print(
-        '========================================',
-      );
-
+    } catch (e, stackTrace) {
+      debugPrint('AI OCR ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
       return null;
     }
   }
 
-  // ==========================================================
-  // استخراج النص من Responses API
-  // ==========================================================
-
-  static String _extractOutputText(
-    dynamic decoded,
-  ) {
+  static String _extractOutputText(dynamic decoded) {
     try {
       if (decoded is! Map) {
         return '';
       }
 
-      // ========================================================
-      // output_text
-      // ========================================================
-
-      final dynamic direct =
-          decoded['output_text'];
-
-      if (direct is String &&
-          direct.trim().isNotEmpty) {
+      final dynamic direct = decoded['output_text'];
+      if (direct is String && direct.trim().isNotEmpty) {
         return direct.trim();
       }
 
-      // ========================================================
-      // output
-      // ========================================================
-
-      final dynamic output =
-          decoded['output'];
-
+      final dynamic output = decoded['output'];
       if (output is List) {
-        for (final dynamic item
-            in output) {
-          if (item is! Map) {
-            continue;
-          }
+        for (final dynamic item in output) {
+          if (item is! Map) continue;
+          final dynamic content = item['content'];
+          if (content is! List) continue;
 
-          final dynamic content =
-              item['content'];
-
-          if (content is! List) {
-            continue;
-          }
-
-          for (final dynamic part
-              in content) {
-            if (part is! Map) {
-              continue;
-            }
-
-            final dynamic text =
-                part['text'];
-
-            if (text is String &&
-                text.trim().isNotEmpty) {
+          for (final dynamic part in content) {
+            if (part is! Map) continue;
+            final dynamic text = part['text'];
+            if (text is String && text.trim().isNotEmpty) {
               return text.trim();
             }
           }
@@ -332,84 +161,20 @@ class AIMeterOCR {
       }
 
       return '';
-    } catch (e) {
-      print(
-        'خطأ استخراج النص: $e',
-      );
-
+    } catch (_) {
       return '';
     }
   }
 
-  // ==========================================================
-  // تنظيف الرقم
-  // ==========================================================
-
-  static String _normalizeNumber(
-    String value,
-  ) {
-    String number =
-        value.trim();
-
-    // أخطاء بصرية محتملة
-    number = number
-        .replaceAll(
-          'O',
-          '0',
-        )
-        .replaceAll(
-          'o',
-          '0',
-        )
-        .replaceAll(
-          'I',
-          '1',
-        )
-        .replaceAll(
-          'i',
-          '1',
-        )
-        .replaceAll(
-          'l',
-          '1',
-        )
-        .replaceAll(
-          '|',
-          '1',
-        );
-
-    // أرقام فقط
-    number =
-        number.replaceAll(
-      RegExp(r'[^0-9]'),
-      '',
-    );
-
-    return number;
+  static String _normalizeNumber(String value) {
+    return MeterAnalyzer.normalize(value);
   }
 
-  // ==========================================================
-  // MIME TYPE
-  // ==========================================================
-
-  static String _getMimeType(
-    String filename,
-  ) {
-    final String name =
-        filename.toLowerCase();
-
-    if (name.endsWith('.png')) {
-      return 'image/png';
-    }
-
-    if (name.endsWith('.webp')) {
-      return 'image/webp';
-    }
-
-    if (name.endsWith('.gif')) {
-      return 'image/gif';
-    }
-
+  static String _getMimeType(String filename) {
+    final String name = filename.toLowerCase();
+    if (name.endsWith('.png')) return 'image/png';
+    if (name.endsWith('.webp')) return 'image/webp';
+    if (name.endsWith('.gif')) return 'image/gif';
     return 'image/jpeg';
   }
 }

@@ -470,13 +470,19 @@ Future<void> readMeterImage() async {
       isReadingImage = true;
     });
 
-    // تمرير context لفتح صفحة OCR الخاصة بالويب.
-    final String? result =
-        await OCRService.readNumber(context);
+    // تمرير context والقراءة السابقة لتحسين دقة التحليل والتحقق.
+    final String? result = await OCRService.readNumber(
+      context,
+      previousReading: previousReading,
+    );
 
     if (!mounted) return;
 
-    if (result == null || result.trim().isEmpty) {
+    if (result == null) {
+      return;
+    }
+
+    if (result.trim().isEmpty) {
       showMessage(
         'لم يتم العثور على قراءة من 7 خانات',
         error: true,
