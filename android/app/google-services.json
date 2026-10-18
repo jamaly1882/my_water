@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "396645666580",
+    "project_id": "water-567bb",
+    "storage_bucket": "water-567bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:396645666580:android:097f5cb163f246839c7c01",
+        "android_client_info": {
+          "package_name": "com.azal.water"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8YNfRAStN8JsLilUH98oQ-s6XpTTTN5g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

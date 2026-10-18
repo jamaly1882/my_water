@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "water": "water-567bb",
+    "default": "water-567bb"
+  },
+  "targets": {
+    "water-567bb": {
+      "hosting": {
+        "water2": [
+          "https-water-app-2026-web-ap-26"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
