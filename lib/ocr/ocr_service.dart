@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -12,16 +11,22 @@ class OCRService {
   OCRService._();
 
   static Future<String?> readNumber(
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    int? previousReading,
+  }) async {
     if (kIsWeb) {
       return Navigator.of(context).push<String>(
         MaterialPageRoute<String>(
-          builder: (_) => const web.OcrWebPage(),
+          builder: (_) => web.OcrWebPage(
+            previousReading: previousReading,
+          ),
         ),
       );
     }
 
-    return mobile.readNumberImpl();
+    return mobile.readNumberImpl(
+      context: context,
+      previousReading: previousReading,
+    );
   }
 }
