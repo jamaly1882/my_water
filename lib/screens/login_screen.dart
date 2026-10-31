@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../home_screen.dart';
+import '../services/supervisor_location.dart';
 import '../widgets/my_app_bar.dart';
 import 'set_up_mshrf/setup_mshrf_screen.dart';
 
@@ -176,33 +177,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final String supervisorId = user.uid;
 
-      final String provinceId =
-          data['provinceId']?.toString() ?? '';
+      // --------------------------------------------------------
+      // تحليل الموقع كاملاً:
+      // المعرفات + الأسماء (المحافظة / المديرية / العزلة / القرية / البئر)
+      //
+      // الأسماء تُقرأ من مستند المستخدم، وإذا كانت مفقودة
+      // يتم جلبها من Firestore حتى لا تظهر "غير محدد" في الصفحات.
+      // --------------------------------------------------------
 
-      final String districtId =
-          data['districtId']?.toString() ?? '';
-
-      final String hamletId =
-          data['hamletId']?.toString() ?? '';
-
-      final String villageId =
-          data['villageId']?.toString() ?? '';
-
-      final String wellId =
-          data['wellId']?.toString() ?? '';
-
-      final String wellName =
-          data['wellName']?.toString() ?? '';
+      final SupervisorLocation location =
+          await SupervisorLocationResolver.fromUserData(data);
 
       // ========================================================
       // التحقق من اكتمال بيانات الموقع
       // ========================================================
 
-      if (provinceId.isEmpty ||
-          districtId.isEmpty ||
-          hamletId.isEmpty ||
-          villageId.isEmpty ||
-          wellId.isEmpty) {
+      if (location.provinceId.isEmpty ||
+          location.districtId.isEmpty ||
+          location.hamletId.isEmpty ||
+          location.villageId.isEmpty ||
+          location.wellId.isEmpty) {
         await auth.signOut();
 
         message('بيانات موقع المشرف غير مكتملة');
@@ -221,12 +215,21 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (_) => HomeScreen(
             isAdmin: false,
             supervisorId: supervisorId,
-            provinceId: provinceId,
-            districtId: districtId,
-            hamletId: hamletId,
-            villageId: villageId,
-            wellId: wellId,
-            wellName: wellName,
+
+            provinceId: location.provinceId,
+            provinceName: location.provinceName,
+
+            districtId: location.districtId,
+            districtName: location.districtName,
+
+            hamletId: location.hamletId,
+            hamletName: location.hamletName,
+
+            villageId: location.villageId,
+            villageName: location.villageName,
+
+            wellId: location.wellId,
+            wellName: location.wellName,
           ),
         ),
       );

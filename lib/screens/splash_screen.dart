@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../home_screen.dart';
+import '../services/supervisor_location.dart';
 import 'login_screen.dart';
 import 'set_up_mshrf/setup_mshrf_screen.dart';
 
@@ -114,23 +115,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final String supervisorId = user.uid;
 
-      final String provinceId =
-          data["provinceId"]?.toString() ?? "";
+      // --------------------------------------------------------
+      // تحليل الموقع كاملاً (المعرفات + الأسماء)
+      // حتى تظهر المحافظة والمديرية والعزلة والقرية
+      // في كل صفحات التطبيق بدل "غير محدد".
+      // --------------------------------------------------------
 
-      final String districtId =
-          data["districtId"]?.toString() ?? "";
-
-      final String hamletId =
-          data["hamletId"]?.toString() ?? "";
-
-      final String villageId =
-          data["villageId"]?.toString() ?? "";
-
-      final String wellId =
-          data["wellId"]?.toString() ?? "";
-
-      final String wellName =
-          data["wellName"]?.toString() ?? "";
+      final SupervisorLocation location =
+          await SupervisorLocationResolver.fromUserData(data);
 
       // ========================================================
       // الدخول مباشرة إلى الرئيسية
@@ -144,12 +136,21 @@ class _SplashScreenState extends State<SplashScreen> {
           builder: (_) => HomeScreen(
             isAdmin: false,
             supervisorId: supervisorId,
-            provinceId: provinceId,
-            districtId: districtId,
-            hamletId: hamletId,
-            villageId: villageId,
-            wellId: wellId,
-            wellName: wellName,
+
+            provinceId: location.provinceId,
+            provinceName: location.provinceName,
+
+            districtId: location.districtId,
+            districtName: location.districtName,
+
+            hamletId: location.hamletId,
+            hamletName: location.hamletName,
+
+            villageId: location.villageId,
+            villageName: location.villageName,
+
+            wellId: location.wellId,
+            wellName: location.wellName,
           ),
         ),
       );

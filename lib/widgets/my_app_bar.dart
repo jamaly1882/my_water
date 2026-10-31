@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'location_bar.dart';
+
 class MyAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   final String title;
@@ -8,6 +10,23 @@ class MyAppBar extends StatelessWidget
   final bool showBackButton;
   final List<Widget>? actions;
 
+  // ==========================================================
+  // شريط الموقع الموحّد
+  // المحافظة ← المديرية ← العزلة ← القرية ← البئر
+  // ==========================================================
+
+  final String? provinceName;
+  final String? districtName;
+  final String? hamletName;
+  final String? villageName;
+  final String? wellName;
+
+  /// إظهار البئر ضمن شريط الموقع
+  final bool showWellInLocation;
+
+  /// إظهار شريط الموقع (يتم تجاهله إذا كانت كل الأسماء فارغة)
+  final bool showLocation;
+
   const MyAppBar({
     super.key,
     required this.title,
@@ -15,7 +34,31 @@ class MyAppBar extends StatelessWidget
     this.icon,
     this.showBackButton = true,
     this.actions,
+    this.provinceName,
+    this.districtName,
+    this.hamletName,
+    this.villageName,
+    this.wellName,
+    this.showWellInLocation = true,
+    this.showLocation = true,
   });
+
+  // ==========================================================
+  // هل توجد بيانات موقع لعرضها؟
+  // ==========================================================
+
+  bool get _hasLocation {
+    if (!showLocation) return false;
+
+    bool filled(String? value) =>
+        value != null && value.trim().isNotEmpty;
+
+    return filled(provinceName) ||
+        filled(districtName) ||
+        filled(hamletName) ||
+        filled(villageName) ||
+        (showWellInLocation && filled(wellName));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +140,30 @@ class MyAppBar extends StatelessWidget
       ),
 
       actions: actions,
+
+      // ========================================================
+      // شريط الموقع أسفل العنوان
+      // ========================================================
+
+      bottom: _hasLocation
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(28),
+              child: LocationBar(
+                provinceName: provinceName,
+                districtName: districtName,
+                hamletName: hamletName,
+                villageName: villageName,
+                wellName: wellName,
+                showWell: showWellInLocation,
+                compact: true,
+              ),
+            )
+          : null,
     );
   }
 
   @override
-  Size get preferredSize =>
-      const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => Size.fromHeight(
+        kToolbarHeight + (_hasLocation ? 28 : 0),
+      );
 }

@@ -1,17 +1,23 @@
 
 // ============================================================
 // open_cycle_screen.dart
-// صفحة إضافة / فتح دور مياه جديد
+// صفحة إضافة / فتح دور مياه جديد (قراءة بداية الدور)
 //
-// التعديل:
+// المسار:
 // - الإدخال اليدوي يقبل أي عدد من الأرقام.
-// - OCR: تصوير العداد ثم قص شاشة الأرقام يدويًا ثم قراءة 7 أرقام بالضبط.
+// - قراءة الصورة: تصوير العداد -> قص شاشة الأرقام ->
+//   قراءة بالذكاء الاصطناعي (AI Vision) ->
+//   وإذا تعذّر: قراءة محلية على الجهاز -> مراجعة وتأكيد.
+//   قراءة الصورة يجب أن تكون 7 خانات بالضبط.
 // ============================================================
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../ocr/ai_meter_ocr.dart';
+import '../ocr/meter_analysis.dart';
 import '../ocr/ocr_service.dart';
+import '../widgets/location_bar.dart';
 import '../widgets/my_app_bar.dart';
 
 class OpenCycleScreen extends StatefulWidget {
@@ -87,6 +93,13 @@ class _OpenCycleScreenState extends State<OpenCycleScreen>
 
   bool _isLoadingOcr = false;
   bool _isSaving = false;
+
+  // ==========================================================
+  // المحرّك الذي أنتج قراءة بداية الدور
+  // (ذكاء اصطناعي أو قراءة محلية)
+  // ==========================================================
+
+  OcrEngine? _readingEngine;
 
   // ============================================================
   // CUSTOMER
@@ -340,8 +353,9 @@ class _OpenCycleScreenState extends State<OpenCycleScreen>
   // ============================================================
   // OCR
   //
-  // المسار: الكاميرا -> القص اليدوي -> OCR.
-  // OCR يشترط 7 أرقام بالضبط.
+  // المسار: الكاميرا -> القص اليدوي -> قراءة بالذكاء الاصطناعي
+  // -> وإذا تعذّر: قراءة محلية على الجهاز -> مراجعة وتأكيد.
+  // القراءة يجب أن تكون 7 أرقام بالضبط.
   // ============================================================
 
 Future<void> readMeterImage() async {
@@ -349,22 +363,29 @@ Future<void> readMeterImage() async {
 
   setState(() {
     _isLoadingOcr = true;
+    _readingEngine = null;
   });
 
   try {
     debugPrint("======================================");
     debugPrint("START METER OCR");
 
-    // فتح واجهة OCR وتمرير context.
-    final String? result =
-        await OCRService.readNumber(context);
+    // فتح واجهة القراءة وتمرير context والقراءة السابقة
+    // لمساعدة الذكاء الاصطناعي على تجنب الأخطاء المنطقية.
+    final MeterReadingResult? result =
+        await OCRService.readNumber(
+      context,
+      previousReading:
+          int.tryParse(previousReading),
+      preferAi: true,
+    );
 
     debugPrint("OCR RAW RESULT: $result");
 
     if (!mounted) return;
 
-    // التحقق من نتيجة OCR.
-    if (result == null || result.trim().isEmpty) {
+    // التحقق من نتيجة القراءة.
+    if (result == null || result.reading.trim().isEmpty) {
       showMessage(
         "لم يتم العثور على قراءة العداد.\n\n"
         "تأكد من أن صورة العداد واضحة وأن شاشة الأرقام ظاهرة بالكامل.",
@@ -373,8 +394,9 @@ Future<void> readMeterImage() async {
       return;
     }
 
-    // توحيد الأرقام العربية والإنجليزية ومعالجة نتيجة OCR.
-    final String number = normalizeMeterNumber(result);
+    // توحيد الأرقام العربية والإنجليزية ومعالجة نتيجة القراءة.
+    final String number =
+        normalizeMeterNumber(result.reading);
 
     debugPrint("OCR NORMALIZED: $number");
 
@@ -393,6 +415,7 @@ Future<void> readMeterImage() async {
     setState(() {
       readingController.text = number;
       previousReading = number;
+      _readingEngine = result.engine;
     });
 
     // الانتقال إلى تبويب الإدخال اليدوي لعرض القراءة.
@@ -401,11 +424,13 @@ Future<void> readMeterImage() async {
     }
 
     showMessage(
-      "تمت قراءة العداد بنجاح: $number",
+      result.isAi
+          ? "قرأ الذكاء الاصطناعي العداد بنجاح: $number"
+          : "تمت قراءة العداد بنجاح: $number",
       color: Colors.green,
     );
 
-    debugPrint("OCR SUCCESS: $number");
+    debugPrint("OCR SUCCESS (${result.engine.label}): $number");
     debugPrint("======================================");
   } catch (e, stackTrace) {
     debugPrint("OCR ERROR: $e");
@@ -428,85 +453,72 @@ Future<void> readMeterImage() async {
 
 
   // ============================================================
+  // ENGINE CHIP
+  //
+  // شارة توضح هل القراءة جاءت من الذكاء الاصطناعي
+  // أم من القراءة المحلية على الجهاز
+  // ============================================================
+
+  Widget _engineChip(OcrEngine engine) {
+    final bool isAi = engine.isAi;
+
+    final Color color =
+        isAi ? Colors.indigo : Colors.blueGrey;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withOpacity(.35),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isAi ? Icons.psychology : Icons.memory,
+            size: 16,
+            color: color,
+          ),
+
+          const SizedBox(width: 6),
+
+          Text(
+            isAi
+                ? "قراءة بالذكاء الاصطناعي"
+                : "قراءة محلية على الجهاز",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
   // LOCATION BAR
+  //
+  // شريط الموقع الموحّد:
+  // المحافظة ← المديرية ← العزلة ← القرية ← البئر
   // ============================================================
 
   Widget buildLocationTitleBar() {
-    final locations = <String>[];
-
-    void addLocation(String? value) {
-      if (value != null &&
-          value.trim().isNotEmpty) {
-        locations.add(value.trim());
-      }
-    }
-
-    addLocation(widget.provinceName);
-    addLocation(widget.districtName);
-    addLocation(widget.hamletName);
-    addLocation(widget.villageName);
-    addLocation(widget.wellName);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
-      color: appColor,
-      child: Row(
-        children: [
-          const Icon(
-            Icons.location_on,
-            color: Colors.white,
-          ),
-
-          const SizedBox(width: 10),
-
-          Expanded(
-            child: locations.isEmpty
-                ? const Text(
-                    "فتح دور مياه جديد",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : Wrap(
-                    spacing: 3,
-                    runSpacing: 4,
-                    children: [
-                      for (int i = 0;
-                          i < locations.length;
-                          i++)
-                        Row(
-                          mainAxisSize:
-                              MainAxisSize.min,
-                          children: [
-                            Text(
-                              locations[i],
-                              style:
-                                  const TextStyle(
-                                color:
-                                    Colors.white,
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
-                            ),
-                            if (i <
-                                locations.length - 1)
-                              const Icon(
-                                Icons.chevron_left,
-                                color:
-                                    Colors.white70,
-                                size: 18,
-                              ),
-                          ],
-                        ),
-                    ],
-                  ),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      child: LocationBar(
+        provinceName: widget.provinceName,
+        districtName: widget.districtName,
+        hamletName: widget.hamletName,
+        villageName: widget.villageName,
+        wellName: widget.wellName,
       ),
     );
   }
@@ -1127,7 +1139,8 @@ Future<void> readMeterImage() async {
 
                 const Text(
                   "يمكنك إدخال القراءة يدويًا بأي عدد من الخانات،\n"
-                  "أو تصوير العداد ثم قص شاشة الأرقام يدويًا، ويجب أن تكون القراءة 7 خانات.",
+                  "أو تصوير العداد وقص شاشة الأرقام ليقوم الذكاء الاصطناعي بقراءتها.\n"
+                  "قراءة الصورة يجب أن تكون 7 خانات.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey,
@@ -1178,8 +1191,8 @@ Future<void> readMeterImage() async {
                           ),
                     label: Text(
                       _isLoadingOcr
-                          ? "جاري القراءة..."
-                          : "تصوير وقص وقراءة العداد",
+                          ? "جاري القراءة بالذكاء الاصطناعي..."
+                          : "قراءة العداد بالذكاء الاصطناعي",
                     ),
                   ),
                 ),
@@ -1238,6 +1251,10 @@ Future<void> readMeterImage() async {
                     setState(() {
                       previousReading =
                           normalized;
+
+                      // الإدخال اليدوي يلغي نسبة القراءة
+                      // إلى الذكاء الاصطناعي
+                      _readingEngine = null;
                     });
                   },
                 ),
@@ -1295,6 +1312,10 @@ Future<void> readMeterImage() async {
 
                         previousReading =
                             value;
+
+                        // إدخال يدوي: لا تُنسب القراءة
+                        // إلى الذكاء الاصطناعي
+                        _readingEngine = null;
                       });
 
                       Navigator.pop(
@@ -1429,6 +1450,10 @@ Future<void> readMeterImage() async {
               setState(() {
                 previousReading =
                     normalized;
+
+                // الإدخال اليدوي يلغي نسبة القراءة
+                // إلى الذكاء الاصطناعي
+                _readingEngine = null;
               });
             },
           ),
@@ -1449,7 +1474,7 @@ Future<void> readMeterImage() async {
             MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.document_scanner,
+            Icons.psychology,
             size: 55,
             color:
                 appColor.withOpacity(.7),
@@ -1459,7 +1484,8 @@ Future<void> readMeterImage() async {
 
           const Text(
             "صوّر العداد ثم حدد شاشة الأرقام بالقص اليدوي.\n"
-            "بعد القص ستتم قراءة الأرقام تلقائيًا، ويجب أن تكون 7 خانات.",
+            "بعد القص يقوم الذكاء الاصطناعي بقراءة الخانات السبع تلقائيًا،\n"
+            "وإذا تعذّر ذلك تُستخدم القراءة المحلية على الجهاز.",
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.grey,
@@ -1500,8 +1526,69 @@ Future<void> readMeterImage() async {
                     ),
               label: Text(
                 _isLoadingOcr
-                    ? "جاري القراءة..."
-                    : "تصوير وقص وقراءة العداد",
+                    ? "جاري القراءة بالذكاء الاصطناعي..."
+                    : "قراءة العداد بالذكاء الاصطناعي",
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // ====================================================
+          // بيان حالة محرك الذكاء الاصطناعي
+          // ====================================================
+
+          _aiAvailabilityNote(),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // ملاحظة توفر محرك الذكاء الاصطناعي
+  //
+  // إذا لم يُمرَّر مفتاح OPENAI_API_KEY عند البناء
+  // تعمل القراءة المحلية تلقائياً بدون أي انقطاع.
+  // ============================================================
+
+  Widget _aiAvailabilityNote() {
+    final bool available = AIMeterOCR.isAvailable;
+
+    final Color color =
+        available ? Colors.green : Colors.orange;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(.30),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            available
+                ? Icons.verified
+                : Icons.info_outline,
+            color: color,
+            size: 20,
+          ),
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: Text(
+              available
+                  ? "الذكاء الاصطناعي مفعّل وسيقرأ العداد تلقائيًا بعد القص."
+                  : "الذكاء الاصطناعي غير مفعّل حاليًا، ستُستخدم القراءة المحلية على الجهاز.\n"
+                      "للتفعيل: مرّر OPENAI_API_KEY عند بناء التطبيق.",
+              style: TextStyle(
+                color: color.shade800,
+                fontSize: 12,
+                height: 1.5,
               ),
             ),
           ),
@@ -1573,6 +1660,15 @@ Future<void> readMeterImage() async {
                 letterSpacing: 2,
               ),
             ),
+
+            const SizedBox(height: 6),
+
+            // ==================================================
+            // بيان مصدر القراءة
+            // ==================================================
+
+            if (_readingEngine != null)
+              _engineChip(_readingEngine!),
 
             const SizedBox(height: 6),
 
@@ -2386,8 +2482,13 @@ Future<void> readMeterImage() async {
         backgroundColor:
             backgroundColor,
 
-        appBar: const MyAppBar(
+        appBar: MyAppBar(
           title: "فتح دور مياه جديد",
+          provinceName: widget.provinceName,
+          districtName: widget.districtName,
+          hamletName: widget.hamletName,
+          villageName: widget.villageName,
+          wellName: widget.wellName,
         ),
 
         body: Column(

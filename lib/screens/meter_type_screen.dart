@@ -1391,10 +1391,15 @@ class _EquipmentTypeScreenState
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: const MyAppBar(
+        appBar: MyAppBar(
           title:
               'تهيئة أنواع المعدات والأسعار',
           icon: Icons.precision_manufacturing,
+          provinceName: widget.provinceName,
+          districtName: widget.districtName,
+          hamletName: widget.hamletName,
+          villageName: widget.villageName,
+          wellName: widget.wellName,
         ),
         body: SingleChildScrollView(
           child: Column(

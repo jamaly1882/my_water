@@ -1,7 +1,12 @@
 // ============================================================
 // ocr_mobile.dart
-// قراءة عداد المياه على Android / iOS مع فحص جودة الصورة
-// والمعالجة المتعددة (Adaptive Threshold + Spatial OCR + مراجعة تفاعلية)
+// قراءة عداد المياه على Android / iOS
+//
+// ترتيب القراءة:
+// 1) الذكاء الاصطناعي (نموذج رؤية) على الصورة المقصوصة.
+// 2) إذا تعذر، القراءة المحلية (ML Kit) مع المعالجة المتعددة
+//    (Adaptive Threshold + Spatial OCR).
+// 3) مراجعة تفاعلية للمشرف مع فحص جودة الصورة.
 // ============================================================
 
 import 'dart:io';
@@ -14,6 +19,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'ai_meter_ocr.dart';
 import 'image_quality_analyzer.dart';
 import 'meter_analysis.dart';
 import 'ocr_quality_widgets.dart';
@@ -49,11 +55,15 @@ class _ImageVariantSpec {
 /// ============================================================
 /// قراءة عداد المياه - استخراج 7 أرقام مع فحص الجودة والمراجعة
 /// مثال: 0650040
+///
+/// تُرجع القراءة مع بيان المحرّك الذي أنتجها
+/// (ذكاء اصطناعي أو قراءة محلية).
 /// ============================================================
 
-Future<String?> readNumberImpl({
+Future<MeterReadingResult?> readNumberImpl({
   BuildContext? context,
   int? previousReading,
+  bool preferAi = true,
 }) async {
   final ImagePicker picker = ImagePicker();
 
@@ -73,6 +83,7 @@ Future<String?> readNumberImpl({
             picker: picker,
             context: context,
             previousReading: previousReading,
+            preferAi: preferAi,
           );
         }
       }
@@ -97,6 +108,7 @@ Future<String?> readNumberImpl({
     picker: picker,
     context: context,
     previousReading: previousReading,
+    preferAi: preferAi,
   );
 }
 
@@ -259,13 +271,19 @@ Future<File?> _pickImageFile(
 
 /// ============================================================
 /// حلقة القص والقراءة والمراجعة (تتيح إعادة القص أو إعادة التصوير)
+///
+/// بعد القص مباشرة:
+/// - تُرسل الصورة إلى الذكاء الاصطناعي (نموذج رؤية) لقراءتها.
+/// - إذا تعذّر، تُقرأ محلياً عبر ML Kit.
+/// - ثم تظهر نافذة المراجعة مع بيان المحرّك المستخدم.
 /// ============================================================
 
-Future<String?> _cropAndReadLoop(
+Future<MeterReadingResult?> _cropAndReadLoop(
   File initialImageFile, {
   required ImagePicker picker,
   BuildContext? context,
   int? previousReading,
+  bool preferAi = true,
 }) async {
   File currentImageFile = initialImageFile;
 
@@ -297,10 +315,40 @@ Future<String?> _cropAndReadLoop(
       throw Exception('الصورة المقصوصة غير صالحة.');
     }
 
+    // --------------------------------------------------------
+    // 1) محاولة القراءة بالذكاء الاصطناعي أولاً
+    // --------------------------------------------------------
+
+    MeterAnalysisResult? aiAnalysis;
+
+    if (preferAi) {
+      aiAnalysis = await _tryAiReading(
+        croppedFile,
+        context: context,
+        previousReading: previousReading,
+      );
+    }
+
+    // --------------------------------------------------------
+    // 2) القراءة المحلية (تُستخدم دائماً لحساب جودة الصورة،
+    //    وتكون النتيجة الأساسية إذا فشل الذكاء الاصطناعي)
+    // --------------------------------------------------------
+
     final _MobileOcrRunOutput output = await _runOCRWithQuality(
       croppedFile,
       previousReading: previousReading,
     );
+
+    // --------------------------------------------------------
+    // 3) اختيار النتيجة النهائية وبيان المحرّك
+    // --------------------------------------------------------
+
+    final MeterAnalysisResult finalAnalysis =
+        aiAnalysis ?? output.analysis;
+
+    final OcrEngine engine = aiAnalysis != null
+        ? OcrEngine.aiVision
+        : OcrEngine.local;
 
     // إذا كان context متوفراً، نعرض نافذة مراجعة جودة الصورة والخانات السبع
     if (context != null && context.mounted) {
@@ -312,8 +360,9 @@ Future<String?> _cropAndReadLoop(
           croppedImageBytes: output.croppedBytes,
           enhancedImageBytes: output.enhancedPreviewBytes,
           qualityReport: output.qualityReport,
-          analysisResult: output.analysis,
+          analysisResult: finalAnalysis,
           previousReading: previousReading,
+          engine: engine,
         ),
       );
 
@@ -322,7 +371,16 @@ Future<String?> _cropAndReadLoop(
       }
 
       if (outcome.action == OcrReviewAction.confirm) {
-        return outcome.reading;
+        final String? reading = outcome.reading;
+
+        if (reading == null || reading.trim().isEmpty) {
+          return null;
+        }
+
+        return MeterReadingResult(
+          reading: reading,
+          engine: engine,
+        );
       }
 
       if (outcome.action == OcrReviewAction.recrop) {
@@ -344,13 +402,96 @@ Future<String?> _cropAndReadLoop(
     }
 
     // في حال عدم تمرير context نعتمد النتيجة الأفضل مباشرة
-    if (!output.analysis.isValid) {
+    if (!finalAnalysis.isValid) {
       throw Exception(
-        '${output.analysis.message}\n${output.qualityReport.summaryMessage}',
+        '${finalAnalysis.message}\n${output.qualityReport.summaryMessage}',
       );
     }
 
-    return output.analysis.reading;
+    return MeterReadingResult(
+      reading: finalAnalysis.reading,
+      engine: engine,
+    );
+  }
+}
+
+/// ============================================================
+/// محاولة قراءة الصورة المقصوصة بالذكاء الاصطناعي
+///
+/// تُرجع نتيجة تحليل صالحة أو null عند أي فشل،
+/// حتى لا يتوقف مسار القراءة أبداً بسبب الشبكة أو المفتاح.
+/// ============================================================
+
+Future<MeterAnalysisResult?> _tryAiReading(
+  File croppedFile, {
+  BuildContext? context,
+  int? previousReading,
+}) async {
+  if (!AIMeterOCR.isAvailable) {
+    debugPrint('AI OCR: المفتاح غير متوفر، سيتم استخدام القراءة المحلية.');
+    return null;
+  }
+
+  // مؤشر "جاري القراءة بالذكاء الاصطناعي"
+  if (context != null && context.mounted) {
+    showAiReadingIndicator(context);
+  }
+
+  try {
+    final Uint8List bytes = await croppedFile.readAsBytes();
+
+    if (bytes.isEmpty) {
+      return null;
+    }
+
+    final String? raw = await AIMeterOCR.readCroppedMeter(
+      bytes,
+      previousReading: previousReading,
+      filename: croppedFile.path,
+    );
+
+    if (raw == null || raw.trim().isEmpty) {
+      debugPrint('AI OCR: لم يرجع النموذج قراءة، سيتم استخدام المحلية.');
+      return null;
+    }
+
+    final String reading = MeterAnalyzer.normalize(raw);
+
+    if (!MeterAnalyzer.isValid(reading)) {
+      debugPrint('AI OCR: القراءة غير مكتملة ($reading)، سيتم استخدام المحلية.');
+
+      return MeterAnalysisResult(
+        reading: '',
+        confidence: 0,
+        occurrences: 0,
+        totalAttempts: 1,
+        isValid: false,
+        partialReading: reading,
+        message:
+            'قرأ الذكاء الاصطناعي ($reading) وهي ليست 7 خانات، '
+            'أعد القص أو اعتمد القراءة المحلية.',
+      );
+    }
+
+    debugPrint('AI OCR SUCCESS: $reading');
+
+    return MeterAnalysisResult(
+      reading: reading,
+      confidence: 95,
+      occurrences: 1,
+      totalAttempts: 1,
+      isValid: true,
+      message: 'قرأ الذكاء الاصطناعي الخانات السبع من صورة العداد.',
+      digitConfidences: List<double>.filled(7, 95),
+    );
+  } catch (e, stackTrace) {
+    debugPrint('AI OCR FALLBACK ERROR: $e');
+    debugPrintStack(stackTrace: stackTrace);
+    return null;
+  } finally {
+    if (context != null && context.mounted) {
+      hideAiReadingIndicator(context);
+    }
   }
 }
 

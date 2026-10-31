@@ -53,8 +53,13 @@ class SetupScreen extends StatelessWidget {
         // شريط العنوان الموحد
         // ==========================================================
 
-        appBar: const MyAppBar(
+        appBar: MyAppBar(
           title: 'التهيئة',
+          provinceName: provinceName,
+          districtName: districtName,
+          hamletName: hamletName,
+          villageName: villageName,
+          wellName: wellName,
         ),
 
         // ==========================================================
@@ -83,6 +88,8 @@ class SetupScreen extends StatelessWidget {
                 hamletName: hamletName,
                 villageId: villageId,
                 villageName: villageName,
+                wellId: wellId,
+                wellName: wellName,
               ),
             ),
 
@@ -98,9 +105,13 @@ class SetupScreen extends StatelessWidget {
               WellCustomerScreen(
                 supervisorId: supervisorId,
                 provinceId: provinceId,
+                provinceName: provinceName,
                 districtId: districtId,
+                districtName: districtName,
                 hamletId: hamletId,
+                hamletName: hamletName,
                 villageId: villageId,
+                villageName: villageName,
                 wellId: wellId,
                 wellName: wellName,
               ),
@@ -131,13 +142,18 @@ class SetupScreen extends StatelessWidget {
               // إزالة const لأن MeterTypeScreen
               // لا يحتوي على constructor const
               EquipmentTypeScreen(
-               supervisorId: supervisorId,
+                supervisorId: supervisorId,
                 provinceId: provinceId,
+                provinceName: provinceName,
                 districtId: districtId,
+                districtName: districtName,
                 hamletId: hamletId,
+                hamletName: hamletName,
                 villageId: villageId,
+                villageName: villageName,
                 wellId: wellId,
-                wellName: wellName,),
+                wellName: wellName,
+              ),
             ),
 
             // ======================================================
