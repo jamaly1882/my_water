@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../widgets/location_bar.dart';
 import '../widgets/my_app_bar.dart';
 
 class CustomerScreen extends StatefulWidget {
@@ -18,6 +19,9 @@ class CustomerScreen extends StatefulWidget {
   final String? villageId;
   final String? villageName;
 
+  final String? wellId;
+  final String? wellName;
+
   const CustomerScreen({
     super.key,
     required this.supervisorId,
@@ -29,6 +33,8 @@ class CustomerScreen extends StatefulWidget {
     this.hamletName,
     this.villageId,
     this.villageName,
+    this.wellId,
+    this.wellName,
   });
 
   @override
@@ -560,6 +566,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   // ============================================================
   // LOCATION INFO
+  //
+  // تعرض: المحافظة / المديرية / العزلة / القرية / البئر
+  // مع شريط الموقع الموحد أعلى البطاقة
   // ============================================================
 
   Widget locationInfo() {
@@ -582,6 +591,31 @@ class _CustomerScreenState extends State<CustomerScreen> {
             CrossAxisAlignment
                 .start,
         children: [
+          // ====================================================
+          // شريط الموقع الموحد
+          // ====================================================
+
+          LocationBar(
+            provinceName:
+                widget.provinceName,
+            districtName:
+                widget.districtName,
+            hamletName:
+                widget.hamletName,
+            villageName:
+                widget.villageName,
+            wellName:
+                widget.wellName,
+          ),
+
+          const SizedBox(
+            height: 10,
+          ),
+
+          // ====================================================
+          // العناوين
+          // ====================================================
+
           const Row(
             children: [
               Icon(
@@ -623,6 +657,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
             'القرية',
             widget.villageName,
           ),
+          _locationRow(
+            'البئر',
+            widget.wellName,
+          ),
         ],
       ),
     );
@@ -636,19 +674,34 @@ class _CustomerScreenState extends State<CustomerScreen> {
     String title,
     String? value,
   ) {
-    final text =
+    final bool missing =
         value == null ||
-                value.trim().isEmpty
-            ? 'غير محدد'
-            : value;
+            value.trim().isEmpty;
+
+    final String text =
+        missing ? 'غير محدد' : value!.trim();
 
     return Padding(
       padding:
           const EdgeInsets.only(
-        bottom: 5,
+        bottom: 6,
       ),
       child: Row(
         children: [
+          Icon(
+            missing
+                ? Icons
+                    .warning_amber_rounded
+                : Icons
+                    .check_circle_outline,
+            size: 16,
+            color: missing
+                ? Colors.orange
+                : Colors.green,
+          ),
+          const SizedBox(
+            width: 6,
+          ),
           SizedBox(
             width: 80,
             child: Text(
@@ -663,10 +716,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
           Expanded(
             child: Text(
               text,
-              style:
-                  const TextStyle(
+              style: TextStyle(
                 fontWeight:
                     FontWeight.bold,
+                color: missing
+                    ? Colors.orange
+                        .shade800
+                    : Colors.black87,
               ),
             ),
           ),
@@ -955,6 +1011,16 @@ class _CustomerScreenState extends State<CustomerScreen> {
               'villageName':
                   widget
                       .villageName,
+
+              // ------------------------------------------------
+              // البئر
+              // ------------------------------------------------
+
+              'wellId':
+                  widget.wellId,
+
+              'wellName':
+                  widget.wellName,
 
               // ------------------------------------------------
               // استخدام المياه
@@ -1903,12 +1969,14 @@ class _CustomerScreenState extends State<CustomerScreen> {
         // APP BAR
         // ======================================================
 
-        appBar:
-            const MyAppBar(
-          title:
-              'إدارة الزبائن',
-          icon:
-              Icons.people,
+        appBar: MyAppBar(
+          title: 'إدارة الزبائن',
+          icon: Icons.people,
+          provinceName: widget.provinceName,
+          districtName: widget.districtName,
+          hamletName: widget.hamletName,
+          villageName: widget.villageName,
+          wellName: widget.wellName,
         ),
 
         // ======================================================

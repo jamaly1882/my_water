@@ -818,12 +818,27 @@ class _CustomerSearchScreenState
         // ========================================================
 
         appBar:
-            const MyAppBar(
+            MyAppBar(
           title:
               "اختيار زبون البئر",
 
           icon:
               Icons.people,
+
+          provinceName:
+              widget.provinceName,
+
+          districtName:
+              widget.districtName,
+
+          hamletName:
+              widget.hamletName,
+
+          villageName:
+              widget.villageName,
+
+          wellName:
+              widget.wellName,
         ),
 
         // ========================================================

@@ -6,6 +6,51 @@
 
 import 'dart:math' as math;
 
+// ============================================================
+// محرّك القراءة
+//
+// aiVision  : نموذج رؤية ذكي (AI Vision) هو من قرأ الأرقام
+// local     : القراءة المحلية على الجهاز (ML Kit)
+// ============================================================
+
+enum OcrEngine {
+  aiVision,
+  local,
+}
+
+extension OcrEngineLabel on OcrEngine {
+  /// اسم المحرّك بالعربية للعرض في الواجهة
+  String get label {
+    switch (this) {
+      case OcrEngine.aiVision:
+        return 'الذكاء الاصطناعي';
+      case OcrEngine.local:
+        return 'القراءة المحلية';
+    }
+  }
+
+  bool get isAi => this == OcrEngine.aiVision;
+}
+
+// ============================================================
+// نتيجة قراءة العداد مع تحديد المحرّك الذي أنتجها
+// ============================================================
+
+class MeterReadingResult {
+  final String reading;
+  final OcrEngine engine;
+
+  const MeterReadingResult({
+    required this.reading,
+    required this.engine,
+  });
+
+  bool get isAi => engine.isAi;
+
+  @override
+  String toString() => 'MeterReadingResult($reading, $engine)';
+}
+
 class WeightedOcrCandidate {
   final String text;
   final double weight;

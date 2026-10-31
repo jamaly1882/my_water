@@ -937,6 +937,11 @@ class _WellCustomerScreenState
                   : 'زبائن البئر $wellName',
           icon:
               Icons.people,
+          provinceName: provinceName,
+          districtName: districtName,
+          hamletName: hamletName,
+          villageName: villageName,
+          wellName: wellName,
         ),
 
         // ======================================================

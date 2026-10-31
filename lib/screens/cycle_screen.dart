@@ -76,9 +76,14 @@ class CycleScreen extends StatelessWidget {
         // شريط العنوان
         // ======================================================
 
-        appBar: const MyAppBar(
+        appBar: MyAppBar(
           title: 'الدور لإدخال القراءات',
           icon: Icons.speed,
+          provinceName: provinceName,
+          districtName: districtName,
+          hamletName: hamletName,
+          villageName: villageName,
+          wellName: wellName,
         ),
 
         // ======================================================

@@ -25,6 +25,38 @@ class AIMeterOCR {
   static const String _model = 'gpt-4o';
 
   // ==========================================================
+  // هل محرك الذكاء الاصطناعي متاح؟
+  // (يتطلب تمرير المفتاح عند البناء:
+  //  flutter run --dart-define=OPENAI_API_KEY=sk-...)
+  // ==========================================================
+
+  static bool get isAvailable => _apiKey.trim().isNotEmpty;
+
+  // ==========================================================
+  // قراءة رقم العداد من صورة مقصوصة (نافذة الأرقام السبعة)
+  //
+  // تُستخدم في مسار "قراءة بداية الدور":
+  // تصوير -> قص يدوي -> قراءة بالذكاء الاصطناعي
+  // ==========================================================
+
+  static Future<String?> readCroppedMeter(
+    Uint8List bytes, {
+    int? previousReading,
+    String filename = 'meter.jpg',
+  }) async {
+    if (bytes.isEmpty) {
+      debugPrint('AI OCR: الصورة المقصوصة فارغة');
+      return null;
+    }
+
+    return _requestReading(
+      bytes: bytes,
+      mimeType: _getMimeType(filename),
+      previousReading: previousReading,
+    );
+  }
+
+  // ==========================================================
   // قراءة العداد
   // ==========================================================
 
@@ -61,23 +93,39 @@ class AIMeterOCR {
           ImageQualityAnalyzer.analyzeBytes(bytes);
       debugPrint('AI OCR Image Quality: ${quality.summaryMessage}');
 
+      return _requestReading(
+        bytes: bytes,
+        mimeType: _getMimeType(pickedImage.name),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('AI OCR ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      return null;
+    }
+  }
+
+  // ==========================================================
+  // النداء المشترك لنموذج الرؤية
+  //
+  // يرسل الصورة مع تعليمات دقيقة لقراءة الخانات السبع فقط،
+  // ويمكن تمرير القراءة السابقة لمساعدة النموذج على تجنب
+  // الأخطاء المنطقية (قراءة أقل من السابقة مثلاً).
+  // ==========================================================
+
+  static Future<String?> _requestReading({
+    required Uint8List bytes,
+    required String mimeType,
+    int? previousReading,
+  }) async {
+    try {
+      if (_apiKey.isEmpty) {
+        throw Exception('OPENAI_API_KEY غير موجود');
+      }
+
       final String base64Image = base64Encode(bytes);
-      final String mimeType = _getMimeType(pickedImage.name);
       final String dataUrl = 'data:$mimeType;base64,$base64Image';
 
-      const String prompt = '''
-اقرأ رقم عداد المياه الظاهر في نافذة الأرقام السبعة فقط.
-
-مهم جداً:
-- اقرأ الخانات السبع الظاهرة داخل نافذة العداد من اليسار إلى اليمين.
-- لا تقرأ أرقام الملصقات أو الرقم التسلسلي على جسم العداد.
-- لا تحذف الصفر الأول في بداية القراءة.
-- لا تضف أي رقم ولا تغير ترتيب الأرقام.
-- أرجع الرقم المكون من 7 خانات فقط بدون شرح وبدون مسافات.
-
-مثال:
-0650040
-''';
+      final String prompt = _buildPrompt(previousReading);
 
       final Uri uri = Uri.parse('https://api.openai.com/v1/responses');
 
@@ -101,14 +149,23 @@ class AIMeterOCR {
         ],
       };
 
-      final http.Response response = await http.post(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $_apiKey',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
+      debugPrint('AI OCR: إرسال الصورة إلى نموذج الرؤية...');
+
+      final http.Response response = await http
+          .post(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $_apiKey',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(
+            const Duration(seconds: 45),
+            onTimeout: () {
+              throw Exception('انتهت مهلة الاتصال بنموذج الرؤية');
+            },
+          );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw Exception(
@@ -120,16 +177,65 @@ class AIMeterOCR {
       final String rawText = _extractOutputText(decoded);
       final String number = _normalizeNumber(rawText);
 
+      debugPrint('AI OCR RAW: $rawText');
+      debugPrint('AI OCR NORMALIZED: $number');
+
       if (number.isEmpty) {
         return null;
       }
 
       return number;
     } catch (e, stackTrace) {
-      debugPrint('AI OCR ERROR: $e');
+      debugPrint('AI OCR REQUEST ERROR: $e');
       debugPrintStack(stackTrace: stackTrace);
       return null;
     }
+  }
+
+  // ==========================================================
+  // بناء تعليمات القراءة
+  // ==========================================================
+
+  static String _buildPrompt(int? previousReading) {
+    final StringBuffer buffer = StringBuffer();
+
+    buffer.writeln(
+      'اقرأ رقم عداد المياه الظاهر في نافذة الأرقام السبعة فقط.',
+    );
+    buffer.writeln();
+    buffer.writeln('مهم جداً:');
+    buffer.writeln(
+      '- اقرأ الخانات السبع الظاهرة داخل نافذة العداد من اليسار إلى اليمين.',
+    );
+    buffer.writeln(
+      '- لا تقرأ أرقام الملصقات أو الرقم التسلسلي على جسم العداد.',
+    );
+    buffer.writeln('- لا تحذف الصفر الأول في بداية القراءة.');
+    buffer.writeln('- لا تضف أي رقم ولا تغير ترتيب الأرقام.');
+    buffer.writeln(
+      '- إذا كانت خانة بين رقمين (منتصفة) اعتمد الرقم الأدنى.',
+    );
+    buffer.writeln(
+      '- أرجع الرقم المكون من 7 خانات فقط بدون شرح وبدون مسافات.',
+    );
+
+    if (previousReading != null && previousReading > 0) {
+      buffer.writeln();
+      buffer.writeln(
+        'للمساعدة فقط: القراءة السابقة لهذا العداد هي '
+        '${previousReading.toString().padLeft(7, '0')}.',
+      );
+      buffer.writeln(
+        'القراءة الجديدة يجب أن تكون مساوية أو أكبر منها عادةً، '
+        'لكن اعتمد دائماً ما تراه في الصورة وليس القراءة السابقة.',
+      );
+    }
+
+    buffer.writeln();
+    buffer.writeln('مثال:');
+    buffer.writeln('0650040');
+
+    return buffer.toString();
   }
 
   static String _extractOutputText(dynamic decoded) {

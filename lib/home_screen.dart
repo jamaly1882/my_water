@@ -54,9 +54,14 @@ class HomeScreen extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xffF5F9FF),
-        appBar: const MyAppBar(
+        appBar: MyAppBar(
           title: 'نظام إدارة المياه',
           showBackButton: false,
+          provinceName: provinceName,
+          districtName: districtName,
+          hamletName: hamletName,
+          villageName: villageName,
+          wellName: wellName,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),

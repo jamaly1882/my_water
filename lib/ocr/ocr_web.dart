@@ -10,6 +10,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'ai_meter_ocr.dart';
 import 'image_quality_analyzer.dart';
 import 'meter_analysis.dart';
 import 'ocr_quality_widgets.dart';
@@ -17,9 +18,13 @@ import 'ocr_quality_widgets.dart';
 class OcrWebPage extends StatefulWidget {
   final int? previousReading;
 
+  /// البدء بقراءة الذكاء الاصطناعي قبل القراءة المحلية
+  final bool preferAi;
+
   const OcrWebPage({
     super.key,
     this.previousReading,
+    this.preferAi = true,
   });
 
   @override
@@ -32,6 +37,9 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   String _reading = '';
   String _rawText = '';
+
+  /// المحرّك الذي أنتج القراءة الحالية
+  OcrEngine _engine = OcrEngine.local;
 
   ImageQualityReport? _qualityReport;
   MeterAnalysisResult? _analysisResult;
@@ -215,7 +223,40 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _isRecognizing = true;
         _reading = '';
         _rawText = '';
+        _engine = OcrEngine.local;
         _status = 'جاري قراءة أرقام العداد وتحليل الخانات السبع...';
+      });
+
+      // ------------------------------------------------------
+      // 1) الذكاء الاصطناعي أولاً (نموذج رؤية)
+      // ------------------------------------------------------
+
+      final MeterAnalysisResult? aiAnalysis =
+          widget.preferAi ? await _tryAiReading() : null;
+
+      if (!mounted) return;
+
+      if (aiAnalysis != null && aiAnalysis.isValid) {
+        setState(() {
+          _isRecognizing = false;
+          _reading = aiAnalysis.reading;
+          _rawText = aiAnalysis.reading;
+          _analysisResult = aiAnalysis;
+          _engine = OcrEngine.aiVision;
+          _status = aiAnalysis.message;
+        });
+
+        return;
+      }
+
+      // ------------------------------------------------------
+      // 2) القراءة المحلية في المتصفح (Tesseract.js)
+      // ------------------------------------------------------
+
+      if (!mounted) return;
+
+      setState(() {
+        _status = 'جاري القراءة المحلية لأرقام العداد...';
       });
 
       await _callJsPromise(
@@ -288,7 +329,86 @@ class _OcrWebPageState extends State<OcrWebPage> {
   }
 
   // ------------------------------------------------------------
+  // محاولة القراءة بالذكاء الاصطناعي (نموذج رؤية)
+  //
+  // تُرجع null عند أي فشل حتى تستمر القراءة المحلية
+  // ------------------------------------------------------------
+
+  Future<MeterAnalysisResult?> _tryAiReading() async {
+    if (!AIMeterOCR.isAvailable) {
+      return null;
+    }
+
+    final String? cropped = _croppedImageData;
+
+    if (cropped == null || cropped.isEmpty) {
+      return null;
+    }
+
+    setState(() {
+      _status = 'جاري القراءة بالذكاء الاصطناعي...';
+    });
+
+    showAiReadingIndicator(context);
+
+    try {
+      final Uint8List bytes = _dataUrlToBytes(cropped);
+
+      if (bytes.isEmpty) {
+        return null;
+      }
+
+      final String? raw = await AIMeterOCR.readCroppedMeter(
+        bytes,
+        previousReading: widget.previousReading,
+      );
+
+      if (!mounted) return null;
+
+      if (raw == null || raw.trim().isEmpty) {
+        return null;
+      }
+
+      final String reading = MeterAnalyzer.normalize(raw);
+
+      if (!MeterAnalyzer.isValid(reading)) {
+        return MeterAnalysisResult(
+          reading: '',
+          confidence: 0,
+          occurrences: 0,
+          totalAttempts: 1,
+          isValid: false,
+          partialReading: reading,
+          message:
+              'قرأ الذكاء الاصطناعي ($reading) وهي ليست 7 خانات، '
+              'سيتم استخدام القراءة المحلية.',
+        );
+      }
+
+      return MeterAnalysisResult(
+        reading: reading,
+        confidence: 95,
+        occurrences: 1,
+        totalAttempts: 1,
+        isValid: true,
+        message: 'قرأ الذكاء الاصطناعي الخانات السبع من صورة العداد.',
+        digitConfidences: List<double>.filled(7, 95),
+      );
+    } catch (e) {
+      debugPrint('AI OCR WEB ERROR: $e');
+      return null;
+    } finally {
+      if (mounted) {
+        hideAiReadingIndicator(context);
+      }
+    }
+  }
+
+  // ------------------------------------------------------------
   // اعتماد القراءة وإرجاعها للشاشة السابقة
+  //
+  // تُرجع القراءة مع وسم المحرّك:
+  // "0650040|ai" أو "0650040|local"
   // ------------------------------------------------------------
 
   void _confirmAndReturn() {
@@ -297,7 +417,16 @@ class _OcrWebPageState extends State<OcrWebPage> {
       _showMessage('القراءة يجب أن تتكون من 7 خانات بالضبط');
       return;
     }
-    Navigator.of(context).pop(clean);
+
+    // إذا عدّل المشرف الخانات يدوياً تصبح القراءة معتمدة يدوياً
+    final OcrEngine engine =
+        clean == MeterAnalyzer.normalize(_rawText) && _rawText.isNotEmpty
+            ? _engine
+            : OcrEngine.local;
+
+    Navigator.of(context).pop(
+      '$clean|${engine == OcrEngine.aiVision ? 'ai' : 'local'}',
+    );
   }
 
   // ------------------------------------------------------------
@@ -580,6 +709,55 @@ class _OcrWebPageState extends State<OcrWebPage> {
     );
   }
 
+  // ------------------------------------------------------------
+  // شارة توضح محرّك القراءة الحالي
+  // ------------------------------------------------------------
+
+  Widget _buildEngineChip() {
+    if (_reading.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final bool isAi = _engine.isAi;
+
+    final Color color = isAi ? Colors.indigo : Colors.blueGrey;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isAi ? Icons.psychology : Icons.memory,
+            size: 18,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            isAi
+                ? 'القراءة بالذكاء الاصطناعي'
+                : 'القراءة المحلية على الجهاز',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildControls() {
     final bool busy = _isRecognizing || _isCropping;
 
@@ -588,6 +766,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       runSpacing: 10,
       alignment: WrapAlignment.center,
       children: [
+        _buildEngineChip(),
         ElevatedButton.icon(
           onPressed: busy ? null : () => _pickImage(useCamera: true),
           icon: const Icon(Icons.camera_alt),

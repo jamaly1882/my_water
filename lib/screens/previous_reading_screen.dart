@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../ocr/meter_analysis.dart';
 import '../ocr/ocr_service.dart';
 import '../widgets/my_app_bar.dart';
 
@@ -471,9 +472,11 @@ Future<void> readMeterImage() async {
     });
 
     // تمرير context والقراءة السابقة لتحسين دقة التحليل والتحقق.
-    final String? result = await OCRService.readNumber(
+    // الذكاء الاصطناعي هو المحرّك الأساسي، والقراءة المحلية احتياط.
+    final MeterReadingResult? result = await OCRService.readNumber(
       context,
       previousReading: previousReading,
+      preferAi: true,
     );
 
     if (!mounted) return;
@@ -482,7 +485,7 @@ Future<void> readMeterImage() async {
       return;
     }
 
-    if (result.trim().isEmpty) {
+    if (result.reading.trim().isEmpty) {
       showMessage(
         'لم يتم العثور على قراءة من 7 خانات',
         error: true,
@@ -492,7 +495,7 @@ Future<void> readMeterImage() async {
 
     debugPrint('OCR RESULT: $result');
 
-    final String number = normalizeMeterNumber(result);
+    final String number = normalizeMeterNumber(result.reading);
 
     debugPrint('NORMALIZED READING: $number');
 
@@ -534,7 +537,11 @@ Future<void> readMeterImage() async {
 
     if (!mounted) return;
 
-    showMessage('تم التعرف على القراءة: $number');
+    showMessage(
+      result.isAi
+          ? 'قرأ الذكاء الاصطناعي العداد: $number'
+          : 'تم التعرف على القراءة: $number',
+    );
 
     setState(() {});
   } catch (e, stackTrace) {

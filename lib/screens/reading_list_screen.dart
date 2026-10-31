@@ -1278,8 +1278,13 @@ class _ReadingListScreenState
         // شريط العنوان
         // ========================================================
 
-        appBar: const MyAppBar(
+        appBar: MyAppBar(
           title: "القراءات الحالية",
+          provinceName: widget.provinceName,
+          districtName: widget.districtName,
+          hamletName: widget.hamletName,
+          villageName: widget.villageName,
+          wellName: widget.wellName,
         ),
 
         // ========================================================

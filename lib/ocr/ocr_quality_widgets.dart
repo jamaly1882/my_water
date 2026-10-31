@@ -588,6 +588,9 @@ class MeterOcrReviewDialog extends StatefulWidget {
   final MeterAnalysisResult analysisResult;
   final int? previousReading;
 
+  /// المحرّك الذي أنتج القراءة المعروضة
+  final OcrEngine engine;
+
   const MeterOcrReviewDialog({
     super.key,
     required this.croppedImageBytes,
@@ -595,6 +598,7 @@ class MeterOcrReviewDialog extends StatefulWidget {
     required this.qualityReport,
     required this.analysisResult,
     this.previousReading,
+    this.engine = OcrEngine.local,
   });
 
   @override
@@ -647,10 +651,16 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                 Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: Colors.blue.shade50,
-                      child: const Icon(
-                        Icons.document_scanner,
-                        color: Colors.blue,
+                      backgroundColor: widget.engine.isAi
+                          ? Colors.indigo.shade50
+                          : Colors.blue.shade50,
+                      child: Icon(
+                        widget.engine.isAi
+                            ? Icons.psychology
+                            : Icons.document_scanner,
+                        color: widget.engine.isAi
+                            ? Colors.indigo
+                            : Colors.blue,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -658,9 +668,11 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'مراجعة قراءة العداد وجودة الصورة',
-                            style: TextStyle(
+                          Text(
+                            widget.engine.isAi
+                                ? 'مراجعة القراءة بالذكاء الاصطناعي'
+                                : 'مراجعة قراءة العداد وجودة الصورة',
+                            style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
@@ -843,5 +855,118 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
         ),
       ),
     );
+  }
+}
+
+// ============================================================
+// مؤشر "جاري القراءة بالذكاء الاصطناعي"
+//
+// يظهر أثناء إرسال صورة العداد إلى نموذج الرؤية،
+// ويختفي عند عودة النتيجة أو حدوث خطأ.
+//
+// يتم تتبّع المسار نفسه (Route) حتى يكون الإغلاق دقيقاً
+// ولا يُغلق أي نافذة أخرى بالخطأ.
+// ============================================================
+
+DialogRoute<void>? _aiIndicatorRoute;
+
+/// عرض مؤشر القراءة الذكية
+void showAiReadingIndicator(BuildContext context) {
+  if (!context.mounted) return;
+
+  // إذا كان هناك مؤشر مفتوح أصلاً لا نفتح آخر
+  if (_aiIndicatorRoute != null) return;
+
+  final DialogRoute<void> route = DialogRoute<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black54,
+    settings: const RouteSettings(
+      name: 'ai-reading-indicator',
+    ),
+    builder: (_) => PopScope(
+      canPop: false,
+      child: Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 22,
+              vertical: 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 46,
+                  height: 46,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Colors.indigo,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.psychology,
+                      color: Colors.indigo,
+                      size: 22,
+                    ),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'جاري القراءة بالذكاء الاصطناعي...',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'يتم تحليل صورة نافذة الأرقام السبعة',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  _aiIndicatorRoute = route;
+
+  Navigator.of(context, rootNavigator: true).push(route);
+}
+
+/// إخفاء مؤشر القراءة الذكية
+void hideAiReadingIndicator(BuildContext context) {
+  final DialogRoute<void>? route = _aiIndicatorRoute;
+
+  _aiIndicatorRoute = null;
+
+  if (route == null) return;
+
+  if (!context.mounted) return;
+
+  final NavigatorState navigator =
+      Navigator.of(context, rootNavigator: true);
+
+  // نغلق مسار المؤشر نفسه فقط دون غيره
+  if (route.isActive) {
+    navigator.removeRoute(route);
   }
 }
