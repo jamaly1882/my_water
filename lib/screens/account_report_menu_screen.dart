@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -29,10 +30,6 @@ class _AccountReportMenuScreenState
 
   String searchText = '';
 
-  // ============================================================
-  // الألوان
-  // ============================================================
-
   static const Color mainColor = Colors.blue;
 
   static const Color backgroundColor =
@@ -47,11 +44,7 @@ class _AccountReportMenuScreenState
     Map<String, dynamic> account,
   ) async {
     try {
-      // ========================================================
-      // أولاً: اسم الحساب الموجود داخل accounts
-      // وهذا مهم لحساب العامل والمبيعات وغيرها
-      // ========================================================
-
+      // أولاً اسم الحساب الموجود في accounts
       final accountName =
           account['name']?.toString().trim();
 
@@ -68,11 +61,8 @@ class _AccountReportMenuScreenState
         return accountName2;
       }
 
-      // ========================================================
-      // إذا لم يوجد اسم الحساب، نبحث عن الزبون
-      // ========================================================
-
-      final customer = await firestore
+      // إذا لم يوجد اسم الحساب نبحث عن الزبون
+      final customerSnapshot = await firestore
           .collection('well_customers')
           .where(
             'accountId',
@@ -81,9 +71,9 @@ class _AccountReportMenuScreenState
           .limit(1)
           .get();
 
-      if (customer.docs.isNotEmpty) {
+      if (customerSnapshot.docs.isNotEmpty) {
         final data =
-            customer.docs.first.data();
+            customerSnapshot.docs.first.data();
 
         final customerName =
             data['customerName']
@@ -109,6 +99,167 @@ class _AccountReportMenuScreenState
   }
 
   // ============================================================
+  // جلب الحسابات
+  //
+  // الترتيب:
+  // 1. حسابات الزبائن المرتبطة بالبئر
+  // 2. حسابات البئر المباشرة
+  //
+  // مع منع التكرار
+  // ============================================================
+
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+      getWellAccounts() async {
+    final wellId = widget.wellId?.trim();
+
+    // ==========================================================
+    // إذا لم يتم تحديد بئر
+    // نعرض جميع الحسابات
+    // ==========================================================
+
+    if (wellId == null || wellId.isEmpty) {
+      final allAccounts = await firestore
+          .collection('accounts')
+          .get();
+
+      return allAccounts.docs;
+    }
+
+    // ==========================================================
+    // أولاً:
+    // جلب الزبائن المرتبطين بهذا البئر
+    // من well_customers
+    // ==========================================================
+
+    final customersSnapshot = await firestore
+        .collection('well_customers')
+        .where(
+          'wellId',
+          isEqualTo: wellId,
+        )
+        .get();
+
+    final Set<String> customerAccountIds =
+        <String>{};
+
+    for (final customerDoc
+        in customersSnapshot.docs) {
+      final data = customerDoc.data();
+
+      final accountId =
+          data['accountId']
+              ?.toString()
+              .trim();
+
+      if (accountId != null &&
+          accountId.isNotEmpty) {
+        customerAccountIds.add(accountId);
+      }
+    }
+
+    // ==========================================================
+    // جلب حسابات الزبائن من accounts
+    //
+    // Firestore whereIn يسمح بحد أقصى 30 قيمة
+    // لذلك نقسم IDs إلى مجموعات
+    // ==========================================================
+
+    final Map<
+            String,
+            QueryDocumentSnapshot<Map<String, dynamic>>>
+        customerAccounts = {};
+
+    final customerIds =
+        customerAccountIds.toList();
+
+    for (
+      int i = 0;
+      i < customerIds.length;
+      i += 30
+    ) {
+      final int end =
+          (i + 30 < customerIds.length)
+              ? i + 30
+              : customerIds.length;
+
+      final chunk =
+          customerIds.sublist(i, end);
+
+      if (chunk.isEmpty) {
+        continue;
+      }
+
+      final accountsSnapshot =
+          await firestore
+              .collection('accounts')
+              .where(
+                FieldPath.documentId,
+                whereIn: chunk,
+              )
+              .get();
+
+      for (final doc
+          in accountsSnapshot.docs) {
+        customerAccounts[doc.id] = doc;
+      }
+    }
+
+    // ==========================================================
+    // ثانياً:
+    // جلب الحسابات المرتبطة مباشرة بالبئر
+    // accounts.wellId
+    // ==========================================================
+
+    final wellAccountsSnapshot =
+        await firestore
+            .collection('accounts')
+            .where(
+              'wellId',
+              isEqualTo: wellId,
+            )
+            .get();
+
+    final Map<
+            String,
+            QueryDocumentSnapshot<Map<String, dynamic>>>
+        wellAccounts = {};
+
+    for (final doc
+        in wellAccountsSnapshot.docs) {
+      wellAccounts[doc.id] = doc;
+    }
+
+    // ==========================================================
+    // بناء القائمة النهائية
+    //
+    // أولاً حسابات الزبائن
+    // ثم حسابات البئر
+    //
+    // بدون تكرار
+    // ==========================================================
+
+    final List<
+            QueryDocumentSnapshot<Map<String, dynamic>>>
+        result = [];
+
+    // أولاً: حسابات الزبائن
+    for (final doc
+        in customerAccounts.values) {
+      result.add(doc);
+    }
+
+    // ثانياً: حسابات البئر
+    for (final doc
+        in wellAccounts.values) {
+      if (!customerAccounts.containsKey(doc.id)) {
+        result.add(doc);
+      }
+    }
+
+    return result;
+  }
+
+  // ============================================================
   // فتح صفحة نوع التقرير
   // ============================================================
 
@@ -123,20 +274,16 @@ class _AccountReportMenuScreenState
         builder: (_) =>
             AccountReportTypeScreen(
           accountId: accountId,
-
           accountData: accountData,
-
           accountName: accountName,
-
           wellId:
               accountData['wellId']
                   ?.toString() ??
-                  widget.wellId,
-
+              widget.wellId,
           wellName:
               accountData['wellName']
                   ?.toString() ??
-                  widget.wellName,
+              widget.wellName,
         ),
       ),
     );
@@ -154,73 +301,50 @@ class _AccountReportMenuScreenState
 
     return Container(
       width: double.infinity,
-
-      padding:
-          const EdgeInsets.all(14),
-
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: mainColor,
-
         borderRadius:
             BorderRadius.circular(16),
-
         boxShadow: [
           BoxShadow(
-            color:
-                mainColor.withOpacity(0.18),
-
+            color: mainColor.withValues(
+              alpha: 0.18,
+            ),
             blurRadius: 8,
-
-            offset:
-                const Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-
       child: Row(
         children: [
-          // ====================================================
-          // أيقونة البئر
-          // ====================================================
-
           Container(
             width: 50,
             height: 50,
-
             decoration: BoxDecoration(
-              color:
-                  Colors.white.withOpacity(0.16),
-
+              color: Colors.white.withValues(
+                alpha: 0.16,
+              ),
               shape: BoxShape.circle,
             ),
-
             child: const Icon(
               Icons.water_drop,
-
               color: Colors.white,
-
               size: 28,
             ),
           ),
 
           const SizedBox(width: 12),
 
-          // ====================================================
-          // بيانات البئر
-          // ====================================================
-
           Expanded(
             child: Column(
               crossAxisAlignment:
                   CrossAxisAlignment.start,
-
               children: [
                 const Text(
                   'البئر',
-
                   style: TextStyle(
                     color: Colors.white70,
-
                     fontSize: 12,
                   ),
                 ),
@@ -229,13 +353,9 @@ class _AccountReportMenuScreenState
 
                 Text(
                   widget.wellName!,
-
-                  style:
-                      const TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
-
                     fontSize: 18,
-
                     fontWeight:
                         FontWeight.bold,
                   ),
@@ -245,11 +365,8 @@ class _AccountReportMenuScreenState
 
                 Text(
                   'رقم البئر: ${widget.wellId ?? ''}',
-
-                  style:
-                      const TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
-
                     fontSize: 11,
                   ),
                 ),
@@ -268,27 +385,19 @@ class _AccountReportMenuScreenState
   Widget searchBox() {
     return TextField(
       controller: searchController,
+      textDirection: TextDirection.rtl,
+      decoration: InputDecoration(
+        labelText: 'البحث باسم الحساب',
 
-      textDirection:
-          TextDirection.rtl,
-
-      decoration:
-          InputDecoration(
-        labelText:
-            'البحث باسم الحساب',
-
-        prefixIcon:
-            const Icon(
+        prefixIcon: const Icon(
           Icons.search,
-
           color: mainColor,
         ),
 
         suffixIcon:
             searchText.isNotEmpty
                 ? IconButton(
-                    icon:
-                        const Icon(
+                    icon: const Icon(
                       Icons.clear,
                     ),
                     onPressed: () {
@@ -303,43 +412,29 @@ class _AccountReportMenuScreenState
                 : null,
 
         filled: true,
+        fillColor: Colors.white,
 
-        fillColor:
-            Colors.white,
-
-        border:
-            OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(
-            14,
-          ),
+              BorderRadius.circular(14),
         ),
 
         enabledBorder:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(
-            14,
-          ),
-
-          borderSide:
-              BorderSide(
-            color:
-                Colors.grey.shade300,
+              BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: Colors.grey.shade300,
           ),
         ),
 
         focusedBorder:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(
-            14,
-          ),
-
+              BorderRadius.circular(14),
           borderSide:
               const BorderSide(
             color: mainColor,
-
             width: 2,
           ),
         ),
@@ -347,8 +442,7 @@ class _AccountReportMenuScreenState
 
       onChanged: (value) {
         setState(() {
-          searchText =
-              value.trim();
+          searchText = value.trim();
         });
       },
     );
@@ -399,16 +493,37 @@ class _AccountReportMenuScreenState
   }
 
   // ============================================================
+  // أيقونة نوع الحساب
+  // ============================================================
+
+  IconData getAccountIcon(
+    String type,
+  ) {
+    switch (type) {
+      case 'worker':
+        return Icons.engineering;
+
+      case 'sales':
+        return Icons.point_of_sale;
+
+      case 'customer':
+        return Icons.person;
+
+      default:
+        return Icons.account_balance_wallet;
+    }
+  }
+
+  // ============================================================
   // بطاقة الحساب
   // ============================================================
 
   Widget accountCard(
     BuildContext context,
-    QueryDocumentSnapshot doc,
+    QueryDocumentSnapshot<
+        Map<String, dynamic>> doc,
   ) {
-    final account =
-        doc.data()
-            as Map<String, dynamic>;
+    final account = doc.data();
 
     return FutureBuilder<String>(
       future: getAccountName(
@@ -424,50 +539,32 @@ class _AccountReportMenuScreenState
         // تحميل الاسم
         // ======================================================
 
-        if (nameSnapshot
-                .connectionState ==
+        if (nameSnapshot.connectionState ==
             ConnectionState.waiting) {
           return Container(
             height: 90,
-
             margin:
                 const EdgeInsets.only(
               bottom: 9,
             ),
-
-            decoration:
-                BoxDecoration(
-              color:
-                  Colors.white,
-
+            decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius:
-                  BorderRadius.circular(
-                16,
-              ),
-
-              border:
-                  Border.all(
-                color:
-                    mainColor
-                        .withOpacity(
-                  0.12,
+                  BorderRadius.circular(16),
+              border: Border.all(
+                color: mainColor.withValues(
+                  alpha: 0.12,
                 ),
               ),
             ),
-
-            child:
-                const Center(
-              child:
-                  SizedBox(
+            child: const Center(
+              child: SizedBox(
                 width: 20,
                 height: 20,
-
                 child:
                     CircularProgressIndicator(
                   strokeWidth: 2,
-
-                  color:
-                      mainColor,
+                  color: mainColor,
                 ),
               ),
             ),
@@ -484,7 +581,7 @@ class _AccountReportMenuScreenState
 
         final accountName =
             nameSnapshot.data ??
-                'حساب عام';
+            'حساب عام';
 
         // ======================================================
         // البحث
@@ -494,8 +591,7 @@ class _AccountReportMenuScreenState
             !accountName
                 .toLowerCase()
                 .contains(
-                  searchText
-                      .toLowerCase(),
+                  searchText.toLowerCase(),
                 )) {
           return const SizedBox.shrink();
         }
@@ -507,17 +603,13 @@ class _AccountReportMenuScreenState
         final type =
             account['type']
                 ?.toString() ??
-                '';
+            '';
 
         final typeName =
-            getAccountTypeName(
-          type,
-        );
+            getAccountTypeName(type);
 
         final typeColor =
-            getAccountTypeColor(
-          type,
-        );
+            getAccountTypeColor(type);
 
         final balance =
             account['balance'] ?? 0;
@@ -525,13 +617,13 @@ class _AccountReportMenuScreenState
         final accountNumber =
             account['accountNumber']
                 ?.toString() ??
-                '';
+            '';
 
         final wellName =
             account['wellName']
                 ?.toString() ??
-                widget.wellName ??
-                '';
+            widget.wellName ??
+            '';
 
         // ======================================================
         // بطاقة الحساب
@@ -542,38 +634,22 @@ class _AccountReportMenuScreenState
               const EdgeInsets.only(
             bottom: 10,
           ),
-
-          decoration:
-              BoxDecoration(
-            color:
-                Colors.white,
-
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius:
-                BorderRadius.circular(
-              16,
-            ),
-
-            border:
-                Border.all(
-              color:
-                  mainColor
-                      .withOpacity(
-                0.14,
+                BorderRadius.circular(16),
+            border: Border.all(
+              color: mainColor.withValues(
+                alpha: 0.14,
               ),
-
               width: 1,
             ),
-
             boxShadow: [
               BoxShadow(
-                color:
-                    Colors.black
-                        .withOpacity(
-                  0.05,
+                color: Colors.black.withValues(
+                  alpha: 0.05,
                 ),
-
                 blurRadius: 7,
-
                 offset:
                     const Offset(0, 3),
               ),
@@ -582,8 +658,7 @@ class _AccountReportMenuScreenState
 
           child: ListTile(
             contentPadding:
-                const EdgeInsets
-                    .symmetric(
+                const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 7,
             ),
@@ -592,46 +667,26 @@ class _AccountReportMenuScreenState
             // الأيقونة
             // ==================================================
 
-            leading:
-                Container(
+            leading: Container(
               width: 50,
               height: 50,
-
-              decoration:
-                  BoxDecoration(
+              decoration: BoxDecoration(
                 color:
-                    typeColor
-                        .withOpacity(
-                  0.10,
+                    typeColor.withValues(
+                  alpha: 0.10,
                 ),
-
-                shape:
-                    BoxShape.circle,
-
-                border:
-                    Border.all(
+                shape: BoxShape.circle,
+                border: Border.all(
                   color:
-                      typeColor
-                          .withOpacity(
-                    0.18,
+                      typeColor.withValues(
+                    alpha: 0.18,
                   ),
                 ),
               ),
 
-              child:
-                  Icon(
-                type == 'worker'
-                    ? Icons
-                        .engineering
-                    : type == 'sales'
-                        ? Icons
-                            .point_of_sale
-                        : Icons
-                            .account_balance_wallet,
-
-                color:
-                    typeColor,
-
+              child: Icon(
+                getAccountIcon(type),
+                color: typeColor,
                 size: 25,
               ),
             ),
@@ -640,18 +695,12 @@ class _AccountReportMenuScreenState
             // اسم الحساب
             // ==================================================
 
-            title:
-                Text(
+            title: Text(
               accountName,
-
-              style:
-                  const TextStyle(
-                color:
-                    mainColor,
-
+              style: const TextStyle(
+                color: mainColor,
                 fontWeight:
                     FontWeight.bold,
-
                 fontSize: 16,
               ),
             ),
@@ -660,18 +709,15 @@ class _AccountReportMenuScreenState
             // تفاصيل الحساب
             // ==================================================
 
-            subtitle:
-                Padding(
+            subtitle: Padding(
               padding:
                   const EdgeInsets.only(
                 top: 5,
               ),
 
-              child:
-                  Column(
+              child: Column(
                 crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                    CrossAxisAlignment.start,
 
                 children: [
                   // نوع الحساب
@@ -689,10 +735,9 @@ class _AccountReportMenuScreenState
                             BoxDecoration(
                           color:
                               typeColor
-                                  .withOpacity(
-                            0.10,
+                                  .withValues(
+                            alpha: 0.10,
                           ),
-
                           borderRadius:
                               BorderRadius
                                   .circular(
@@ -700,18 +745,12 @@ class _AccountReportMenuScreenState
                           ),
                         ),
 
-                        child:
-                            Text(
+                        child: Text(
                           typeName,
-
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             color:
                                 typeColor,
-
-                            fontSize:
-                                11,
-
+                            fontSize: 11,
                             fontWeight:
                                 FontWeight.bold,
                           ),
@@ -727,12 +766,9 @@ class _AccountReportMenuScreenState
                   // الرصيد
                   Text(
                     'الرصيد: $balance',
-
                     style:
                         const TextStyle(
-                      color:
-                          Colors.black54,
-
+                      color: Colors.black54,
                       fontSize: 12,
                     ),
                   ),
@@ -742,12 +778,9 @@ class _AccountReportMenuScreenState
                       .isNotEmpty)
                     Text(
                       'رقم الحساب: $accountNumber',
-
                       style:
                           const TextStyle(
-                        color:
-                            Colors.black45,
-
+                        color: Colors.black45,
                         fontSize: 11,
                       ),
                     ),
@@ -758,12 +791,9 @@ class _AccountReportMenuScreenState
                       .isNotEmpty)
                     Text(
                       'البئر: $wellName',
-
                       style:
                           const TextStyle(
-                        color:
-                            Colors.black45,
-
+                        color: Colors.black45,
                         fontSize: 11,
                       ),
                     ),
@@ -775,33 +805,23 @@ class _AccountReportMenuScreenState
             // السهم
             // ==================================================
 
-            trailing:
-                Container(
+            trailing: Container(
               width: 34,
               height: 34,
-
-              decoration:
-                  BoxDecoration(
+              decoration: BoxDecoration(
                 color:
-                    mainColor
-                        .withOpacity(
-                  0.08,
+                    mainColor.withValues(
+                  alpha: 0.08,
                 ),
-
                 borderRadius:
                     BorderRadius.circular(
                   9,
                 ),
               ),
 
-              child:
-                  const Icon(
-                Icons
-                    .arrow_back_ios_new,
-
-                color:
-                    mainColor,
-
+              child: const Icon(
+                Icons.arrow_back_ios_new,
+                color: mainColor,
                 size: 15,
               ),
             ),
@@ -813,9 +833,7 @@ class _AccountReportMenuScreenState
             onTap: () {
               openReportType(
                 doc.id,
-
                 account,
-
                 accountName,
               );
             },
@@ -832,7 +850,6 @@ class _AccountReportMenuScreenState
   @override
   void dispose() {
     searchController.dispose();
-
     super.dispose();
   }
 
@@ -851,8 +868,7 @@ class _AccountReportMenuScreenState
             .isNotEmpty;
 
     return Directionality(
-      textDirection:
-          TextDirection.rtl,
+      textDirection: TextDirection.rtl,
 
       child: Scaffold(
         backgroundColor:
@@ -862,10 +878,8 @@ class _AccountReportMenuScreenState
         // شريط العنوان
         // ======================================================
 
-        appBar:
-            MyAppBar(
-          title:
-              'تقارير الحساب',
+        appBar: MyAppBar(
+          title: 'تقارير الحساب',
 
           subtitle:
               hasWell
@@ -873,23 +887,18 @@ class _AccountReportMenuScreenState
                   : 'اختيار الحساب لعرض التقرير',
 
           icon:
-              Icons
-                  .account_balance_wallet,
+              Icons.account_balance_wallet,
         ),
 
         // ======================================================
         // المحتوى
         // ======================================================
 
-        body:
-            Padding(
+        body: Padding(
           padding:
-              const EdgeInsets.all(
-            16,
-          ),
+              const EdgeInsets.all(16),
 
-          child:
-              Column(
+          child: Column(
             children: [
               // ==================================================
               // بطاقة البئر
@@ -917,8 +926,7 @@ class _AccountReportMenuScreenState
               // ==================================================
 
               Container(
-                width:
-                    double.infinity,
+                width: double.infinity,
 
                 padding:
                     const EdgeInsets
@@ -929,25 +937,19 @@ class _AccountReportMenuScreenState
 
                 decoration:
                     BoxDecoration(
-                  color:
-                      mainColor,
-
+                  color: mainColor,
                   borderRadius:
                       BorderRadius.circular(
                     14,
                   ),
                 ),
 
-                child:
-                    Row(
+                child: Row(
                   children: [
                     const Icon(
                       Icons
                           .account_balance_wallet,
-
-                      color:
-                          Colors.white,
-
+                      color: Colors.white,
                       size: 22,
                     ),
 
@@ -956,20 +958,15 @@ class _AccountReportMenuScreenState
                     ),
 
                     Expanded(
-                      child:
-                          Text(
+                      child: Text(
                         hasWell
                             ? 'حسابات ${widget.wellName ?? ''}'
                             : 'جميع الحسابات',
 
                         style:
                             const TextStyle(
-                          color:
-                              Colors.white,
-
-                          fontSize:
-                              16,
-
+                          color: Colors.white,
+                          fontSize: 16,
                           fontWeight:
                               FontWeight.bold,
                         ),
@@ -988,53 +985,29 @@ class _AccountReportMenuScreenState
               // ==================================================
 
               Expanded(
-                child:
-                    StreamBuilder<
-                        QuerySnapshot>(
-                  // =================================================
-                  // هنا أهم تعديل:
-                  // إذا كان لدينا wellId نجلب حسابات نفس البئر فقط
-                  // =================================================
+                child: FutureBuilder<
+                    List<
+                        QueryDocumentSnapshot<
+                            Map<String,
+                                dynamic>>>>(
+                  future: getWellAccounts(),
 
-                  stream:
-                      hasWell
-                          ? firestore
-                              .collection(
-                                'accounts',
-                              )
-                              .where(
-                                'wellId',
-                                isEqualTo:
-                                    widget.wellId,
-                              )
-                              .snapshots()
-                          : firestore
-                              .collection(
-                                'accounts',
-                              )
-                              .snapshots(),
-
-                  builder:
-                      (
+                  builder: (
                     context,
                     snapshot,
                   ) {
-                    // =============================================
+                    // ============================================
                     // خطأ
-                    // =============================================
+                    // ============================================
 
-                    if (snapshot
-                        .hasError) {
+                    if (snapshot.hasError) {
                       return Center(
-                        child:
-                            Padding(
+                        child: Padding(
                           padding:
-                              const EdgeInsets.all(
-                            20,
-                          ),
+                              const EdgeInsets
+                                  .all(20),
 
-                          child:
-                              Text(
+                          child: Text(
                             'حدث خطأ:\n${snapshot.error}',
 
                             textAlign:
@@ -1042,17 +1015,16 @@ class _AccountReportMenuScreenState
 
                             style:
                                 const TextStyle(
-                              color:
-                                  Colors.red,
+                              color: Colors.red,
                             ),
                           ),
                         ),
                       );
                     }
 
-                    // =============================================
+                    // ============================================
                     // تحميل
-                    // =============================================
+                    // ============================================
 
                     if (snapshot
                             .connectionState ==
@@ -1061,24 +1033,20 @@ class _AccountReportMenuScreenState
                       return const Center(
                         child:
                             CircularProgressIndicator(
-                          color:
-                              mainColor,
+                          color: mainColor,
                         ),
                       );
                     }
 
-                    // =============================================
+                    // ============================================
                     // لا توجد حسابات
-                    // =============================================
+                    // ============================================
 
-                    if (!snapshot
-                            .hasData ||
+                    if (!snapshot.hasData ||
                         snapshot.data!
-                            .docs
                             .isEmpty) {
                       return Center(
-                        child:
-                            Column(
+                        child: Column(
                           mainAxisAlignment:
                               MainAxisAlignment
                                   .center,
@@ -1087,13 +1055,10 @@ class _AccountReportMenuScreenState
                             Icon(
                               Icons
                                   .account_balance_wallet_outlined,
-
-                              size:
-                                  60,
-
-                              color:
-                                  Colors.grey
-                                      .shade400,
+                              size: 60,
+                              color: Colors
+                                  .grey
+                                  .shade400,
                             ),
 
                             const SizedBox(
@@ -1107,16 +1072,13 @@ class _AccountReportMenuScreenState
 
                               style:
                                   TextStyle(
-                                fontSize:
-                                    17,
-
+                                fontSize: 17,
                                 fontWeight:
                                     FontWeight
                                         .bold,
-
-                                color:
-                                    Colors.grey
-                                        .shade600,
+                                color: Colors
+                                    .grey
+                                    .shade600,
                               ),
                             ),
                           ],
@@ -1124,24 +1086,22 @@ class _AccountReportMenuScreenState
                       );
                     }
 
-                    // =============================================
+                    // ============================================
                     // المستندات
-                    // =============================================
+                    // ============================================
 
                     final docs =
-                        snapshot.data!
-                            .docs;
+                        snapshot.data!;
 
-                    // =============================================
+                    // ============================================
                     // القائمة
-                    // =============================================
+                    // ============================================
 
                     return ListView.builder(
                       itemCount:
                           docs.length,
 
-                      itemBuilder:
-                          (
+                      itemBuilder: (
                         context,
                         index,
                       ) {
