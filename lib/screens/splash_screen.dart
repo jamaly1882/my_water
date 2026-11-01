@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../home_screen.dart';
+import '../services/gm_dashboard_service.dart';
 import 'login_screen.dart';
 import 'set_up_mshrf/setup_mshrf_screen.dart';
 
@@ -57,8 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // المدير الرئيسي
     // ==========================================================
 
-    if (user.email?.toLowerCase() ==
-        "ahmedul2020@gmail.com") {
+    if (GmRoles.isMainSupervisorEmail(user.email)) {
       goToAdmin();
       return;
     }
@@ -95,6 +95,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final String role =
           data["role"]?.toString() ?? "";
+
+      // ========================================================
+      // المشرف الرئيسي حسب الدور
+      // ========================================================
+
+      if (GmRoles.isMainSupervisorRole(role)) {
+        goToAdmin();
+        return;
+      }
 
       if (role != "supervisor") {
         await auth.signOut();
