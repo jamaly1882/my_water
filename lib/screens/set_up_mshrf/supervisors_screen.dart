@@ -575,7 +575,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                     decoration:
                         BoxDecoration(
                       color: Colors.green
-                          .withOpacity(.10),
+                          .withValues(alpha: .10),
                       borderRadius:
                           BorderRadius.circular(
                         10,
@@ -612,9 +612,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                   decoration:
                       BoxDecoration(
                     color:
-                        mainColor.withOpacity(
-                      .08,
-                    ),
+                        mainColor.withValues(alpha: .08),
                     borderRadius:
                         BorderRadius.circular(
                       10,
@@ -658,9 +656,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                   decoration:
                       BoxDecoration(
                     color:
-                        mainColor.withOpacity(
-                      .08,
-                    ),
+                        mainColor.withValues(alpha: .08),
                     borderRadius:
                         BorderRadius.circular(
                       10,
@@ -1430,9 +1426,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                 leading: CircleAvatar(
                   radius: 25,
                   backgroundColor:
-                      mainColor.withOpacity(
-                    .10,
-                  ),
+                      mainColor.withValues(alpha: .10),
                   child: Icon(
                     isDemo
                         ? Icons
@@ -1467,9 +1461,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.green
-                              .withOpacity(
-                            .10,
-                          ),
+                              .withValues(alpha: .10),
                           borderRadius:
                               BorderRadius
                                   .circular(
@@ -1685,9 +1677,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         Colors.white,
                     disabledBackgroundColor:
                         mainColor
-                            .withOpacity(
-                      .55,
-                    ),
+                            .withValues(alpha: .55),
                     disabledForegroundColor:
                         Colors.white,
                     elevation: 3,

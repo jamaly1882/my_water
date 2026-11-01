@@ -340,9 +340,7 @@ class _DailyCycleReportScreenState
                 boxShadow: [
                   BoxShadow(
                     color: primaryColor
-                        .withOpacity(
-                      0.20,
-                    ),
+                        .withValues(alpha: 0.20),
 
                     blurRadius: 8,
 
@@ -427,9 +425,7 @@ class _DailyCycleReportScreenState
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black
-                          .withOpacity(
-                        0.06,
-                      ),
+                          .withValues(alpha: 0.06),
 
                       blurRadius: 5,
 
@@ -468,9 +464,7 @@ class _DailyCycleReportScreenState
                           WidgetStateProperty
                               .all(
                         primaryColor
-                            .withOpacity(
-                          0.10,
-                        ),
+                            .withValues(alpha: 0.10),
                       ),
 
                       columns: const [
@@ -631,9 +625,7 @@ class _DailyCycleReportScreenState
         boxShadow: [
           BoxShadow(
             color:
-                primaryColor.withOpacity(
-              0.25,
-            ),
+                primaryColor.withValues(alpha: 0.25),
 
             blurRadius: 5,
 

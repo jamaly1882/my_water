@@ -424,7 +424,7 @@ class _ReadingListScreenState
             height: 55,
 
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
               shape: BoxShape.circle,
             ),
 
@@ -972,13 +972,13 @@ class _ReadingListScreenState
       padding: const EdgeInsets.all(10),
 
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
 
         borderRadius:
             BorderRadius.circular(12),
 
         border: Border.all(
-          color: color.withOpacity(0.25),
+          color: color.withValues(alpha: 0.25),
         ),
       ),
 

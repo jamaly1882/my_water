@@ -383,9 +383,7 @@ class _WaterUsageScreenState
                       BoxDecoration(
                     color:
                         primaryColor
-                            .withOpacity(
-                      0.10,
-                    ),
+                            .withValues(alpha: 0.10),
                     shape:
                         BoxShape.circle,
                   ),
@@ -859,9 +857,7 @@ class _WaterUsageScreenState
                         : 2,
                 color: isSelected
                     ? primaryColor
-                        .withOpacity(
-                        0.10,
-                      )
+                        .withValues(alpha: 0.10)
                     : Colors.white,
                 margin:
                     const EdgeInsets

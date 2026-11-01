@@ -106,7 +106,7 @@ class _CustomerSearchScreenState
 
         boxShadow: [
           BoxShadow(
-            color: mainColor.withOpacity(0.20),
+            color: mainColor.withValues(alpha: 0.20),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -125,13 +125,13 @@ class _CustomerSearchScreenState
 
             decoration: BoxDecoration(
               color:
-                  Colors.white.withOpacity(0.16),
+                  Colors.white.withValues(alpha: 0.16),
 
               shape: BoxShape.circle,
 
               border: Border.all(
                 color:
-                    Colors.white.withOpacity(0.20),
+                    Colors.white.withValues(alpha: 0.20),
               ),
             ),
 
@@ -223,9 +223,7 @@ class _CustomerSearchScreenState
 
             decoration: BoxDecoration(
               color:
-                  Colors.white.withOpacity(
-                0.15,
-              ),
+                  Colors.white.withValues(alpha: 0.15),
 
               borderRadius:
                   BorderRadius.circular(
@@ -318,9 +316,7 @@ class _CustomerSearchScreenState
             borderSide:
                 BorderSide(
               color:
-                  mainColor.withOpacity(
-                0.35,
-              ),
+                  mainColor.withValues(alpha: 0.35),
             ),
           ),
 
@@ -629,9 +625,7 @@ class _CustomerSearchScreenState
 
                 backgroundColor:
                     mainColor
-                        .withOpacity(
-                  0.12,
-                ),
+                        .withValues(alpha: 0.12),
 
                 child:
                     const Icon(
@@ -768,9 +762,7 @@ class _CustomerSearchScreenState
                     BoxDecoration(
                   color:
                       mainColor
-                          .withOpacity(
-                    0.10,
-                  ),
+                          .withValues(alpha: 0.10),
 
                   borderRadius:
                       BorderRadius.circular(

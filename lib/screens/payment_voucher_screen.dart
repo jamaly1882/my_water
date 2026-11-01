@@ -1170,9 +1170,7 @@ class _PaymentVoucherScreenState
               Colors.white,
 
           disabledBackgroundColor:
-              mainColor.withOpacity(
-            .55,
-          ),
+              mainColor.withValues(alpha: .55),
 
           disabledForegroundColor:
               Colors.white70,

@@ -155,9 +155,7 @@ class _MonthlyCycleReportScreenState
                 boxShadow: [
                   BoxShadow(
                     color:
-                        mainColor.withOpacity(
-                      0.18,
-                    ),
+                        mainColor.withValues(alpha: 0.18),
 
                     blurRadius: 6,
 
@@ -180,18 +178,14 @@ class _MonthlyCycleReportScreenState
                     decoration:
                         BoxDecoration(
                       color:
-                          Colors.white.withOpacity(
-                        0.16,
-                      ),
+                          Colors.white.withValues(alpha: 0.16),
 
                       shape:
                           BoxShape.circle,
 
                       border: Border.all(
                         color:
-                            Colors.white.withOpacity(
-                          0.25,
-                        ),
+                            Colors.white.withValues(alpha: 0.25),
                       ),
                     ),
 
@@ -480,9 +474,7 @@ class _MonthlyCycleReportScreenState
                                   WidgetStateProperty
                                       .all(
                                 mainColor
-                                    .withOpacity(
-                                  0.10,
-                                ),
+                                    .withValues(alpha: 0.10),
                               ),
 
                               columns:
@@ -680,9 +672,7 @@ class _MonthlyCycleReportScreenState
         boxShadow: [
           BoxShadow(
             color:
-                mainColor.withOpacity(
-              0.18,
-            ),
+                mainColor.withValues(alpha: 0.18),
 
             blurRadius: 6,
 

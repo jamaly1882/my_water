@@ -90,17 +90,13 @@ class AccountReportTypeScreen extends StatelessWidget {
 
                   border: Border.all(
                     color:
-                        mainColor.withOpacity(
-                      0.14,
-                    ),
+                        mainColor.withValues(alpha: 0.14),
                   ),
 
                   boxShadow: [
                     BoxShadow(
                       color:
-                          Colors.black.withOpacity(
-                        0.05,
-                      ),
+                          Colors.black.withValues(alpha: 0.05),
 
                       blurRadius: 7,
 
@@ -131,9 +127,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                             decoration:
                                 BoxDecoration(
                               color:
-                                  mainColor.withOpacity(
-                                0.10,
-                              ),
+                                  mainColor.withValues(alpha: 0.10),
 
                               shape:
                                   BoxShape.circle,
@@ -141,9 +135,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                               border:
                                   Border.all(
                                 color:
-                                    mainColor.withOpacity(
-                                  0.15,
-                                ),
+                                    mainColor.withValues(alpha: 0.15),
                               ),
                             ),
 
@@ -332,9 +324,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                   boxShadow: [
                     BoxShadow(
                       color:
-                          mainColor.withOpacity(
-                        0.18,
-                      ),
+                          mainColor.withValues(alpha: 0.18),
 
                       blurRadius: 7,
 
@@ -539,17 +529,13 @@ class AccountReportTypeScreen extends StatelessWidget {
 
             border: Border.all(
               color:
-                  color.withOpacity(
-                0.14,
-              ),
+                  color.withValues(alpha: 0.14),
             ),
 
             boxShadow: [
               BoxShadow(
                 color:
-                    Colors.black.withOpacity(
-                  0.06,
-                ),
+                    Colors.black.withValues(alpha: 0.06),
 
                 blurRadius: 8,
 
@@ -581,9 +567,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                   decoration:
                       BoxDecoration(
                     color:
-                        color.withOpacity(
-                      0.10,
-                    ),
+                        color.withValues(alpha: 0.10),
 
                     shape:
                         BoxShape.circle,
@@ -591,9 +575,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                     border:
                         Border.all(
                       color:
-                          color.withOpacity(
-                        0.16,
-                      ),
+                          color.withValues(alpha: 0.16),
                     ),
                   ),
 
@@ -666,9 +648,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                   decoration:
                       BoxDecoration(
                     color:
-                        color.withOpacity(
-                      0.08,
-                    ),
+                        color.withValues(alpha: 0.08),
 
                     borderRadius:
                         BorderRadius.circular(

@@ -136,7 +136,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(.08),
+              color: Colors.red.withValues(alpha: .08),
               borderRadius:
                   BorderRadius.circular(10),
             ),
@@ -154,7 +154,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(.08),
+              color: Colors.orange.withValues(alpha: .08),
               borderRadius:
                   BorderRadius.circular(10),
             ),
@@ -272,7 +272,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(.08),
+              color: Colors.red.withValues(alpha: .08),
               borderRadius:
                   BorderRadius.circular(10),
             ),
@@ -290,7 +290,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(.08),
+              color: Colors.orange.withValues(alpha: .08),
               borderRadius:
                   BorderRadius.circular(10),
             ),
@@ -453,7 +453,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor:
-                      mainColor.withOpacity(.12),
+                      mainColor.withValues(alpha: .12),
 
                   child: const Icon(
                     Icons.home_work,
@@ -590,9 +590,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
                         Colors.white,
 
                     disabledBackgroundColor:
-                        mainColor.withOpacity(
-                      .5,
-                    ),
+                        mainColor.withValues(alpha: .5),
 
                     disabledForegroundColor:
                         Colors.white70,

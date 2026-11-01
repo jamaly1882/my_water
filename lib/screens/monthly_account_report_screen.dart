@@ -682,7 +682,7 @@ class _MonthlyAccountReportScreenState
         color: mainColor,
         boxShadow: [
           BoxShadow(
-            color: mainColor.withOpacity(.20),
+            color: mainColor.withValues(alpha: .20),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -767,7 +767,7 @@ class _MonthlyAccountReportScreenState
                 CircleAvatar(
                   radius: 25,
                   backgroundColor:
-                      mainColor.withOpacity(.10),
+                      mainColor.withValues(alpha: .10),
                   child: const Icon(
                     Icons.account_balance_wallet,
                     color: mainColor,
@@ -1022,13 +1022,13 @@ class _MonthlyAccountReportScreenState
 
         border: Border.all(
           color:
-              mainColor.withOpacity(.12),
+              mainColor.withValues(alpha: .12),
         ),
 
         boxShadow: [
           BoxShadow(
             color:
-                Colors.black.withOpacity(.05),
+                Colors.black.withValues(alpha: .05),
             blurRadius: 6,
             offset:
                 const Offset(0, 2),
@@ -1047,7 +1047,7 @@ class _MonthlyAccountReportScreenState
           child: DataTable(
             headingRowColor:
                 WidgetStateProperty.all(
-              mainColor.withOpacity(.10),
+              mainColor.withValues(alpha: .10),
             ),
 
             border: TableBorder.all(
@@ -1202,12 +1202,12 @@ class _MonthlyAccountReportScreenState
                             BoxDecoration(
                           color: isPayment
                               ? Colors.red
-                                  .withOpacity(.10)
+                                  .withValues(alpha: .10)
                               : isReceipt
                                   ? Colors.green
-                                      .withOpacity(.10)
+                                      .withValues(alpha: .10)
                                   : Colors.blue
-                                      .withOpacity(.10),
+                                      .withValues(alpha: .10),
 
                           borderRadius:
                               BorderRadius

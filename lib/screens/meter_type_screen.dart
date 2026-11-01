@@ -1225,9 +1225,7 @@ class _EquipmentTypeScreenState
                             decoration:
                                 BoxDecoration(
                               color: primaryColor
-                                  .withOpacity(
-                                0.10,
-                              ),
+                                  .withValues(alpha: 0.10),
                               borderRadius:
                                   BorderRadius
                                       .circular(

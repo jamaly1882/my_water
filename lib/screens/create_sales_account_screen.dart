@@ -584,7 +584,7 @@ class _CreateSalesAccountScreenState
               height: 60,
               decoration: BoxDecoration(
                 color:
-                    appColor.withOpacity(.10),
+                    appColor.withValues(alpha: .10),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -805,7 +805,7 @@ class _CreateSalesAccountScreenState
 
       leading: CircleAvatar(
         backgroundColor:
-            color.withOpacity(.12),
+            color.withValues(alpha: .12),
         child: Icon(
           icon,
           color: color,
@@ -887,9 +887,7 @@ class _CreateSalesAccountScreenState
               Colors.white,
 
           disabledBackgroundColor:
-              appColor.withOpacity(
-            .55,
-          ),
+              appColor.withValues(alpha: .55),
 
           disabledForegroundColor:
               Colors.white70,

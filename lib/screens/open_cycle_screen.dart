@@ -919,18 +919,14 @@ Future<void> readMeterImage() async {
                       decoration:
                           BoxDecoration(
                         color:
-                            appColor.withOpacity(
-                          .06,
-                        ),
+                            appColor.withValues(alpha: .06),
                         borderRadius:
                             BorderRadius.circular(
                           10,
                         ),
                         border: Border.all(
                           color:
-                              appColor.withOpacity(
-                            .2,
-                          ),
+                              appColor.withValues(alpha: .2),
                         ),
                       ),
                       child: Row(
@@ -1452,7 +1448,7 @@ Future<void> readMeterImage() async {
             Icons.document_scanner,
             size: 55,
             color:
-                appColor.withOpacity(.7),
+                appColor.withValues(alpha: .7),
           ),
 
           const SizedBox(height: 10),
@@ -1548,7 +1544,7 @@ Future<void> readMeterImage() async {
 
     return Card(
       color:
-          appColor.withOpacity(.08),
+          appColor.withValues(alpha: .08),
       child: Padding(
         padding:
             const EdgeInsets.all(18),
@@ -2339,7 +2335,7 @@ Future<void> readMeterImage() async {
               foregroundColor:
                   Colors.white,
               disabledBackgroundColor:
-                  appColor.withOpacity(.5),
+                  appColor.withValues(alpha: .5),
             ),
             icon: _isSaving
                 ? const SizedBox(

@@ -598,9 +598,7 @@ class _YearlyAccountReportScreenState
         boxShadow: [
           BoxShadow(
             color:
-                primaryColor.withOpacity(
-              0.18,
-            ),
+                primaryColor.withValues(alpha: 0.18),
             blurRadius: 8,
             offset:
                 const Offset(0, 4),
@@ -679,9 +677,7 @@ class _YearlyAccountReportScreenState
         boxShadow: [
           BoxShadow(
             color:
-                Colors.black.withOpacity(
-              0.05,
-            ),
+                Colors.black.withValues(alpha: 0.05),
             blurRadius: 5,
             offset:
                 const Offset(0, 2),
@@ -800,9 +796,7 @@ class _YearlyAccountReportScreenState
         boxShadow: [
           BoxShadow(
             color:
-                Colors.black.withOpacity(
-              0.05,
-            ),
+                Colors.black.withValues(alpha: 0.05),
             blurRadius: 5,
             offset:
                 const Offset(0, 2),
@@ -827,9 +821,7 @@ class _YearlyAccountReportScreenState
             headingRowColor:
                 WidgetStateProperty.all(
               primaryColor
-                  .withOpacity(
-                0.10,
-              ),
+                  .withValues(alpha: 0.10),
             ),
 
             columns: const [
@@ -979,9 +971,7 @@ class _YearlyAccountReportScreenState
                                 BoxDecoration(
                               color:
                                   voucherColor
-                                      .withOpacity(
-                                0.10,
-                              ),
+                                      .withValues(alpha: 0.10),
                               shape:
                                   BoxShape
                                       .circle,
@@ -1183,9 +1173,7 @@ class _YearlyAccountReportScreenState
                     BoxShadow(
                       color:
                           Colors.black
-                              .withOpacity(
-                        0.05,
-                      ),
+                              .withValues(alpha: 0.05),
                       blurRadius:
                           6,
                       offset:

@@ -106,7 +106,7 @@ class CycleScreen extends StatelessWidget {
 
                   boxShadow: [
                     BoxShadow(
-                      color: mainColor.withOpacity(0.20),
+                      color: mainColor.withValues(alpha: 0.20),
 
                       blurRadius: 10,
 
@@ -315,7 +315,7 @@ class CycleScreen extends StatelessWidget {
             // ==================================================
 
             border: Border.all(
-              color: mainColor.withOpacity(0.15),
+              color: mainColor.withValues(alpha: 0.15),
 
               width: 1,
             ),
@@ -326,7 +326,7 @@ class CycleScreen extends StatelessWidget {
 
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
 
                 blurRadius: 8,
 
@@ -352,12 +352,12 @@ class CycleScreen extends StatelessWidget {
                   height: 68,
 
                   decoration: BoxDecoration(
-                    color: mainColor.withOpacity(0.10),
+                    color: mainColor.withValues(alpha: 0.10),
 
                     shape: BoxShape.circle,
 
                     border: Border.all(
-                      color: mainColor.withOpacity(0.18),
+                      color: mainColor.withValues(alpha: 0.18),
                     ),
                   ),
 
@@ -426,7 +426,7 @@ class CycleScreen extends StatelessWidget {
                   height: 34,
 
                   decoration: BoxDecoration(
-                    color: mainColor.withOpacity(0.08),
+                    color: mainColor.withValues(alpha: 0.08),
 
                     borderRadius: BorderRadius.circular(10),
                   ),

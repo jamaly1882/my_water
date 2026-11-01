@@ -223,7 +223,7 @@ class _WellsScreenState extends State<WellsScreen> {
                       decoration:
                           BoxDecoration(
                         color:
-                            Colors.red.withOpacity(.08),
+                            Colors.red.withValues(alpha: .08),
                         borderRadius:
                             BorderRadius.circular(10),
                       ),
@@ -244,7 +244,7 @@ class _WellsScreenState extends State<WellsScreen> {
                       decoration:
                           BoxDecoration(
                         color:
-                            Colors.orange.withOpacity(.08),
+                            Colors.orange.withValues(alpha: .08),
                         borderRadius:
                             BorderRadius.circular(10),
                       ),
@@ -393,7 +393,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.red
-                              .withOpacity(.08),
+                              .withValues(alpha: .08),
                           borderRadius:
                               BorderRadius.circular(
                             10,
@@ -419,7 +419,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.orange
-                              .withOpacity(.08),
+                              .withValues(alpha: .08),
                           borderRadius:
                               BorderRadius.circular(
                             10,
@@ -570,7 +570,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.red
-                              .withOpacity(.08),
+                              .withValues(alpha: .08),
                           borderRadius:
                               BorderRadius.circular(
                             10,
@@ -596,7 +596,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.orange
-                              .withOpacity(.08),
+                              .withValues(alpha: .08),
                           borderRadius:
                               BorderRadius.circular(
                             10,
@@ -743,7 +743,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.red
-                              .withOpacity(.08),
+                              .withValues(alpha: .08),
                           borderRadius:
                               BorderRadius.circular(
                             10,
@@ -769,7 +769,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         decoration:
                             BoxDecoration(
                           color: Colors.orange
-                              .withOpacity(.08),
+                              .withValues(alpha: .08),
                           borderRadius:
                               BorderRadius.circular(
                             10,
@@ -943,9 +943,7 @@ class _WellsScreenState extends State<WellsScreen> {
                         Colors.white,
 
                     disabledBackgroundColor:
-                        mainColor.withOpacity(
-                      .55,
-                    ),
+                        mainColor.withValues(alpha: .55),
 
                     disabledForegroundColor:
                         Colors.white70,
@@ -1143,9 +1141,7 @@ class _WellsScreenState extends State<WellsScreen> {
                                 CircleAvatar(
                               backgroundColor:
                                   mainColor
-                                      .withOpacity(
-                                .12,
-                              ),
+                                      .withValues(alpha: .12),
 
                               child:
                                   const Icon(

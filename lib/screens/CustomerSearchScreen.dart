@@ -42,7 +42,7 @@ class _CustomerSearchScreenState
         gradient: LinearGradient(
           colors: [
             Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.75),
+            Theme.of(context).primaryColor.withValues(alpha: 0.75),
           ],
         ),
         boxShadow: const [
@@ -80,7 +80,7 @@ class _CustomerSearchScreenState
               vertical: 5,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
