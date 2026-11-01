@@ -178,7 +178,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
 
                 leading: CircleAvatar(
                   backgroundColor:
-                      mainColor.withOpacity(.12),
+                      mainColor.withValues(alpha: .12),
 
                   child: const Icon(
                     Icons.map,
@@ -325,9 +325,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
                         Colors.white,
 
                     disabledBackgroundColor:
-                        mainColor.withOpacity(
-                      0.5,
-                    ),
+                        mainColor.withValues(alpha: 0.5),
 
                     disabledForegroundColor:
                         Colors.white70,

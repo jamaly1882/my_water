@@ -361,7 +361,7 @@ class _EnergyConsumptionReportScreenState
               width: 58,
               height: 58,
               decoration: BoxDecoration(
-                color: mainColor.withOpacity(0.10),
+                color: mainColor.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -706,7 +706,7 @@ class _EnergyConsumptionReportScreenState
                 height: 50,
                 decoration: BoxDecoration(
                   color:
-                      mainColor.withOpacity(0.10),
+                      mainColor.withValues(alpha: 0.10),
                   borderRadius:
                       BorderRadius.circular(14),
                 ),

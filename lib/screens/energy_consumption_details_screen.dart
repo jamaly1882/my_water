@@ -457,7 +457,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
                   decoration:
                       BoxDecoration(
                     color: mainColor
-                        .withOpacity(0.10),
+                        .withValues(alpha: 0.10),
                     borderRadius:
                         BorderRadius.circular(
                       14,
@@ -604,7 +604,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
               decoration:
                   BoxDecoration(
                 color: Colors.green
-                    .withOpacity(0.08),
+                    .withValues(alpha: 0.08),
                 borderRadius:
                     BorderRadius.circular(
                   10,

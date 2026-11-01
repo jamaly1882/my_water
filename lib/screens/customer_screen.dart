@@ -378,14 +378,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
         borderRadius:
             BorderRadius.circular(12),
         color:
-            Colors.red.withOpacity(
-          .08,
-        ),
+            Colors.red.withValues(alpha: .08),
         border: Border.all(
           color:
-              Colors.red.withOpacity(
-            .3,
-          ),
+              Colors.red.withValues(alpha: .3),
         ),
       ),
       child: Row(
@@ -429,14 +425,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
         borderRadius:
             BorderRadius.circular(12),
         color:
-            Colors.orange.withOpacity(
-          .08,
-        ),
+            Colors.orange.withValues(alpha: .08),
         border: Border.all(
           color:
-              Colors.orange.withOpacity(
-            .3,
-          ),
+              Colors.orange.withValues(alpha: .3),
         ),
       ),
       child: Row(
@@ -492,14 +484,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
         borderRadius:
             BorderRadius.circular(12),
         color:
-            primaryColor.withOpacity(
-          .08,
-        ),
+            primaryColor.withValues(alpha: .08),
         border: Border.all(
           color:
-              primaryColor.withOpacity(
-            .3,
-          ),
+              primaryColor.withValues(alpha: .3),
         ),
       ),
       child: Row(
@@ -1580,9 +1568,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   color:
                       selected
                           ? primaryColor
-                              .withOpacity(
-                              .10,
-                            )
+                              .withValues(alpha: .10)
                           : Colors.white,
                   margin:
                       const EdgeInsets
@@ -1736,9 +1722,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   Colors.white,
               disabledBackgroundColor:
                   primaryColor
-                      .withOpacity(
-                .55,
-              ),
+                      .withValues(alpha: .55),
               disabledForegroundColor:
                   Colors.white,
               minimumSize:
@@ -1796,9 +1780,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   Colors.white,
               disabledBackgroundColor:
                   Colors.blue
-                      .withOpacity(
-                .35,
-              ),
+                      .withValues(alpha: .35),
               disabledForegroundColor:
                   Colors.white,
               minimumSize:
@@ -1856,9 +1838,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   Colors.white,
               disabledBackgroundColor:
                   Colors.red
-                      .withOpacity(
-                .35,
-              ),
+                      .withValues(alpha: .35),
               disabledForegroundColor:
                   Colors.white,
               minimumSize:

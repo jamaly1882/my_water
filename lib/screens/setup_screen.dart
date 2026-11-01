@@ -187,7 +187,7 @@ class SetupScreen extends StatelessWidget {
         ),
         leading: CircleAvatar(
           radius: 25,
-          backgroundColor: color.withOpacity(.15),
+          backgroundColor: color.withValues(alpha: .15),
           child: Icon(
             icon,
             size: 27,

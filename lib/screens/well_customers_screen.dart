@@ -776,14 +776,14 @@ class _WellCustomerScreenState
 
       decoration: BoxDecoration(
         color:
-            primaryColor.withOpacity(.08),
+            primaryColor.withValues(alpha: .08),
 
         borderRadius:
             BorderRadius.circular(14),
 
         border: Border.all(
           color:
-              primaryColor.withOpacity(.25),
+              primaryColor.withValues(alpha: .25),
         ),
       ),
 
@@ -896,7 +896,7 @@ class _WellCustomerScreenState
               Colors.white,
 
           disabledBackgroundColor:
-              primaryColor.withOpacity(.60),
+              primaryColor.withValues(alpha: .60),
 
           disabledForegroundColor:
               Colors.white70,

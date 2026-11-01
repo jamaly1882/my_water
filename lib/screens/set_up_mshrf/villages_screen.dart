@@ -492,7 +492,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
                 ),
                 leading: CircleAvatar(
                   backgroundColor:
-                      Colors.purple.withOpacity(.12),
+                      Colors.purple.withValues(alpha: .12),
                   child: const Icon(
                     Icons.home,
                     color: Colors.purple,

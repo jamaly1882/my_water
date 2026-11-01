@@ -416,7 +416,7 @@ class _PaymentVoucherListScreenState
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor:
-              mainColor.withOpacity(.12),
+              mainColor.withValues(alpha: .12),
           child: const Icon(
             Icons.water_drop,
             color: mainColor,

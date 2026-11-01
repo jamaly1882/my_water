@@ -143,7 +143,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
             decoration: BoxDecoration(
               color:
-                  Colors.red.withOpacity(.08),
+                  Colors.red.withValues(alpha: .08),
 
               borderRadius:
                   BorderRadius.circular(10),
@@ -170,7 +170,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
             decoration: BoxDecoration(
               color:
-                  Colors.orange.withOpacity(.08),
+                  Colors.orange.withValues(alpha: .08),
 
               borderRadius:
                   BorderRadius.circular(10),
@@ -376,9 +376,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
                 leading: CircleAvatar(
                   backgroundColor:
-                      mainColor.withOpacity(
-                    .12,
-                  ),
+                      mainColor.withValues(alpha: .12),
 
                   child: const Icon(
                     Icons.location_city,
@@ -556,9 +554,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
                     disabledBackgroundColor:
                         mainColor
-                            .withOpacity(
-                      .5,
-                    ),
+                            .withValues(alpha: .5),
 
                     disabledForegroundColor:
                         Colors.white70,

@@ -69,7 +69,7 @@ class SearchScreen extends StatelessWidget {
                   boxShadow: [
                     BoxShadow(
                       color:
-                          mainColor.withOpacity(0.20),
+                          mainColor.withValues(alpha: 0.20),
 
                       blurRadius: 10,
 
@@ -91,14 +91,14 @@ class SearchScreen extends StatelessWidget {
 
                       decoration: BoxDecoration(
                         color:
-                            Colors.white.withOpacity(0.18),
+                            Colors.white.withValues(alpha: 0.18),
 
                         shape:
                             BoxShape.circle,
 
                         border: Border.all(
                           color:
-                              Colors.white.withOpacity(0.20),
+                              Colors.white.withValues(alpha: 0.20),
                         ),
                       ),
 
@@ -188,9 +188,7 @@ class SearchScreen extends StatelessWidget {
 
                   border: Border.all(
                     color:
-                        mainColor.withOpacity(
-                      0.15,
-                    ),
+                        mainColor.withValues(alpha: 0.15),
 
                     width: 1,
                   ),
@@ -198,9 +196,7 @@ class SearchScreen extends StatelessWidget {
                   boxShadow: [
                     BoxShadow(
                       color:
-                          Colors.black.withOpacity(
-                        0.06,
-                      ),
+                          Colors.black.withValues(alpha: 0.06),
 
                       blurRadius:
                           8,
@@ -233,9 +229,7 @@ class SearchScreen extends StatelessWidget {
                         decoration:
                             BoxDecoration(
                           color:
-                              mainColor.withOpacity(
-                            0.10,
-                          ),
+                              mainColor.withValues(alpha: 0.10),
 
                           shape:
                               BoxShape.circle,
@@ -243,9 +237,7 @@ class SearchScreen extends StatelessWidget {
                           border:
                               Border.all(
                             color:
-                                mainColor.withOpacity(
-                              0.15,
-                            ),
+                                mainColor.withValues(alpha: 0.15),
                           ),
                         ),
 
@@ -322,9 +314,7 @@ class SearchScreen extends StatelessWidget {
                         decoration:
                             BoxDecoration(
                           color:
-                              mainColor.withOpacity(
-                            0.08,
-                          ),
+                              mainColor.withValues(alpha: 0.08),
 
                           borderRadius:
                               BorderRadius.circular(

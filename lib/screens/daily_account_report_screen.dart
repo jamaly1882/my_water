@@ -557,7 +557,7 @@ class _DailyAccountReportScreenState
                   decoration:
                       BoxDecoration(
                     color:
-                        primaryColor.withOpacity(.10),
+                        primaryColor.withValues(alpha: .10),
                     shape:
                         BoxShape.circle,
                   ),
@@ -784,7 +784,7 @@ class _DailyAccountReportScreenState
         boxShadow: [
           BoxShadow(
             color:
-                primaryColor.withOpacity(.25),
+                primaryColor.withValues(alpha: .25),
             blurRadius:
                 5,
             offset:
@@ -1093,7 +1093,7 @@ class _DailyAccountReportScreenState
       decoration:
           BoxDecoration(
         color:
-            color.withOpacity(.10),
+            color.withValues(alpha: .10),
         borderRadius:
             BorderRadius.circular(8),
       ),
@@ -1460,7 +1460,7 @@ class _DailyAccountReportScreenState
                                         headingRowColor:
                                             WidgetStateProperty.all(
                                           primaryColor
-                                              .withOpacity(.10),
+                                              .withValues(alpha: .10),
                                         ),
 
                                         columns:
