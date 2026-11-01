@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../home_screen.dart';
+import '../services/gm_dashboard_service.dart';
 import '../widgets/my_app_bar.dart';
 import 'set_up_mshrf/setup_mshrf_screen.dart';
 
@@ -99,10 +100,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // ========================================================
       // المدير الرئيسي
+      //
+      // يُتعرف عليه من البريد الرئيسي أو من الدور
+      // داخل مجموعة users.
       // ========================================================
 
-      if (user.email?.toLowerCase() ==
-          'ahmedul2020@gmail.com') {
+      if (GmRoles.isMainSupervisorEmail(user.email)) {
         if (!mounted) return;
 
         Navigator.pushReplacement(
@@ -151,6 +154,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final String role =
           data['role']?.toString() ?? '';
+
+      // ========================================================
+      // المشرف الرئيسي من خلال الدور
+      // ========================================================
+
+      if (GmRoles.isMainSupervisorRole(role)) {
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const SetupMshrfScreen(),
+          ),
+        );
+
+        return;
+      }
 
       if (role != 'supervisor') {
         await auth.signOut();
