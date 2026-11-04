@@ -31,11 +31,11 @@ class AIMeterOCR {
   static Future<String?> readMeter() async {
     try {
       if (_apiKey.isEmpty) {
-        throw Exception('OPENAI_API_KEY غير موجود');
+        throw Exception('OPENAI_API_KEY is missing');
       }
 
       debugPrint('========================================');
-      debugPrint('AI METER OCR - بدء تصوير العداد');
+      debugPrint('AI METER OCR — starting the meter capture');
       debugPrint('========================================');
 
       final ImagePicker picker = ImagePicker();
@@ -47,13 +47,13 @@ class AIMeterOCR {
       );
 
       if (pickedImage == null) {
-        debugPrint('المستخدم ألغى التصوير');
+        debugPrint('The user cancelled the capture');
         return null;
       }
 
       final Uint8List bytes = await pickedImage.readAsBytes();
       if (bytes.isEmpty) {
-        throw Exception('الصورة فارغة');
+        throw Exception('The image is empty');
       }
 
       // فحص جودة الصورة قبل الإرسال

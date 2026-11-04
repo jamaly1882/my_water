@@ -78,7 +78,7 @@ Future<String?> readNumberImpl({
       }
     }
   } catch (e) {
-    debugPrint('استرجاع الصورة: $e');
+    debugPrint('Loading the image: $e');
   }
 
   ImageSource? selectedSource = ImageSource.camera;
@@ -135,7 +135,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                     Icon(Icons.document_scanner, color: Colors.blue),
                     SizedBox(width: 8),
                     Text(
-                      'تصوير عداد المياه (7 خانات)',
+                      'Photograph the water meter (7 digits)',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -157,7 +157,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'إرشادات لضمان أعلى جودة للصورة ودقة القراءة:',
+                        'How to get the clearest photo and the most accurate read:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
@@ -166,15 +166,15 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                       ),
                       SizedBox(height: 6),
                       Text(
-                        '• امسح زجاج العداد من الغبار أو قطرات الماء قبل التصوير.',
+                        '• Wipe dust or water drops off the meter glass first.',
                         style: TextStyle(fontSize: 12),
                       ),
                       Text(
-                        '• تجنب انعكاس الفلاش المباشر على الزجاج (صوّر بزاوية مائلة قليلاً عند اللمعان).',
+                        '• Avoid direct flash on the glass (shoot at a slight angle when it glares).',
                         style: TextStyle(fontSize: 12),
                       ),
                       Text(
-                        '• في خطوة القص، حدد مستطيل الأرقام السبعة فقط بدون حواف العداد.',
+                        '• When cropping, select only the seven digits, without the meter casing.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -190,7 +190,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                         },
                         icon: const Icon(Icons.camera_alt),
                         label: const Text(
-                          'الكاميرا',
+                          'Camera',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -211,7 +211,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                         },
                         icon: const Icon(Icons.photo_library),
                         label: const Text(
-                          'معرض الصور',
+                          'Gallery',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         style: OutlinedButton.styleFrom(
@@ -251,7 +251,7 @@ Future<File?> _pickImageFile(
 
   final File file = File(picked.path);
   if (!await file.exists() || await file.length() == 0) {
-    throw Exception('تعذر الوصول إلى صورة العداد.');
+    throw Exception('Could not open the meter photo.');
   }
 
   return file;
@@ -276,7 +276,7 @@ Future<String?> _cropAndReadLoop(
       compressQuality: 100,
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'حدد الأرقام السبعة فقط',
+          toolbarTitle: 'Select the seven digits only',
           toolbarColor: const Color(0xFF1565C0),
           toolbarWidgetColor: Colors.white,
           lockAspectRatio: false,
@@ -284,7 +284,7 @@ Future<String?> _cropAndReadLoop(
           backgroundColor: Colors.black,
         ),
         IOSUiSettings(
-          title: 'حدد الأرقام السبعة فقط',
+          title: 'Select the seven digits only',
           aspectRatioLockEnabled: false,
         ),
       ],
@@ -294,7 +294,7 @@ Future<String?> _cropAndReadLoop(
 
     final File croppedFile = File(cropped.path);
     if (!await croppedFile.exists() || await croppedFile.length() == 0) {
-      throw Exception('الصورة المقصوصة غير صالحة.');
+      throw Exception('The cropped image is not valid.');
     }
 
     final _MobileOcrRunOutput output = await _runOCRWithQuality(
@@ -368,12 +368,12 @@ Future<_MobileOcrRunOutput> _runOCRWithQuality(
 
   debugPrint('========================================');
   debugPrint(
-    'جودة الصورة: ${qualityReport.levelText} '
+    'Photo quality: ${qualityReport.levelText} '
     '(${qualityReport.overallScore.toStringAsFixed(1)}%) | '
-    'الحدة: ${qualityReport.sharpnessScore.toStringAsFixed(1)} | '
-    'الإضاءة: ${qualityReport.brightnessScore.toStringAsFixed(1)} | '
-    'التباين: ${qualityReport.contrastScore.toStringAsFixed(1)} | '
-    'الوهج: ${qualityReport.glareScore.toStringAsFixed(1)}',
+    'Sharpness: ${qualityReport.sharpnessScore.toStringAsFixed(1)} | '
+    'Lighting: ${qualityReport.brightnessScore.toStringAsFixed(1)} | '
+    'Contrast: ${qualityReport.contrastScore.toStringAsFixed(1)} | '
+    'Glare: ${qualityReport.glareScore.toStringAsFixed(1)}',
   );
   debugPrint('========================================');
 
@@ -451,7 +451,7 @@ Future<_MobileOcrRunOutput> _runOCRWithQuality(
           ),
         );
       } catch (e) {
-        debugPrint('خطأ OCR في النسخة ${spec.name}: $e');
+        debugPrint('OCR failed on variant ${spec.name}: $e');
       }
     }
 
@@ -461,8 +461,8 @@ Future<_MobileOcrRunOutput> _runOCRWithQuality(
       weightedCandidates: weightedCandidates,
     );
 
-    debugPrint('قراءة العداد المحللة: ${analysis.reading}');
-    debugPrint('درجة الثقة: ${analysis.confidence.toStringAsFixed(1)}%');
+    debugPrint('Parsed meter reading: ${analysis.reading}');
+    debugPrint('Confidence: ${analysis.confidence.toStringAsFixed(1)}%');
 
     return _MobileOcrRunOutput(
       analysis: analysis,
@@ -571,7 +571,7 @@ Future<_VariantsCreationResult> _createImageVariants(
   try {
     final img.Image? decoded = img.decodeImage(originalBytes);
     if (decoded == null) {
-      debugPrint('تعذر فك الصورة؛ سيتم استخدام الأصل فقط.');
+      debugPrint('Could not decode the image; the original will be used.');
       return _VariantsCreationResult(variants: result);
     }
 
@@ -684,7 +684,7 @@ Future<_VariantsCreationResult> _createImageVariants(
       ),
     );
   } catch (e) {
-    debugPrint('تعذر تجهيز نسخ الصورة: $e');
+    debugPrint('Could not prepare the image variants: $e');
   }
 
   return _VariantsCreationResult(

@@ -98,11 +98,11 @@ class _DailyCycleReportScreenState
         // ========================================================
 
         appBar: MyAppBar(
-          title: "التقرير اليومي للدور",
+          title: "Daily cycle report",
 
           subtitle: hasWell
-              ? "البئر: ${widget.wellName}"
-              : "التقرير اليومي",
+              ? "Well: ${widget.wellName}"
+              : "Daily report",
 
           icon: Icons.water_drop,
         ),
@@ -129,7 +129,7 @@ class _DailyCycleReportScreenState
         widget.wellId!.trim().isEmpty) {
       return const Center(
         child: Text(
-          "لم يتم تحديد رقم البئر",
+          "No well ID selected",
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -217,7 +217,7 @@ class _DailyCycleReportScreenState
                       ),
 
                       Text(
-                        "لا توجد أدوار اليوم لهذا البئر",
+                        "No cycles today for this well",
 
                         style:
                             TextStyle(
@@ -358,7 +358,7 @@ class _DailyCycleReportScreenState
                   Expanded(
                     child:
                         _buildStatItem(
-                      "أدوار اليوم",
+                      "Today's cycles",
                       "$totalCycles",
                       Icons.water_drop,
                     ),
@@ -369,7 +369,7 @@ class _DailyCycleReportScreenState
                   Expanded(
                     child:
                         _buildStatItem(
-                      "الاستهلاك",
+                      "Consumption",
                       totalConsumption
                           .toStringAsFixed(
                         0,
@@ -383,7 +383,7 @@ class _DailyCycleReportScreenState
                   Expanded(
                     child:
                         _buildStatItem(
-                      "المبالغ",
+                      "Amounts",
                       totalAmount
                           .toStringAsFixed(
                         0,
@@ -470,42 +470,42 @@ class _DailyCycleReportScreenState
                       columns: const [
                         DataColumn(
                           label:
-                              Text("الدور"),
+                              Text("Cycle"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("الزبون"),
+                              Text("Subscriber"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("الاستخدام"),
+                              Text("Usage"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("العداد"),
+                              Text("Meter"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("سابقة"),
+                              Text("Previous"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("حالية"),
+                              Text("Current"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("الاستهلاك"),
+                              Text("Consumption"),
                         ),
 
                         DataColumn(
                           label:
-                              Text("الإجمالي"),
+                              Text("Total"),
                         ),
                       ],
 
@@ -660,7 +660,7 @@ class _DailyCycleReportScreenState
               ),
 
               const Text(
-                "التقرير اليومي للدور",
+                "Daily cycle report",
 
                 style:
                     TextStyle(
@@ -682,7 +682,7 @@ class _DailyCycleReportScreenState
           // ======================================================
 
           Text(
-            "اليوم: ${_formatToday()}",
+            "Day: ${_formatToday()}",
 
             style:
                 const TextStyle(
@@ -708,7 +708,7 @@ class _DailyCycleReportScreenState
               ),
 
               child: Text(
-                "البئر: ${widget.wellName}",
+                "Well: ${widget.wellName}",
 
                 style:
                     const TextStyle(
@@ -727,7 +727,7 @@ class _DailyCycleReportScreenState
                   .trim()
                   .isNotEmpty)
             Text(
-              "رقم البئر: ${widget.wellId}",
+              "Well number: ${widget.wellId}",
 
               style:
                   const TextStyle(

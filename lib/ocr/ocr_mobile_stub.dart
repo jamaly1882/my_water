@@ -5,6 +5,6 @@ Future<String?> readNumberImpl({
   int? previousReading,
 }) async {
   throw UnsupportedError(
-    'قراءة العداد بهذه الطريقة غير متاحة على هذه المنصة.',
+    'Meter reading by photo is not available on this platform.',
   );
 }

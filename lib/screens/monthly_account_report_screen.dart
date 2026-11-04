@@ -66,9 +66,9 @@ class _MonthlyAccountReportScreenState
       initialDate: selectedMonth,
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
-      helpText: "اختر الشهر",
-      cancelText: "إلغاء",
-      confirmText: "اختيار",
+      helpText: "Pick the month",
+      cancelText: "Cancel",
+      confirmText: "Select",
     );
 
     if (date != null && mounted) {
@@ -213,13 +213,13 @@ class _MonthlyAccountReportScreenState
 
     switch (type) {
       case "payment":
-        return "سند صرف";
+        return "Payment voucher";
 
       case "receipt":
-        return "سند قبض";
+        return "Receipt voucher";
 
       default:
-        return type ?? "قيد محاسبي";
+        return type ?? "Journal entry";
     }
   }
 
@@ -234,14 +234,14 @@ class _MonthlyAccountReportScreenState
         data["type"]?.toString();
 
     if (type == "payment") {
-      return "سند صرف";
+      return "Payment voucher";
     }
 
     if (type == "receipt") {
-      return "سند قبض";
+      return "Receipt voucher";
     }
 
-    return "قيد";
+    return "Entry";
   }
 
   // ============================================================
@@ -502,7 +502,7 @@ class _MonthlyAccountReportScreenState
         backgroundColor: backgroundColor,
 
         appBar: const MyAppBar(
-          title: "التقرير الشهري للحساب",
+          title: "Monthly account report",
           icon: Icons.account_balance_wallet,
         ),
 
@@ -703,7 +703,7 @@ class _MonthlyAccountReportScreenState
               const SizedBox(width: 8),
 
               const Text(
-                "التقرير الشهري للحساب",
+                "Monthly account report",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 19,
@@ -727,7 +727,7 @@ class _MonthlyAccountReportScreenState
           const SizedBox(height: 4),
 
           Text(
-            "الشهر: $monthTitle",
+            "Month: $monthTitle",
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 13,
@@ -737,7 +737,7 @@ class _MonthlyAccountReportScreenState
           if (widget.wellName != null &&
               widget.wellName!.trim().isNotEmpty)
             Text(
-              "البئر: ${widget.wellName}",
+              "Well: ${widget.wellName}",
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 13,
@@ -782,7 +782,7 @@ class _MonthlyAccountReportScreenState
                         CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "الحساب",
+                        "Account",
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 12,
@@ -798,7 +798,7 @@ class _MonthlyAccountReportScreenState
                       ),
 
                       Text(
-                        "رقم الحساب: ${widget.accountId}",
+                        "Account number: ${widget.accountId}",
                         style: TextStyle(
                           color:
                               Colors.grey.shade600,
@@ -826,7 +826,7 @@ class _MonthlyAccountReportScreenState
 
                   Expanded(
                     child: Text(
-                      "البئر: ${widget.wellName}",
+                      "Well: ${widget.wellName}",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -857,7 +857,7 @@ class _MonthlyAccountReportScreenState
         ),
 
         label: Text(
-          "الشهر: $monthTitle",
+          "Month: $monthTitle",
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -894,7 +894,7 @@ class _MonthlyAccountReportScreenState
           children: [
             Expanded(
               child: _summaryCard(
-                "الرصيد السابق",
+                "Opening balance",
                 opening,
                 Colors.blue,
                 Icons.history,
@@ -903,7 +903,7 @@ class _MonthlyAccountReportScreenState
 
             Expanded(
               child: _summaryCard(
-                "إجمالي المدين (علية)",
+                "Total debit",
                 debit,
                 Colors.red,
                 Icons.arrow_downward,
@@ -916,7 +916,7 @@ class _MonthlyAccountReportScreenState
           children: [
             Expanded(
               child: _summaryCard(
-                "إجمالي الدائن (لة)",
+                "Total credit",
                 credit,
                 Colors.green,
                 Icons.arrow_upward,
@@ -925,7 +925,7 @@ class _MonthlyAccountReportScreenState
 
             Expanded(
               child: _summaryCard(
-                "الرصيد النهائي",
+                "Closing balance",
                 finalBalance,
                 mainColor,
                 Icons.account_balance_wallet,
@@ -991,7 +991,7 @@ class _MonthlyAccountReportScreenState
             ),
 
             const Text(
-              "ريال",
+              "YER",
 
               style: TextStyle(
                 fontSize: 9,
@@ -1062,7 +1062,7 @@ class _MonthlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "التاريخ",
+                  "Date",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -1076,7 +1076,7 @@ class _MonthlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "نوع الحركة",
+                  "Entry type",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -1090,7 +1090,7 @@ class _MonthlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "البيان",
+                  "Description",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -1104,7 +1104,7 @@ class _MonthlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "مدين (علية)",
+                  "Debit",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -1119,7 +1119,7 @@ class _MonthlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "دائن (لة)",
+                  "Credit",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -1134,7 +1134,7 @@ class _MonthlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "الرصيد",
+                  "Balance",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -1340,7 +1340,7 @@ class _MonthlyAccountReportScreenState
               ),
 
               const Text(
-                "لا توجد حركة في هذا الشهر",
+                "No movement in this month",
 
                 style: TextStyle(
                   fontSize: 16,
@@ -1354,8 +1354,8 @@ class _MonthlyAccountReportScreenState
               ),
 
               Text(
-                "الرصيد السابق: "
-                "${openingBalance.toStringAsFixed(2)} ريال",
+                "Opening balance: "
+                "${openingBalance.toStringAsFixed(2)} YER",
 
                 style: TextStyle(
                   color:

@@ -38,7 +38,7 @@ class CycleDailyReportScreen extends StatelessWidget {
         appBar: AppBar(
 
           title: const Text(
-            "تقرير الدور اليومي",
+            "Daily cycle report",
           ),
 
           centerTitle: true,
@@ -112,7 +112,7 @@ class CycleDailyReportScreen extends StatelessWidget {
                 child:
 
                 Text(
-                  "لا يوجد أدوار اليوم",
+                  "No cycles today",
                   style: TextStyle(
                     fontSize:18,
                   ),
@@ -165,84 +165,84 @@ class CycleDailyReportScreen extends StatelessWidget {
 
                     DataColumn(
                       label:
-                      Text("رقم الدور"),
+                      Text("Cycle no."),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الزبون"),
+                      Text("Subscriber"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الهاتف"),
+                      Text("Phone"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("العنوان"),
+                      Text("Address"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الاستخدام"),
+                      Text("Usage"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("العداد"),
+                      Text("Meter"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("السعر"),
+                      Text("Price"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("السابقة"),
+                      Text("Previous"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الحالية"),
+                      Text("Current"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الاستهلاك"),
+                      Text("Consumption"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الإجمالي"),
+                      Text("Total"),
                     ),
 
 
 
                     DataColumn(
                       label:
-                      Text("الحالة"),
+                      Text("Status"),
                     ),
 
 

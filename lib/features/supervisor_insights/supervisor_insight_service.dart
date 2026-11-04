@@ -150,11 +150,11 @@ class SupervisorInsightService {
     final List<String> warnings = <String>[];
 
     final List<Map<String, dynamic>> users =
-        await _docs('users', warnings, 'المشرفين');
+        await _docs('users', warnings, 'supervisors');
     final List<Map<String, dynamic>> wells =
-        await _docs('wells', warnings, 'الآبار');
+        await _docs('wells', warnings, 'wells');
     final List<Map<String, dynamic>> links =
-        await _docs('well_customers', warnings, 'ربط المشتركين');
+        await _docs('well_customers', warnings, 'subscriber links');
     final List<Map<String, dynamic>> cycles =
         await _cycles(warnings);
 
@@ -273,7 +273,7 @@ class SupervisorInsightService {
           id: _id(data),
           name: name.isNotEmpty
               ? name
-              : (phone.isNotEmpty ? phone : 'مشرف بلا اسم'),
+              : (phone.isNotEmpty ? phone : 'Unnamed supervisor'),
           phone: phone,
           wellId: wellId,
           wellName: info?['name'] ?? '',
@@ -383,7 +383,7 @@ class SupervisorInsightService {
 
     if (kpi.hasWell) dataQuality += 8;
     if (kpi.hasPhone) dataQuality += 5;
-    if (kpi.name.trim().isNotEmpty && !kpi.name.contains('بلا اسم')) {
+    if (kpi.name.trim().isNotEmpty && !kpi.name.contains('No name')) {
       dataQuality += 3;
     }
     if (kpi.lastCycleConsumption > 0) dataQuality += 4;
@@ -392,12 +392,12 @@ class SupervisorInsightService {
         activity + regularity + coverage + dataQuality;
 
     final String grade = total >= 85
-        ? 'متميز'
+        ? 'Excellent'
         : total >= 70
-            ? 'جيد'
+            ? 'Good'
             : total >= 50
-                ? 'يحتاج متابعة'
-                : 'خطر';
+                ? 'Needs follow-up'
+                : 'At risk';
 
     // ------------------------------------------------------
     // القراءة النصية
@@ -405,20 +405,20 @@ class SupervisorInsightService {
     final String headline;
 
     if (!kpi.hasWell) {
-      headline = 'لم يُربط بأي بئر — لا يمكن حساب أي مؤشر قبل الربط.';
+      headline = 'Not linked to a well — no metric can be computed before linking.';
     } else if (kpi.closedCycles == 0) {
-      headline = 'لا توجد دورة مغلقة على بئره بعد؛ المؤشرات صفرية وليست سلبية.';
+      headline = 'No closed cycle on their well yet; the metrics are zero, not negative.';
     } else if (days == null) {
-      headline = 'الدورات موجودة لكن بلا تاريخ إغلاق، فالنشاط غير قابل للقياس.';
+      headline = 'Cycles exist but carry no close date, so activity cannot be measured.';
     } else if (days > 60) {
-      headline = 'توقّف عن الإغلاق منذ $days يوماً — أطول من دورتين متتاليتين.';
+      headline = 'Has not closed a cycle for $days days — longer than two full cycles.';
     } else if (days > 30) {
-      headline = 'آخر دورة قبل $days يوماً، والاستهلاك المسجّل فيها '
-          '${_num(kpi.lastCycleConsumption)} م³.';
+      headline = 'Last cycle was $days days ago, with '
+          '${_num(kpi.lastCycleConsumption)} m³.';
     } else {
-      headline = 'آخر دورة قبل $days يوماً بـ'
-          '${_num(kpi.lastCycleConsumption)} م³، '
-          'و${kpi.closedCycles} دورة مغلقة إجمالاً.';
+      headline = 'Last cycle was $days days ago at '
+          '${_num(kpi.lastCycleConsumption)} m³, '
+          'with ${kpi.closedCycles} closed cycles in total.';
     }
 
     // ------------------------------------------------------
@@ -429,66 +429,66 @@ class SupervisorInsightService {
     final List<String> actions = <String>[];
 
     if (activity >= 24) {
-      strengths.add('انتظام عالٍ: أغلق دورته الأخيرة خلال أسبوعين.');
+      strengths.add('Highly regular: closed the last cycle within two weeks.');
     }
 
     if (regularity >= 18) {
-      strengths.add('$cycles90 دورات في آخر 90 يوماً — إيقاع تشغيلي ثابت.');
+      strengths.add('$cycles90 cycles in the last 90 days — a steady operating rhythm.');
     }
 
     if (kpi.subscribers >= 15) {
-      strengths.add('${kpi.subscribers} مشتركاً مربوطاً ببئره في النظام.');
+      strengths.add('${kpi.subscribers} subscribers linked to their well.');
     }
 
     if (kpi.lastCycleConsumption > 0) {
       strengths.add(
-        'يُدخل استهلاكاً فعلياً (${_num(kpi.lastCycleConsumption)} م³ في آخر دورة).',
+        'Records real consumption (${_num(kpi.lastCycleConsumption)} m³ in the last cycle).',
       );
     }
 
     if (!kpi.hasWell) {
-      risks.add('لا يوجد بئر مرتبط بحسابه: كل قراءاته تُحتسب على غير بئر.');
-      actions.add('اربط حسابه ببئر من شاشة تهيئة بيانات المشرفين.');
+      risks.add('No well is linked to this account: every reading counts against no well.');
+      actions.add('Link the account to a well in Supervisor Setup.');
     }
 
     if (!kpi.hasPhone) {
-      risks.add('لا يوجد رقم هاتف — لا يمكن التنبيه ولا المتابعة.');
-      actions.add('أضف رقم هاتفه في بطاقة المشرف.');
+      risks.add('No phone number — they cannot be alerted or followed up.');
+      actions.add('Add the phone number on the supervisor card.');
     }
 
     if (kpi.subscribers == 0 && kpi.hasWell) {
-      risks.add('لا مشترك واحد مربوط ببئره، فلا توجد قراءات متوقعة.');
-      actions.add('أدخل مشتركي بئره وربطهم قبل الدورة القادمة.');
+      risks.add('Not a single subscriber is linked, so no readings are expected.');
+      actions.add('Add and link the well subscribers before the next cycle.');
     }
 
     if (kpi.closedCycles == 0) {
-      risks.add('لم يُغلق أي دورة: لا استهلاك ولا فاتورة ولا تحصيل.');
-      actions.add('افتح له دورة تجريبية وأغلقها معه لضبط طريقة العمل.');
+      risks.add('Has never closed a cycle: no consumption, no invoice, no collection.');
+      actions.add('Run a trial cycle together to settle the working method.');
     } else if (days != null && days > 30) {
-      risks.add('آخر إغلاق قبل $days يوماً — قد يكون تراكم قراءات غير مسجّلة.');
-      actions.add('اتصل به اليوم وحدّد موعد إغلاق الدورة المتأخرة.');
+      risks.add('Last close was $days days ago — readings may be piling up unrecorded.');
+      actions.add('Call them today and set a date for the overdue cycle.');
     } else if (days != null && days > 14) {
-      risks.add('تأخّر الإغلاق ($days يوماً) عن الإيقاع الشهري.');
-      actions.add('ذكّره بموعد الإغلاق قبل نهاية الأسبوع.');
+      risks.add('The close is $days days late against the monthly rhythm.');
+      actions.add('Remind them before the end of the week.');
     }
 
     if (cycles90 == 0 && kpi.closedCycles > 0) {
-      risks.add('لا دورات في آخر 90 يوماً رغم وجود دورات قديمة.');
-      actions.add('راجع دوراته القديمة: هل أُغلقت أم أُلغيت؟');
+      risks.add('No cycles in the last 90 days although older cycles exist.');
+      actions.add('Review the older cycles: were they closed or cancelled?');
     }
 
     if (kpi.lastCycleConsumption <= 0 && kpi.closedCycles > 0) {
-      risks.add('آخر دورة مغلقة باستهلاك صفر — قراءات ناقصة أو عدّاد معطّل.');
-      actions.add('راجع قراءات آخر دورة، وتأكّد من صحة العدّاد.');
+      risks.add('The last closed cycle has zero consumption — missing readings or a faulty meter.');
+      actions.add('Review the last cycle readings and check the meter.');
     }
 
     if (strengths.isEmpty) {
-      strengths.add('لا توجد نقاط قوة قابلة للقياس بعد — هذه ليست حكماً عليه، '
-          'بل غياب بيانات.');
+      strengths.add('No measurable strengths yet — this is not a verdict on the person, '
+          'it is missing data.');
     }
 
     if (actions.isEmpty) {
-      actions.add('استمر على الإيقاع الحالي، وراجع التقرير الشهري لبئره.');
+      actions.add('Keep the current rhythm and review the monthly report for the well.');
     }
 
     return SupervisorScore(
@@ -527,7 +527,7 @@ class SupervisorInsightService {
         return data;
       }).toList();
     } catch (_) {
-      warnings.add('تعذر تحميل $label');
+      warnings.add('Could not load $label');
 
       return <Map<String, dynamic>>[];
     }
@@ -566,7 +566,7 @@ class SupervisorInsightService {
           return data;
         }).toList();
       } catch (_) {
-        warnings.add('تعذر تحميل الدورات');
+        warnings.add('Could not load the cycles');
 
         return <Map<String, dynamic>>[];
       }

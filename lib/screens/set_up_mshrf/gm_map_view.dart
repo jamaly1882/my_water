@@ -75,7 +75,7 @@ class _GmMapViewState extends State<GmMapView> {
               ),
               const SizedBox(height: 12),
               const Text(
-                'تعذر تحميل الخريطة',
+                'Could not load the map',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class _GmMapViewState extends State<GmMapView> {
               const SizedBox(height: 6),
               Text(
                 widget.error ??
-                    'تحقق من الاتصال بالإنترنت وصلاحيات الحساب.',
+                    'Check the internet connection and account permissions.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
@@ -99,7 +99,7 @@ class _GmMapViewState extends State<GmMapView> {
                   widget.onRefresh();
                 },
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('إعادة المحاولة'),
+                label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: gmPrimary,
                   foregroundColor: Colors.white,
@@ -135,7 +135,7 @@ class _GmMapViewState extends State<GmMapView> {
             children: <Widget>[
               Expanded(
                 child: _toggle(
-                  label: 'الآبار (${value.wellCount})',
+                  label: 'Wells (${value.wellCount})',
                   icon: Icons.water_drop,
                   active: _showWells,
                   color: gmPrimary,
@@ -149,7 +149,7 @@ class _GmMapViewState extends State<GmMapView> {
               const SizedBox(width: 8),
               Expanded(
                 child: _toggle(
-                  label: 'القرى (${value.villageCount})',
+                  label: 'Villages (${value.villageCount})',
                   icon: Icons.home,
                   active: _showVillages,
                   color: gmAccent,
@@ -171,7 +171,7 @@ class _GmMapViewState extends State<GmMapView> {
                   size: 19,
                   color: gmPrimary,
                 ),
-                tooltip: 'تحديث',
+                tooltip: 'Refresh',
                 visualDensity: VisualDensity.compact,
               ),
             ],
@@ -180,7 +180,7 @@ class _GmMapViewState extends State<GmMapView> {
           Row(
             children: <Widget>[
               Text(
-                'كثافة الاستهلاك',
+                'Consumption density',
                 style: TextStyle(
                   fontSize: 9.5,
                   color: Colors.grey.shade600,
@@ -204,7 +204,7 @@ class _GmMapViewState extends State<GmMapView> {
               ),
               const SizedBox(width: 8),
               Text(
-                'مرتفع',
+                'High',
                 style: TextStyle(
                   fontSize: 9,
                   color: Colors.grey.shade600,
@@ -227,10 +227,10 @@ class _GmMapViewState extends State<GmMapView> {
                 Expanded(
                   child: Text(
                     value.hasCoordinates
-                        ? 'بعض الآبار بلا إحداثيات، وتظهر بموقع تخطيطي. '
-                            'اضغط على أي بئر لتحديد موقعه.'
-                        : 'المواقع تخطيطية حسب المحافظة والقرية. '
-                            'اضغط على أي بئر لتحديد إحداثياته على الخريطة.',
+                        ? 'Some wells have no coordinates and are shown at an approximate place. '
+                            'Tap a well to place it.'
+                        : 'Locations are approximate, by governorate and village. '
+                            'Tap a well to set its coordinates on the map.',
                     style: TextStyle(
                       fontSize: 9.5,
                       height: 1.4,
@@ -409,7 +409,7 @@ class _GmMapViewState extends State<GmMapView> {
       top: well.mapY * side - size / 2,
       child: Tooltip(
         message:
-            '${well.name}\n${gmFormatNumber(well.consumption)} م³',
+            '${well.name}\n${gmFormatNumber(well.consumption)} m³',
         child: GestureDetector(
           onTap: () {
             _showWellSheet(context, well, value);
@@ -520,7 +520,7 @@ class _GmMapViewState extends State<GmMapView> {
               ),
               const SizedBox(height: 1),
               Text(
-                '${gmFormatNumber(village.consumption)} م³',
+                '${gmFormatNumber(village.consumption)} m³',
                 maxLines: 1,
                 overflow: TextOverflow.clip,
                 style: TextStyle(
@@ -556,25 +556,25 @@ class _GmMapViewState extends State<GmMapView> {
           _footerItem(
             Icons.water_drop,
             '${value.wellCount}',
-            'بئر',
+            'well',
             gmPrimary,
           ),
           _footerItem(
             Icons.home,
             '${value.villageCount}',
-            'قرية',
+            'village',
             gmAccent,
           ),
           _footerItem(
             Icons.my_location,
             '${value.wellsWithCoordinates.length}',
-            'بإحداثيات',
+            'mapped',
             const Color(0xFF5E35B1),
           ),
           _footerItem(
             Icons.opacity,
             gmFormatNumber(value.currentMonthConsumption),
-            'م³ هذا الشهر',
+            'm³ this month',
             const Color(0xFFEF6C00),
           ),
         ],
@@ -707,7 +707,7 @@ class _GmMapViewState extends State<GmMapView> {
                               const SizedBox(height: 3),
                               Text(
                                 well.locationLabel.isEmpty
-                                    ? 'موقع غير محدد'
+                                    ? 'Location not set'
                                     : well.locationLabel,
                                 style: TextStyle(
                                   fontSize: 10.5,
@@ -733,8 +733,8 @@ class _GmMapViewState extends State<GmMapView> {
                       children: <Widget>[
                         GmPill(
                           label: well.hasSupervisor
-                              ? 'المشرف: ${well.supervisorName}'
-                              : 'بدون مشرف',
+                              ? 'Supervisor: ${well.supervisorName}'
+                              : 'No supervisor',
                           color: well.hasSupervisor
                               ? gmAccent
                               : const Color(0xFFD32F2F),
@@ -742,13 +742,13 @@ class _GmMapViewState extends State<GmMapView> {
                         ),
                         if (well.needsReview)
                           const GmPill(
-                            label: 'تحتاج مراجعة',
+                            label: 'Needs review',
                             color: Color(0xFFD32F2F),
                             icon: Icons.warning_amber_rounded,
                           ),
                         GmPill(
                           label:
-                              '${well.closedCycles} دورة مغلقة',
+                              '${well.closedCycles} closed cycles',
                           color: gmPrimary,
                           icon: Icons.loop,
                         ),
@@ -766,23 +766,23 @@ class _GmMapViewState extends State<GmMapView> {
                       child: Column(
                         children: <Widget>[
                           GmInfoRow(
-                            label: 'استهلاك هذا الشهر',
+                            label: 'Consumption this month',
                             value:
-                                '${gmFormatNumber(well.currentMonthConsumption)} م³',
+                                '${gmFormatNumber(well.currentMonthConsumption)} m³',
                             icon: Icons.calendar_month,
                             valueColor: gmPrimary,
                           ),
                           GmInfoRow(
-                            label: 'الشهر الماضي',
+                            label: 'Last month',
                             value:
-                                '${gmFormatNumber(well.previousMonthConsumption)} م³',
+                                '${gmFormatNumber(well.previousMonthConsumption)} m³',
                             icon: Icons.history,
                           ),
                           GmInfoRow(
-                            label: 'التغير',
+                            label: 'Change',
                             value:
                                 well.changePercentOrNull == null
-                                    ? 'بدون مقارنة'
+                                    ? 'No comparison'
                                     : gmFormatPercent(
                                         well.changePercent,
                                       ),
@@ -792,19 +792,19 @@ class _GmMapViewState extends State<GmMapView> {
                                 : const Color(0xFFD32F2F),
                           ),
                           GmInfoRow(
-                            label: 'إجمالي الاستهلاك',
+                            label: 'Total consumption',
                             value:
-                                '${gmFormatNumber(well.consumption)} م³',
+                                '${gmFormatNumber(well.consumption)} m³',
                             icon: Icons.opacity,
                           ),
                           GmInfoRow(
-                            label: 'المشتركون',
+                            label: 'Subscribers',
                             value:
                                 gmFormatNumber(well.subscribers),
                             icon: Icons.people_alt,
                           ),
                           GmInfoRow(
-                            label: 'آخر دورة',
+                            label: 'Last cycle',
                             value:
                                 gmFormatDate(well.lastCycleDate),
                             icon: Icons.event,
@@ -815,7 +815,7 @@ class _GmMapViewState extends State<GmMapView> {
                     const SizedBox(height: 12),
                     if (well.hasCoordinates)
                       GmInfoRow(
-                        label: 'الإحداثيات',
+                        label: 'Coordinates',
                         value: well.coordinatesLabel,
                         icon: Icons.place,
                       )
@@ -830,7 +830,7 @@ class _GmMapViewState extends State<GmMapView> {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              'لم يتم تحديد إحداثيات هذا البئر بعد.',
+                              'This well has no coordinates yet.',
                               style: TextStyle(
                                 fontSize: 10.5,
                                 color: Colors.grey.shade600,
@@ -853,7 +853,7 @@ class _GmMapViewState extends State<GmMapView> {
                               size: 17,
                             ),
                             label: const Text(
-                              'تحديد الموقع',
+                              'Set location',
                               style: TextStyle(fontSize: 11.5),
                             ),
                             style: OutlinedButton.styleFrom(
@@ -884,7 +884,7 @@ class _GmMapViewState extends State<GmMapView> {
                               size: 17,
                             ),
                             label: const Text(
-                              'التقارير',
+                              'Reports',
                               style: TextStyle(fontSize: 11.5),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -1002,7 +1002,7 @@ class _GmMapViewState extends State<GmMapView> {
                                 const SizedBox(height: 3),
                                 Text(
                                   village.locationLabel.isEmpty
-                                      ? 'موقع غير محدد'
+                                      ? 'Location not set'
                                       : village.locationLabel,
                                   style: TextStyle(
                                     fontSize: 10.5,
@@ -1029,19 +1029,19 @@ class _GmMapViewState extends State<GmMapView> {
                         children: <Widget>[
                           GmPill(
                             label:
-                                '${village.wellCount} آبار',
+                                '${village.wellCount} wells',
                             color: gmPrimary,
                             icon: Icons.water_drop,
                           ),
                           GmPill(
                             label:
-                                '${gmFormatNumber(village.subscribers)} مشترك',
+                                '${gmFormatNumber(village.subscribers)} subscribers',
                             color: const Color(0xFF00838F),
                             icon: Icons.people_alt,
                           ),
                           if (village.needsAttention)
                             const GmPill(
-                              label: 'ارتفاع غير طبيعي',
+                              label: 'Abnormal rise',
                               color: Color(0xFFEF6C00),
                               icon: Icons.warning_amber_rounded,
                             ),
@@ -1059,24 +1059,24 @@ class _GmMapViewState extends State<GmMapView> {
                         child: Column(
                           children: <Widget>[
                             GmInfoRow(
-                              label: 'استهلاك هذا الشهر',
+                              label: 'Consumption this month',
                               value:
-                                  '${gmFormatNumber(village.currentMonthConsumption)} م³',
+                                  '${gmFormatNumber(village.currentMonthConsumption)} m³',
                               icon: Icons.calendar_month,
                               valueColor: gmPrimary,
                             ),
                             GmInfoRow(
-                              label: 'الشهر الماضي',
+                              label: 'Last month',
                               value:
-                                  '${gmFormatNumber(village.previousMonthConsumption)} م³',
+                                  '${gmFormatNumber(village.previousMonthConsumption)} m³',
                               icon: Icons.history,
                             ),
                             GmInfoRow(
-                              label: 'التغير',
+                              label: 'Change',
                               value: village
                                           .changePercentOrNull ==
                                       null
-                                  ? 'بدون مقارنة'
+                                  ? 'No comparison'
                                   : gmFormatPercent(
                                       village.changePercent,
                                     ),
@@ -1087,9 +1087,9 @@ class _GmMapViewState extends State<GmMapView> {
                                       : const Color(0xFFD32F2F),
                             ),
                             GmInfoRow(
-                              label: 'إجمالي الاستهلاك',
+                              label: 'Total consumption',
                               value:
-                                  '${gmFormatNumber(village.consumption)} م³',
+                                  '${gmFormatNumber(village.consumption)} m³',
                               icon: Icons.opacity,
                             ),
                           ],
@@ -1097,7 +1097,7 @@ class _GmMapViewState extends State<GmMapView> {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'الآبار التابعة',
+                        'Linked wells',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -1107,9 +1107,9 @@ class _GmMapViewState extends State<GmMapView> {
                       const SizedBox(height: 6),
                       if (village.wells.isEmpty)
                         const GmEmptyState(
-                          title: 'لا توجد آبار',
+                          title: 'No wells',
                           message:
-                              'لم تُسجل آبار تابعة لهذه القرية بعد.',
+                              'No wells are linked to this village yet.',
                           icon: Icons.water_drop_outlined,
                         )
                       else
@@ -1140,8 +1140,8 @@ class _GmMapViewState extends State<GmMapView> {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  '${gmFormatNumber(well.consumption)} م³ • '
-                                  '${well.hasSupervisor ? well.supervisorName : 'بدون مشرف'}',
+                                  '${gmFormatNumber(well.consumption)} m³ • '
+                                  '${well.hasSupervisor ? well.supervisorName : 'No supervisor'}',
                                   style: TextStyle(
                                     fontSize: 10,
                                     color:
@@ -1221,7 +1221,7 @@ class _GmMapViewState extends State<GmMapView> {
               textDirection: TextDirection.rtl,
               child: AlertDialog(
                 title: const Text(
-                  'تحديد موقع البئر',
+                  'Place the well',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1233,7 +1233,7 @@ class _GmMapViewState extends State<GmMapView> {
                       CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'أدخل إحداثيات البئر ليظهر في موقعه الجغرافي على الخريطة.',
+                      'Enter the coordinates so the well appears at its real place on the map.',
                       style: TextStyle(
                         fontSize: 11,
                         height: 1.5,
@@ -1249,8 +1249,8 @@ class _GmMapViewState extends State<GmMapView> {
                         signed: true,
                       ),
                       decoration: const InputDecoration(
-                        labelText: 'خط العرض (Latitude)',
-                        hintText: 'مثال: 15.369400',
+                        labelText: 'Latitude',
+                        hintText: 'e.g. 15.369400',
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
@@ -1264,8 +1264,8 @@ class _GmMapViewState extends State<GmMapView> {
                         signed: true,
                       ),
                       decoration: const InputDecoration(
-                        labelText: 'خط الطول (Longitude)',
-                        hintText: 'مثال: 44.191000',
+                        labelText: 'Longitude',
+                        hintText: 'e.g. 44.191000',
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
@@ -1287,7 +1287,7 @@ class _GmMapViewState extends State<GmMapView> {
                     onPressed: () {
                       Navigator.pop(dialogContext, false);
                     },
-                    child: const Text('إلغاء'),
+                    child: const Text('Cancel'),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -1309,7 +1309,7 @@ class _GmMapViewState extends State<GmMapView> {
                           longitude == null) {
                         setDialogState(() {
                           error =
-                              'أدخل رقمين صحيحين لخط العرض وخط الطول.';
+                              'Enter two valid numbers for latitude and longitude.';
                         });
                         return;
                       }
@@ -1317,7 +1317,7 @@ class _GmMapViewState extends State<GmMapView> {
                       if (latitude < -90 || latitude > 90) {
                         setDialogState(() {
                           error =
-                              'خط العرض يجب أن يكون بين -90 و 90.';
+                              'Latitude must be between -90 and 90.';
                         });
                         return;
                       }
@@ -1326,14 +1326,14 @@ class _GmMapViewState extends State<GmMapView> {
                           longitude > 180) {
                         setDialogState(() {
                           error =
-                              'خط الطول يجب أن يكون بين -180 و 180.';
+                              'Longitude must be between -180 and 180.';
                         });
                         return;
                       }
 
                       Navigator.pop(dialogContext, true);
                     },
-                    child: const Text('حفظ'),
+                    child: const Text('Save'),
                   ),
                 ],
               ),
@@ -1377,7 +1377,7 @@ class _GmMapViewState extends State<GmMapView> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم حفظ إحداثيات البئر'),
+          content: Text('Well coordinates saved'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -1389,7 +1389,7 @@ class _GmMapViewState extends State<GmMapView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'تعذر حفظ الإحداثيات: $error',
+            'Could not save the coordinates: $error',
           ),
           behavior: SnackBarBehavior.floating,
         ),

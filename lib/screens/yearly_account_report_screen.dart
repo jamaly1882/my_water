@@ -71,11 +71,11 @@ class _YearlyAccountReportScreenState
       initialDate: DateTime(selectedYear),
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
-      helpText: "اختر سنة التقرير",
-      cancelText: "إلغاء",
-      confirmText: "اختيار",
-      fieldLabelText: "التاريخ",
-      fieldHintText: "يوم/شهر/سنة",
+      helpText: "Pick the report year",
+      cancelText: "Cancel",
+      confirmText: "Select",
+      fieldLabelText: "Date",
+      fieldHintText: "day/month/year",
     );
 
     if (date != null && mounted) {
@@ -136,7 +136,7 @@ class _YearlyAccountReportScreenState
 
   String formatDate(DateTime? date) {
     if (date == null) {
-      return "بدون تاريخ";
+      return "No date";
     }
 
     final day =
@@ -182,11 +182,11 @@ class _YearlyAccountReportScreenState
         data["type"]?.toString().trim();
 
     if (type == "payment") {
-      return "سند صرف";
+      return "Payment voucher";
     }
 
     if (type == "receipt") {
-      return "سند قبض";
+      return "Receipt voucher";
     }
 
     return type ?? "";
@@ -203,14 +203,14 @@ class _YearlyAccountReportScreenState
         data["type"]?.toString();
 
     if (type == "payment") {
-      return "سند صرف";
+      return "Payment voucher";
     }
 
     if (type == "receipt") {
-      return "سند قبض";
+      return "Receipt voucher";
     }
 
-    return "قيد";
+    return "Entry";
   }
 
   // =========================================================
@@ -534,7 +534,7 @@ class _YearlyAccountReportScreenState
         ),
 
         Text(
-          "$value ريال",
+          "$value YER",
           textAlign:
               TextAlign.center,
           style:
@@ -611,7 +611,7 @@ class _YearlyAccountReportScreenState
             child:
                 _buildReportStat(
               title:
-                  "إجمالي المدين (عليه)",
+                  "Total debit",
               value:
                   formatNumber(
                 totalDebit,
@@ -627,7 +627,7 @@ class _YearlyAccountReportScreenState
             child:
                 _buildReportStat(
               title:
-                  "إجمالي الدائن (له)",
+                  "Total credit",
               value:
                   formatNumber(
                 totalCredit,
@@ -643,7 +643,7 @@ class _YearlyAccountReportScreenState
             child:
                 _buildReportStat(
               title:
-                  "الرصيد النهائي",
+                  "Closing balance",
               value:
                   formatNumber(
                 finalBalance,
@@ -708,7 +708,7 @@ class _YearlyAccountReportScreenState
                 ),
 
                 const Text(
-                  "عدد الحركات",
+                  "Movements",
                   style:
                       TextStyle(
                     fontWeight:
@@ -831,7 +831,7 @@ class _YearlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "التاريخ",
+                  "Date",
                   style:
                       TextStyle(
                     fontWeight:
@@ -846,7 +846,7 @@ class _YearlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "نوع السند",
+                  "Voucher type",
                   style:
                       TextStyle(
                     fontWeight:
@@ -861,7 +861,7 @@ class _YearlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "البيان",
+                  "Description",
                   style:
                       TextStyle(
                     fontWeight:
@@ -876,7 +876,7 @@ class _YearlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "مدين (عليه)",
+                  "Debit",
                   style:
                       TextStyle(
                     fontWeight:
@@ -891,7 +891,7 @@ class _YearlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "دائن (له)",
+                  "Credit",
                   style:
                       TextStyle(
                     fontWeight:
@@ -906,7 +906,7 @@ class _YearlyAccountReportScreenState
 
               DataColumn(
                 label: Text(
-                  "الرصيد",
+                  "Balance",
                   style:
                       TextStyle(
                     fontWeight:
@@ -1126,12 +1126,12 @@ class _YearlyAccountReportScreenState
         appBar:
             MyAppBar(
           title:
-              "التقرير السنوي - ${widget.accountName}",
+              "Yearly statement — ${widget.accountName}",
 
           subtitle:
               hasWell
-                  ? "البئر: ${widget.wellName}"
-                  : "السنة: $selectedYear",
+                  ? "Well: ${widget.wellName}"
+                  : "Year: $selectedYear",
 
           icon:
               Icons.account_balance_wallet,
@@ -1241,7 +1241,7 @@ class _YearlyAccountReportScreenState
 
                               children: [
                                 const Text(
-                                  "الحساب",
+                                  "Account",
 
                                   style:
                                       TextStyle(
@@ -1276,7 +1276,7 @@ class _YearlyAccountReportScreenState
                                 ),
 
                                 Text(
-                                  "رقم الحساب: ${widget.accountId}",
+                                  "Account number: ${widget.accountId}",
 
                                   style:
                                       TextStyle(
@@ -1318,7 +1318,7 @@ class _YearlyAccountReportScreenState
                             Expanded(
                               child:
                                   Text(
-                                "البئر: ${widget.wellName}",
+                                "Well: ${widget.wellName}",
 
                                 style:
                                     const TextStyle(
@@ -1353,7 +1353,7 @@ class _YearlyAccountReportScreenState
 
                             child:
                                 Text(
-                              "رقم البئر: ${widget.wellId}",
+                              "Well number: ${widget.wellId}",
 
                               style:
                                   TextStyle(
@@ -1419,7 +1419,7 @@ class _YearlyAccountReportScreenState
 
                   label:
                       Text(
-                    "السنة: $selectedYear",
+                    "Year: $selectedYear",
 
                     style:
                         const TextStyle(
@@ -1558,7 +1558,7 @@ class _YearlyAccountReportScreenState
                             ),
 
                             Text(
-                              "لا توجد حركة في سنة $selectedYear",
+                              "No movement in $selectedYear",
 
                               style:
                                   const TextStyle(

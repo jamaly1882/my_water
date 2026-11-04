@@ -105,17 +105,17 @@ class _YearlyCycleReportScreenState
               const Color(0xffF5F9FF),
 
           appBar: MyAppBar(
-            title: "التقرير السنوي للدور",
+            title: "Yearly cycle report",
 
             subtitle:
-                "تقرير السنة $_currentYear",
+                "Report for $_currentYear",
 
             icon: Icons.assessment,
           ),
 
           body: const Center(
             child: Text(
-              "لم يتم تحديد رقم البئر",
+              "No well ID selected",
 
               style: TextStyle(
                 fontSize: 17,
@@ -140,11 +140,11 @@ class _YearlyCycleReportScreenState
         // =====================================================
 
         appBar: MyAppBar(
-          title: "التقرير السنوي للدور",
+          title: "Yearly cycle report",
 
           subtitle: hasWell
-              ? "البئر: ${widget.wellName} - السنة $_currentYear"
-              : "تقرير السنة $_currentYear",
+              ? "Well: ${widget.wellName} — year $_currentYear"
+              : "Report for $_currentYear",
 
           icon: Icons.assessment,
         ),
@@ -229,7 +229,7 @@ class _YearlyCycleReportScreenState
                           ),
 
                           Text(
-                            "لا توجد أدوار مسجلة لهذا البئر خلال هذه السنة",
+                            "No cycles recorded for this well in this year",
 
                             textAlign:
                                 TextAlign.center,
@@ -372,7 +372,7 @@ class _YearlyCycleReportScreenState
                       Expanded(
                         child:
                             _buildStatItem(
-                          "إجمالي الأدوار",
+                          "Cycles",
                           "$cyclesCount",
                           Icons.water_drop,
                         ),
@@ -383,7 +383,7 @@ class _YearlyCycleReportScreenState
                       Expanded(
                         child:
                             _buildStatItem(
-                          "الاستهلاك",
+                          "Consumption",
                           totalConsumption
                               .toStringAsFixed(
                             0,
@@ -397,7 +397,7 @@ class _YearlyCycleReportScreenState
                       Expanded(
                         child:
                             _buildStatItem(
-                          "إجمالي المبالغ",
+                          "Total amounts",
                           totalAmount
                               .toStringAsFixed(
                             0,
@@ -411,7 +411,7 @@ class _YearlyCycleReportScreenState
                       Expanded(
                         child:
                             _buildStatItem(
-                          "السنة",
+                          "Year",
                           "$_currentYear",
                           Icons.calendar_month,
                         ),
@@ -495,57 +495,57 @@ class _YearlyCycleReportScreenState
                           columns: const [
                             DataColumn(
                               label:
-                                  Text("الدور"),
+                                  Text("Cycle"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("التاريخ"),
+                                  Text("Date"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("الزبون"),
+                                  Text("Subscriber"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("الاستخدام"),
+                                  Text("Usage"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("نوع العداد"),
+                                  Text("Meter type"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("السابقة"),
+                                  Text("Previous"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("الحالية"),
+                                  Text("Current"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("الاستهلاك"),
+                                  Text("Consumption"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("سعر الوحدة"),
+                                  Text("Unit price"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("الإجمالي"),
+                                  Text("Total"),
                             ),
 
                             DataColumn(
                               label:
-                                  Text("الحالة"),
+                                  Text("Status"),
                             ),
                           ],
 
@@ -671,7 +671,7 @@ class _YearlyCycleReportScreenState
                                           TextStyle(
                                         color:
                                             status ==
-                                                    "مغلق"
+                                                    "Closed"
                                                 ? Colors
                                                     .green
                                                 : Colors
@@ -770,7 +770,7 @@ class _YearlyCycleReportScreenState
               ),
 
               const Text(
-                "التقرير السنوي للدور",
+                "Yearly cycle report",
 
                 style:
                     TextStyle(
@@ -792,7 +792,7 @@ class _YearlyCycleReportScreenState
           // =====================================================
 
           Text(
-            "السنة: $_currentYear",
+            "Year: $_currentYear",
 
             style:
                 const TextStyle(
@@ -818,7 +818,7 @@ class _YearlyCycleReportScreenState
               ),
 
               child: Text(
-                "البئر: ${widget.wellName}",
+                "Well: ${widget.wellName}",
 
                 style:
                     const TextStyle(
@@ -839,7 +839,7 @@ class _YearlyCycleReportScreenState
                   .trim()
                   .isNotEmpty)
             Text(
-              "رقم البئر: ${widget.wellId}",
+              "Well number: ${widget.wellId}",
 
               style:
                   const TextStyle(

@@ -92,16 +92,32 @@ match /water_challenge_briefs/{uid} {
 
 ## لغة الواجهة — Interface language
 
-الشاشات التالية إنجليزية بالكامل (لا نص عربي فيها، بما فيها رسائل الخطأ والتحقق):
+**كل شاشات التطبيق إنجليزية الآن.** أُزيل النص العربي المعروض من 33 ملفًا في خمس دفعات:
 
-| الشاشة | الملف | الحالة |
+| المنطقة | الملفات | الحالة |
 |---|---|---|
-| Splash | `lib/screens/splash_screen.dart` | English |
-| Sign In | `lib/screens/login_screen.dart` | English |
-| Home | `lib/home_screen.dart` | English |
-| Reading Cycle | `lib/screens/cycle_screen.dart` | English |
-| Setup · Inquiry · Reports · Receipt Voucher · Payment Voucher · Challenge Brief · AI Agent · Supervisor Insights · Supervisor Setup | app bars فقط | English titles |
+| الدخول والرئيسية | splash · login · home | English |
+| الاستعلام | search · customer_search · CustomerSearchScreen | English |
+| التقارير | reports + قوائم وأنواع تقارير الدور والحساب + اليومية/الشهرية/السنوية | English |
+| السندات | receipt · payment · payment list | English |
+| التهيئة | المحافظات · المديريات · العزل · القرى · الآبار · أنواع المعدات · المشرفون · هيكل المشرف | English |
+| دورة القراءة | open_cycle · reading_list · close_cycle · current/previous reading | English |
+| الزبائن والحسابات | customer · well_customers · water_usage · create_sales_account · invoice | English |
+| الطاقة | energy_consumption_report · energy_consumption_details | English |
+| لوحة المدير | gm_dashboard_view · gm_map_view · gm_analytics_view | English |
+| التحليل الذكي | supervisor_insight_service · supervisor_insights_page | English |
+| OCR والكاميرا | ocr_web · ocr_mobile · ocr_quality_widgets · image_quality_analyzer · meter_analysis | English |
 
-**ما لم يُترجم بعد:** نصوص الحقول والجداول والأزرار والرسائل داخل بقية الشاشات (الدور، الاستعلام، التقارير، السندات، التهيئة، لوحة المشرف)، وأسماء البيانات نفسها (الآبار، القرى، المشتركون) عربية بطبيعتها.
+### عربي مقصود (لا يُترجم)
 
-**ملاحظة تصميمية:** حاوية الشاشة ما زالت `TextDirection.rtl`؛ النص الإنجليزي يُعرض صحيحاً لكنه يصطف يميناً. تحويل الشاشة إلى `ltr` قرار تخطيطي منفصل — يُطلب عند الحاجة.
+| ما بقي | لماذا |
+|---|---|
+| `challenge_brief_spec` · `challenge_brief_page` (86) | ملف التحدي **ثنائي اللغة بحكم التصميم** — تسليم AYC يحتاج العربية والإنجليزية معًا |
+| كلمات البحث في `local_insight_service` (54) | لفهم سؤال المستخدم بالعربية؛ الإجابة تبقى إنجليزية |
+| `/٠-٩` و`/۰-۹` | خرائط تحويل الأرقام عند الإدخال — وظيفية |
+| aliases مثل `شمس/ديزل/مولد` | مطابقة أنواع المعدات المخزّنة في Firestore |
+| `مغلق` · `منتهي` · `مكتمل` · `مشرف` · `مدير عام` | قيم مخزّنة في Firestore تُقارن بها الحالة والدور |
+| التعليقات البرمجية | لا تظهر للمستخدم |
+
+### ملاحظة تصميمية
+حاويات الشاشات ما زالت `TextDirection.rtl`، فالنص الإنجليزي يصطف يمينًا. تحويلها إلى `ltr` قرار تخطيطي منفصل.

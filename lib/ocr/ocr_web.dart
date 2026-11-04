@@ -39,7 +39,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
   bool _isCropping = false;
   bool _isRecognizing = false;
 
-  String _status = 'اختر أو صوّر عداد الماء للبدء';
+  String _status = 'Choose or photograph the water meter to start';
 
   html.FileUploadInputElement? _fileInput;
 
@@ -75,13 +75,13 @@ class _OcrWebPageState extends State<OcrWebPage> {
       final file = files.first;
 
       if (!file.type.startsWith('image/')) {
-        _showMessage('الملف المختار ليس صورة');
+        _showMessage('The selected file is not an image');
         return;
       }
 
       try {
         setState(() {
-          _status = 'جاري تحميل الصورة...';
+          _status = 'Loading the image…';
           _reading = '';
           _rawText = '';
           _croppedImageData = null;
@@ -99,14 +99,14 @@ class _OcrWebPageState extends State<OcrWebPage> {
             completer.complete(result);
           } else {
             completer.completeError(
-              Exception('تعذر قراءة الصورة'),
+              Exception('Could not read the image'),
             );
           }
         });
 
         reader.onError.listen((_) {
           completer.completeError(
-            Exception('حدث خطأ أثناء قراءة الصورة'),
+            Exception('Something went wrong while reading the image'),
           );
         });
 
@@ -118,7 +118,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
         setState(() {
           _imageData = dataUrl;
-          _status = 'حدد منطقة أرقام العداد السبعة';
+          _status = 'Select the seven-digit area';
         });
 
         // فتح القص تلقائياً بعد اختيار الصورة
@@ -127,10 +127,10 @@ class _OcrWebPageState extends State<OcrWebPage> {
         if (!mounted) return;
 
         setState(() {
-          _status = 'فشل تحميل الصورة';
+          _status = 'Could not load the image';
         });
 
-        _showMessage('خطأ في تحميل الصورة: $e');
+        _showMessage('Image load error: $e');
       }
     });
 
@@ -144,14 +144,14 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   Future<void> _openCropper() async {
     if (_imageData == null || _imageData!.isEmpty) {
-      _showMessage('اختر صورة أولاً');
+      _showMessage('Choose an image first');
       return;
     }
 
     try {
       setState(() {
         _isCropping = true;
-        _status = 'حدد منطقة شاشة العداد (7 أرقام)';
+        _status = 'Select the meter window (7 digits)';
       });
 
       final result = await _callJsPromise(
@@ -166,7 +166,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       if (cropped.isEmpty || cropped == 'null') {
         setState(() {
           _isCropping = false;
-          _status = 'تم إلغاء تحديد المنطقة';
+          _status = 'Area selection cancelled';
         });
         return;
       }
@@ -181,7 +181,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _croppedImageData = cropped;
         _qualityReport = report;
         _isCropping = false;
-        _status = 'تم تحديد المنطقة وفحص الجودة. جاري قراءة الأرقام...';
+        _status = 'Area selected and quality checked. Reading the digits…';
       });
 
       // بدء القراءة تلقائياً بعد تأكيد القص
@@ -191,7 +191,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
       setState(() {
         _isCropping = false;
-        _status = 'تم إلغاء القص أو حدث خطأ أثناء تحديد المنطقة';
+        _status = 'Cropping was cancelled or failed';
       });
     }
   }
@@ -202,7 +202,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   Future<void> _recognizeMeter() async {
     if (_croppedImageData == null || _croppedImageData!.isEmpty) {
-      _showMessage('حدد منطقة شاشة العداد أولاً');
+      _showMessage('Select the meter window first');
       return;
     }
 
@@ -215,7 +215,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _isRecognizing = true;
         _reading = '';
         _rawText = '';
-        _status = 'جاري قراءة أرقام العداد وتحليل الخانات السبع...';
+        _status = 'Reading the meter digits and checking all seven…';
       });
 
       await _callJsPromise(
@@ -272,7 +272,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
           _status = analysis.message;
         } else {
           _status =
-              'تعذر قراءة الخانات السبع تلقائياً بوضوح؛ يمكنك ضبط الخانات أدناه أو إعادة القص.';
+              'The seven digits could not be read clearly — adjust them below or crop again.';
         }
       });
     } catch (e) {
@@ -280,10 +280,10 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
       setState(() {
         _isRecognizing = false;
-        _status = 'فشل التعرف التلقائي على الأرقام';
+        _status = 'Automatic digit recognition failed';
       });
 
-      _showMessage('خطأ OCR: $e');
+      _showMessage('OCR error: $e');
     }
   }
 
@@ -294,7 +294,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
   void _confirmAndReturn() {
     final String clean = MeterAnalyzer.normalize(_reading);
     if (!MeterAnalyzer.isValid(clean)) {
-      _showMessage('القراءة يجب أن تتكون من 7 خانات بالضبط');
+      _showMessage('The reading must be exactly 7 digits');
       return;
     }
     Navigator.of(context).pop(clean);
@@ -393,7 +393,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       _analysisResult = null;
       _isCropping = false;
       _isRecognizing = false;
-      _status = 'اختر أو صوّر عداد الماء للبدء';
+      _status = 'Choose or photograph the water meter to start';
     });
   }
 
@@ -412,7 +412,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             children: [
               Icon(Icons.water),
               SizedBox(width: 8),
-              Text('قراءة عداد الماء وفحص الجودة'),
+              Text('Water meter reading with quality check'),
             ],
           ),
           centerTitle: true,
@@ -467,7 +467,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
             const SizedBox(height: 10),
             const Text(
-              'التعرف الإلكتروني على قراءة عداد الماء (7 خانات)',
+              'Electronic reading of the water meter (7 digits)',
               style: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.bold,
@@ -476,7 +476,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'صوّر أو اختر صورة العداد، ثم حدد شاشة الأرقام السبعة ليتم فحص جودة الصورة واستخراج القراءة تلقائياً.',
+              'Photograph or pick the meter, then select the seven-digit window so the photo is checked and the reading extracted automatically.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -511,7 +511,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
             SizedBox(height: 10),
             Text(
-              'لم يتم اختيار صورة بعد',
+              'No image selected yet',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -519,7 +519,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
             SizedBox(height: 6),
             Text(
-              'احرص على نظافة زجاج العداد وتجنب انعكاس الفلاش المباشر',
+              'Keep the meter glass clean and avoid direct flash',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -558,8 +558,8 @@ class _OcrWebPageState extends State<OcrWebPage> {
                 const SizedBox(width: 8),
                 Text(
                   _croppedImageData != null
-                      ? 'منطقة الأرقام المحددة (OCR)'
-                      : 'الصورة الأصلية',
+                      ? 'Selected digit area (OCR)'
+                      : 'Original photo',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
@@ -591,7 +591,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
         ElevatedButton.icon(
           onPressed: busy ? null : () => _pickImage(useCamera: true),
           icon: const Icon(Icons.camera_alt),
-          label: const Text('تصوير بالكاميرا'),
+          label: const Text('Take a photo'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
@@ -601,14 +601,14 @@ class _OcrWebPageState extends State<OcrWebPage> {
           onPressed: busy ? null : () => _pickImage(useCamera: false),
           icon: const Icon(Icons.upload_file),
           label: Text(
-            _imageData == null ? 'اختيار صورة من الجهاز' : 'تغيير الصورة',
+            _imageData == null ? 'Pick an image from the device' : 'Change the image',
           ),
         ),
         if (_imageData != null)
           OutlinedButton.icon(
             onPressed: busy ? null : _openCropper,
             icon: const Icon(Icons.crop),
-            label: const Text('إعادة قص منطقة الأرقام'),
+            label: const Text('Crop the digit area again'),
           ),
         if (_croppedImageData != null)
           FilledButton.icon(
@@ -624,14 +624,14 @@ class _OcrWebPageState extends State<OcrWebPage> {
                   )
                 : const Icon(Icons.document_scanner),
             label: Text(
-              _isRecognizing ? 'جاري القراءة...' : 'إعادة قراءة الأرقام',
+              _isRecognizing ? 'Reading…' : 'Read the digits again',
             ),
           ),
         if (_imageData != null)
           TextButton.icon(
             onPressed: busy ? null : _reset,
             icon: const Icon(Icons.refresh),
-            label: const Text('مسح وإعادة'),
+            label: const Text('Reset'),
           ),
       ],
     );
@@ -661,7 +661,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'قراءة العداد المستخرجة',
+                  'Extracted meter reading',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -681,7 +681,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'ثقة ${_analysisResult!.confidence.round()}%',
+                      'Confidence ${_analysisResult!.confidence.round()}%',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -716,7 +716,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
                 onPressed: _confirmAndReturn,
                 icon: const Icon(Icons.check_circle),
                 label: Text(
-                  'اعتماد القراءة ($_reading)',
+                  'Approve the reading ($_reading)',
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
@@ -734,7 +734,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             if (_rawText.isNotEmpty) ...[
               const SizedBox(height: 12),
               ExpansionTile(
-                title: const Text('النص الخام من محرك OCR'),
+                title: const Text('Raw OCR text'),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),

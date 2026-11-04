@@ -153,7 +153,7 @@ class _WellCustomerScreenState
       }
     } catch (e) {
       debugPrint(
-        'خطأ في جلب اسم القرية: $e',
+        'Could not load the village name: $e',
       );
     }
   }
@@ -191,7 +191,7 @@ class _WellCustomerScreenState
       });
     } catch (e) {
       debugPrint(
-        'خطأ في تحميل الزبائن: $e',
+        'Could not load the subscribers: $e',
       );
 
       if (mounted) {
@@ -236,7 +236,7 @@ class _WellCustomerScreenState
 
     if (selectedCustomerId == null ||
         selectedCustomerId!.trim().isEmpty) {
-      message('اختر الزبون أولاً');
+      message('Choose the subscriber first');
       return;
     }
 
@@ -246,7 +246,7 @@ class _WellCustomerScreenState
 
     if (wellId == null ||
         wellId!.trim().isEmpty) {
-      message('رقم البئر غير موجود');
+      message('The well ID is missing');
       return;
     }
 
@@ -271,7 +271,7 @@ class _WellCustomerScreenState
 
       if (!customerDoc.exists) {
         throw Exception(
-          'الزبون غير موجود',
+          'The subscriber was not found',
         );
       }
 
@@ -318,7 +318,7 @@ class _WellCustomerScreenState
           'credit': 0,
 
           'statement':
-              'فتح حساب زبون البئر',
+              'Open a well subscriber account',
 
           'createdAt':
               FieldValue.serverTimestamp(),
@@ -404,7 +404,7 @@ class _WellCustomerScreenState
       if (!mounted) return;
 
       message(
-        'تم إضافة الزبون وربطه بالبئر بنجاح',
+        'Subscriber added and linked to the well',
       );
 
       // ========================================================
@@ -440,7 +440,7 @@ class _WellCustomerScreenState
       initialValue: villageId,
 
       decoration: InputDecoration(
-        labelText: 'القرية',
+        labelText: 'Village',
 
         prefixIcon: const Icon(
           Icons.location_on,
@@ -480,7 +480,7 @@ class _WellCustomerScreenState
         DropdownMenuItem<String>(
           value: villageId,
           child: Text(
-            villageName ?? 'غير محدد',
+            villageName ?? 'Not set',
           ),
         ),
       ],
@@ -498,7 +498,7 @@ class _WellCustomerScreenState
       initialValue: selectedCustomerId,
 
       decoration: InputDecoration(
-        labelText: 'اختر الزبون',
+        labelText: 'Choose subscriber',
 
         prefixIcon: const Icon(
           Icons.person,
@@ -667,7 +667,7 @@ class _WellCustomerScreenState
                       ),
 
                       Text(
-                        'البئر: ${wellName ?? ''}',
+                        'Well: ${wellName ?? ''}',
                         style:
                             const TextStyle(
                           color:
@@ -687,21 +687,21 @@ class _WellCustomerScreenState
             if (phone.isNotEmpty)
               _infoRow(
                 Icons.phone,
-                'الهاتف',
+                'Phone',
                 phone,
               ),
 
             if (address.isNotEmpty)
               _infoRow(
                 Icons.home,
-                'العنوان',
+                'Address',
                 address,
               ),
 
             if (usage.isNotEmpty)
               _infoRow(
                 Icons.water_drop,
-                'نوع الاستخدام',
+                'Usage type',
                 usage,
               ),
           ],
@@ -805,7 +805,7 @@ class _WellCustomerScreenState
                   CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'البئر المحدد',
+                  'Selected well',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey,
@@ -821,7 +821,7 @@ class _WellCustomerScreenState
                           wellName!
                               .trim()
                               .isEmpty
-                      ? 'غير محدد'
+                      ? 'Not set'
                       : wellName!,
                   style:
                       const TextStyle(
@@ -876,8 +876,8 @@ class _WellCustomerScreenState
 
         label: Text(
           saving
-              ? 'جاري الإضافة...'
-              : 'إضافة وربط الزبون بالبئر',
+              ? 'Adding…'
+              : 'Add and link the subscriber',
 
           style:
               const TextStyle(
@@ -933,8 +933,8 @@ class _WellCustomerScreenState
           title:
               wellName == null ||
                       wellName!.trim().isEmpty
-                  ? 'زبائن البئر'
-                  : 'زبائن البئر $wellName',
+                  ? 'Well subscribers'
+                  : 'Well subscribers $wellName',
           icon:
               Icons.people,
         ),

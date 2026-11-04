@@ -81,7 +81,7 @@ class ImageQualityCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'جودة صورة العداد: ${report.levelText}',
+                    'Meter photo quality: ${report.levelText}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -114,7 +114,7 @@ class ImageQualityCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _metricBar(
-                    label: 'الوضوح والحدة',
+                    label: 'Sharpness',
                     score: report.sharpnessScore,
                     icon: Icons.center_focus_strong,
                   ),
@@ -122,7 +122,7 @@ class ImageQualityCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _metricBar(
-                    label: 'الإضاءة',
+                    label: 'Lighting',
                     score: report.brightnessScore,
                     icon: Icons.wb_sunny_outlined,
                   ),
@@ -134,7 +134,7 @@ class ImageQualityCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _metricBar(
-                    label: 'التباين',
+                    label: 'Contrast',
                     score: report.contrastScore,
                     icon: Icons.contrast,
                   ),
@@ -142,7 +142,7 @@ class ImageQualityCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _metricBar(
-                    label: 'عدم الوهج',
+                    label: 'No glare',
                     score: report.glareScore,
                     icon: Icons.flare_outlined,
                   ),
@@ -191,7 +191,7 @@ class ImageQualityCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'نصائح لتحسين القراءة:',
+                      'Tips for a better read:',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -333,7 +333,7 @@ class SevenDigitRollerEditor extends StatelessWidget {
       child: Column(
         children: [
           const Text(
-            'تحقق من تطابق الخانات السبع مع الصورة (يمكنك تعديل أي خانة بالأسهم):',
+            'Check the seven digits against the photo (use the arrows to fix any digit):',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
@@ -383,7 +383,7 @@ class SevenDigitRollerEditor extends StatelessWidget {
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
-                    'الخانات الملونة بالبرتقالي أقل وضوحاً في الصورة، تأكد من مطابقتها.',
+                    'Digits in orange are less clear in the photo — double-check them.',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.orange.shade900,
@@ -405,7 +405,7 @@ class SevenDigitRollerEditor extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 const Text(
-                  'قراءات محتملة أخرى:',
+                  'Other possible readings:',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.blueGrey,
@@ -463,8 +463,8 @@ class SevenDigitRollerEditor extends StatelessWidget {
                   Expanded(
                     child: Text(
                       isLessThanPrevious
-                          ? 'تنبيه: القراءة الحالية ($currentStr) أقل من القراءة السابقة ($previousReading)!'
-                          : 'القراءة السابقة: $previousReading  |  الاستهلاك: $consumption وحدة',
+                          ? 'Warning: the current reading ($currentStr) is lower than the previous one ($previousReading)!'
+                          : 'Previous reading: $previousReading  |  Consumption: $consumption units',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -659,7 +659,7 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'مراجعة قراءة العداد وجودة الصورة',
+                            'Review the meter reading and photo quality',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
@@ -691,7 +691,7 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'ثقة ${widget.analysisResult.confidence.round()}%',
+                          'Confidence ${widget.analysisResult.confidence.round()}%',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -741,8 +741,8 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                       ),
                       label: Text(
                         _showEnhanced
-                            ? 'عرض الصورة الأصلية'
-                            : 'عرض نسخة التحسين (OCR)',
+                            ? 'Show the original photo'
+                            : 'Show the enhanced (OCR) copy',
                         style: const TextStyle(fontSize: 12),
                       ),
                     ),
@@ -788,7 +788,7 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                     },
                     icon: const Icon(Icons.check_circle),
                     label: Text(
-                      'اعتماد القراءة ($_currentReading)',
+                      'Approve the reading ($_currentReading)',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -818,7 +818,7 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                           );
                         },
                         icon: const Icon(Icons.crop, size: 18),
-                        label: const Text('إعادة القص'),
+                        label: const Text('Crop again'),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -832,7 +832,7 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                           );
                         },
                         icon: const Icon(Icons.camera_alt, size: 18),
-                        label: const Text('إعادة التصوير'),
+                        label: const Text('Retake photo'),
                       ),
                     ),
                   ],

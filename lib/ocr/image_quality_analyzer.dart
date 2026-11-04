@@ -57,13 +57,13 @@ class ImageQualityReport {
   String get levelText {
     switch (level) {
       case ImageQualityLevel.excellent:
-        return 'ممتازة';
+        return 'Excellent';
       case ImageQualityLevel.good:
-        return 'جيدة';
+        return 'Good';
       case ImageQualityLevel.fair:
-        return 'متوسطة';
+        return 'Average';
       case ImageQualityLevel.poor:
-        return 'ضعيفة';
+        return 'Poor';
     }
   }
 
@@ -75,9 +75,9 @@ class ImageQualityReport {
 
   String get summaryMessage {
     if (issues.isEmpty) {
-      return 'جودة الصورة $levelText ومناسبة لقراءة العداد.';
+      return 'Photo quality is $levelText and suitable for reading the meter.';
     }
-    return 'جودة الصورة $levelText: ${issues.join('، ')}.';
+    return 'Photo quality is $levelText: ${issues.join('، ')}.';
   }
 }
 
@@ -105,8 +105,8 @@ class ImageQualityAnalyzer {
         height: 0,
         level: ImageQualityLevel.poor,
         isAcceptable: false,
-        issues: ['تعذر قراءة ملف الصورة'],
-        tips: ['أعد التقاط صورة واضحة للعداد'],
+        issues: ['Could not read the image file'],
+        tips: ['Retake a clear photo of the meter'],
       );
     }
 
@@ -137,9 +137,9 @@ class ImageQualityAnalyzer {
         height: origH,
         level: ImageQualityLevel.poor,
         isAcceptable: false,
-        issues: const ['أبعاد الصورة المقصوصة صغيرة جداً'],
+        issues: const ['The cropped image is too small'],
         tips: const [
-          'قرّب الكاميرا من شاشة العداد وحدد نافذة الأرقام السبعة بالكامل',
+          'Move closer and select the whole seven-digit window',
         ],
       );
     }
@@ -297,37 +297,37 @@ class ImageQualityAnalyzer {
     final double aspect = origW / math.max(1, origH);
     if (origW < 180 || origH < 40) {
       overallScore -= 18;
-      issues.add('دقة منطقة الأرقام منخفضة');
-      tips.add('قرّب الهاتف من العداد أثناء التصوير لتكون الأرقام كبيرة وواضحة');
+      issues.add('The digit area resolution is low');
+      tips.add('Move the phone closer so the digits are large and clear');
     }
 
     if (aspect < 1.35) {
       overallScore -= 8;
-      issues.add('منطقة القص مربعة أكثر من اللازم');
-      tips.add('قص الشريط الأفقي للأرقام السبعة فقط بدون جسم العداد');
+      issues.add('The crop area is too square');
+      tips.add('Crop just the horizontal strip of seven digits');
     }
 
     if (sharpnessScore < 45) {
-      issues.add('الصورة غير حادة (مهتزة أو غير مركزة)');
-      tips.add('ثبّت يدك واضغط على شاشة العداد للتركيز (Focus) قبل الالتقاط');
+      issues.add('The photo is not sharp (shaken or out of focus)');
+      tips.add('Hold steady and tap the meter window to focus before shooting');
     }
 
     if (meanLum < 72) {
-      issues.add('الإضاءة ضعيفة جداً');
-      tips.add('استخدم إضاءة كافية أو صوّر في مكان جيد الإضاءة');
+      issues.add('The lighting is far too low');
+      tips.add('Use enough light or shoot in a brighter place');
     } else if (meanLum > 205) {
-      issues.add('الإضاءة ساطعة جداً');
-      tips.add('خفف الإضاءة المباشرة لتجنب اختفاء تفاصيل الأرقام');
+      issues.add('The lighting is far too bright');
+      tips.add('Reduce direct light so the digits do not wash out');
     }
 
     if (contrastScore < 45) {
-      issues.add('التباين منخفض بين الأرقام والخلفية');
-      tips.add('امسح زجاج العداد من الغبار أو البخار قبل التصوير');
+      issues.add('Contrast between digits and background is low');
+      tips.add('Wipe dust or condensation off the glass first');
     }
 
     if (glareScore < 65) {
-      issues.add('يوجد انعكاس ضوئي (وهج) على زجاج العداد');
-      tips.add('غيّر زاوية التصوير قليلاً لتجنب انعكاس الفلاش أو الشمس على الزجاج');
+      issues.add('There is glare on the meter glass');
+      tips.add('Change the shooting angle to keep flash or sun off the glass');
     }
 
     overallScore = overallScore.clamp(0.0, 100.0);

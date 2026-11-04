@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/gm_dashboard_service.dart';
+import '../../services/local_insight_service.dart';
 import '../../widgets/gm_ui.dart';
 
 // ============================================================
@@ -33,12 +34,12 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
   final List<_QaEntry> _entries = <_QaEntry>[];
 
   static const List<String> _suggestions = <String>[
-    'ما البئر الأعلى استهلاكًا هذا الشهر؟',
-    'ما القرية التي ارتفع استهلاكها مقارنة بالشهر الماضي؟',
-    'ما الآبار التي تحتاج إلى مراجعة؟',
-    'كيف تغيّر استهلاك المياه خلال الأشهر الستة الماضية؟',
-    'كم عدد المشتركين؟',
-    'قارن استهلاك الآبار',
+    'Which well consumes the most this month?',
+    'Which village rose against last month?',
+    'Which wells need a review?',
+    'How did consumption move over the last six months?',
+    'How many subscribers are linked?',
+    'Compare the wells',
   ];
 
   @override
@@ -56,7 +57,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
     if (text.isEmpty || data == null) return;
 
     final String answer =
-        GmAssistant.answer(text, data);
+        LocalInsightService.answerFor(text, data);
 
     setState(() {
       _entries.add(
@@ -139,7 +140,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
               ),
               const SizedBox(height: 12),
               const Text(
-                'تعذر تحميل التحليل الذكي',
+                'Could not load smart analytics',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -149,7 +150,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
               const SizedBox(height: 6),
               Text(
                 widget.error ??
-                    'تحقق من الاتصال بالإنترنت وصلاحيات الحساب.',
+                    'Check the internet connection and account permissions.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
@@ -163,7 +164,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
                   widget.onRefresh();
                 },
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('إعادة المحاولة'),
+                label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: gmPrimary,
                   foregroundColor: Colors.white,
@@ -197,7 +198,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              widget.error ?? 'تعذر تحديث البيانات',
+              widget.error ?? 'Could not refresh the data',
               style: const TextStyle(
                 fontSize: 10.8,
                 color: Color(0xFFC62828),
@@ -209,7 +210,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
               widget.onRefresh();
             },
             child: const Text(
-              'تحديث',
+              'Refresh',
               style: TextStyle(fontSize: 11),
             ),
           ),
@@ -228,10 +229,10 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           const GmSectionTitle(
-            title: 'التحليل الذكي',
+            title: 'Smart analytics',
             icon: Icons.psychology,
             subtitle:
-                'قراءة تلقائية لبيانات الاستهلاك والمشرفين',
+                'Automatic reading of consumption and supervisor data',
           ),
           const SizedBox(height: 14),
           Wrap(
@@ -239,30 +240,30 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
             runSpacing: 8,
             children: <Widget>[
               GmPill(
-                label: '${value.closedCycleCount} دورة مغلقة',
+                label: '${value.closedCycleCount} closed cycles',
                 icon: Icons.loop,
               ),
               GmPill(
                 label:
-                    '${value.wellsNeedingReview.length} بئر للمراجعة',
+                    '${value.wellsNeedingReview.length} wells to review',
                 icon: Icons.warning_amber_rounded,
                 color: const Color(0xFFD32F2F),
               ),
               GmPill(
                 label:
-                    '${value.villagesRising.length} قرية مرتفعة',
+                    '${value.villagesRising.length} rising villages',
                 icon: Icons.trending_up,
                 color: const Color(0xFFEF6C00),
               ),
               GmPill(
                 label:
-                    '${value.wellsWithoutSupervisor.length} بدون مشرف',
+                    '${value.wellsWithoutSupervisor.length} without a supervisor',
                 icon: Icons.person_off,
                 color: const Color(0xFF6A1B9A),
               ),
               GmPill(
                 label:
-                    '${value.staleWells.length} بحاجة لمتابعة',
+                    '${value.staleWells.length} need follow-up',
                 icon: Icons.explore_outlined,
                 color: const Color(0xFF00838F),
               ),
@@ -270,9 +271,9 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
           ),
           const SizedBox(height: 12),
           Text(
-            'يقارن النظام استهلاك الشهر الحالي بالشهر الماضي '
-            'لكل بئر وقرية، وينبّه عند تجاوز الارتفاع 20% للقرى و30% للآبار، '
-            'ويعرض الآبار التي لا يوجد لها مشرف أو لا تملك دورة حديثة.',
+            'The system compares this month with the last for every well and '
+            'village, flags rises above 20% for villages and 30% for wells, '
+            'and lists wells with no supervisor or no recent cycle.',
             style: TextStyle(
               fontSize: 10.8,
               height: 1.6,
@@ -294,10 +295,10 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'تنبيهات ومؤشرات',
+            title: 'Alerts and indicators',
             icon: Icons.notifications_active,
             subtitle:
-                '${value.insights.length} ملاحظة من بيانات النظام',
+                '${value.insights.length} notes from your data',
           ),
           const SizedBox(height: 14),
           ...value.insights.map(
@@ -327,10 +328,10 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'المساعد الذكي',
+            title: 'Assistant',
             icon: Icons.auto_awesome,
             subtitle:
-                'اسأل عن الآبار والقرى والاستهلاك والمشرفين',
+                'Ask about wells, villages, consumption and supervisors',
             trailing: _entries.isEmpty
                 ? null
                 : TextButton(
@@ -347,7 +348,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
                           MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: const Text(
-                      'مسح',
+                      'Clear',
                       style: TextStyle(fontSize: 10.5),
                     ),
                   ),
@@ -372,8 +373,8 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'ابدأ بسؤال من الاقتراحات أدناه أو اكتب '
-                      'سؤالك عن بيانات الآبار والقرى.',
+                      'Start with a suggestion below, or type your own '
+                      'question about wells and villages.',
                       style: TextStyle(
                         fontSize: 11,
                         height: 1.5,
@@ -426,7 +427,7 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
                   },
                   style: const TextStyle(fontSize: 12),
                   decoration: InputDecoration(
-                    hintText: 'اكتب سؤالك هنا...',
+                    hintText: 'Type your question…',
                     hintStyle: TextStyle(
                       fontSize: 11.5,
                       color: Colors.grey.shade500,
@@ -470,9 +471,9 @@ class _GmAnalyticsViewState extends State<GmAnalyticsView> {
           ),
           const SizedBox(height: 8),
           Text(
-            'الإجابات تُحسب مباشرة من بيانات النظام '
-            '(${gmFormatNumber(value.wellCount)} بئر، '
-            '${gmFormatNumber(value.villageCount)} قرية).',
+            'Answers are computed straight from your data '
+            '(${gmFormatNumber(value.wellCount)} wells, '
+            '${gmFormatNumber(value.villageCount)} villages).',
             style: TextStyle(
               fontSize: 9,
               color: Colors.grey.shade500,

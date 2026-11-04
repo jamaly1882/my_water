@@ -91,7 +91,7 @@ class GmDashboardView extends StatelessWidget {
           const SizedBox(height: 20),
 
           Text(
-            'المصدر: بيانات Firestore المباشرة — نظام إدارة المياه',
+            'Source: live Firestore data — Azal Soft Platform',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 9.5,
@@ -128,7 +128,7 @@ class GmDashboardView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                'تعذر تحميل لوحة المؤشرات',
+                'Could not load the dashboard',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
@@ -139,7 +139,7 @@ class GmDashboardView extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 error ??
-                    'تحقق من الاتصال بالإنترنت وصلاحيات الحساب ثم حاول مرة أخرى.',
+                    'Check the internet connection and account permissions, then try again.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
@@ -153,7 +153,7 @@ class GmDashboardView extends StatelessWidget {
                   onRefresh();
                 },
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('إعادة المحاولة'),
+                label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: gmPrimary,
                   foregroundColor: Colors.white,
@@ -187,7 +187,7 @@ class GmDashboardView extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              error ?? 'تعذر تحديث البيانات',
+              error ?? 'Could not refresh the data',
               style: const TextStyle(
                 fontSize: 10.8,
                 color: Color(0xFFC62828),
@@ -199,7 +199,7 @@ class GmDashboardView extends StatelessWidget {
               onRefresh();
             },
             child: const Text(
-              'تحديث',
+              'Refresh',
               style: TextStyle(fontSize: 11),
             ),
           ),
@@ -226,7 +226,7 @@ class GmDashboardView extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'بعض البيانات لم تُحمّل: ${warnings.join('، ')}',
+              'Some data did not load: ${warnings.join('، ')}',
               style: TextStyle(
                 fontSize: 10.5,
                 height: 1.5,
@@ -289,7 +289,7 @@ class GmDashboardView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'لوحة المدير العام',
+                      'GM dashboard',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -298,7 +298,7 @@ class GmDashboardView extends StatelessWidget {
                     ),
                     SizedBox(height: 3),
                     Text(
-                      'نظرة شاملة على المحافظات والقرى والآبار',
+                      'Overview of governorates, villages and wells',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 10.5,
@@ -317,7 +317,7 @@ class GmDashboardView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
-                  'صلاحية كاملة',
+                  'Full access',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 9,
@@ -330,11 +330,11 @@ class GmDashboardView extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: <Widget>[
-              _heroStat('${value.wellCount}', 'بئر'),
+              _heroStat('${value.wellCount}', 'wells'),
               _heroDivider(),
-              _heroStat('${value.villageCount}', 'قرية'),
+              _heroStat('${value.villageCount}', 'villages'),
               _heroDivider(),
-              _heroStat('${value.supervisorCount}', 'مشرف'),
+              _heroStat('${value.supervisorCount}', 'supervisors'),
             ],
           ),
           const SizedBox(height: 16),
@@ -345,7 +345,7 @@ class GmDashboardView extends StatelessWidget {
                   onPressed: onOpenMap,
                   icon: const Icon(Icons.map_outlined, size: 17),
                   label: const Text(
-                    'الخريطة التفاعلية',
+                    'Interactive map',
                     style: TextStyle(fontSize: 11.5),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -367,7 +367,7 @@ class GmDashboardView extends StatelessWidget {
                   onPressed: onOpenAnalytics,
                   icon: const Icon(Icons.psychology, size: 17),
                   label: const Text(
-                    'التحليل الذكي',
+                    'Smart analytics',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.bold,
@@ -389,7 +389,7 @@ class GmDashboardView extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'آخر تحديث: ${gmFormatDateTime(value.generatedAt)}',
+            'Last updated: ${gmFormatDateTime(value.generatedAt)}',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.75),
               fontSize: 9.5,
@@ -446,46 +446,46 @@ class GmDashboardView extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       children: <Widget>[
         GmStatCard(
-          label: 'إجمالي الآبار',
+          label: 'Total wells',
           value: gmFormatNumber(value.wellCount),
           icon: Icons.water_drop,
           color: gmPrimary,
-          caption: '${value.activeWellCount} بئر باستهلاك',
+          caption: '${value.activeWellCount} wells with consumption',
         ),
         GmStatCard(
-          label: 'القرى المرتبطة',
+          label: 'Villages',
           value: gmFormatNumber(value.villageCount),
           icon: Icons.home_work,
           color: gmAccent,
-          caption: '${value.hamletCount} عزلة',
+          caption: '${value.hamletCount} sub-districts',
         ),
         GmStatCard(
-          label: 'المشرفون',
+          label: 'Supervisors',
           value: gmFormatNumber(value.supervisorCount),
           icon: Icons.supervisor_account,
           color: const Color(0xFF5E35B1),
-          caption: '${value.wellsWithoutSupervisor.length} بئر بدون مشرف',
+          caption: '${value.wellsWithoutSupervisor.length} wells without a supervisor',
         ),
         GmStatCard(
-          label: 'المشتركون',
+          label: 'Subscribers',
           value: gmFormatNumber(value.subscriberCount),
           icon: Icons.people_alt,
           color: const Color(0xFF00838F),
-          caption: '${value.linkedSubscriberCount} مرتبط ببئر',
+          caption: '${value.linkedSubscriberCount} linked to a well',
         ),
         GmStatCard(
-          label: 'إجمالي الاستهلاك',
-          value: '${gmFormatNumber(value.totalConsumption)} م³',
+          label: 'Total consumption',
+          value: '${gmFormatNumber(value.totalConsumption)} m³',
           icon: Icons.opacity,
           color: const Color(0xFF0277BD),
-          caption: '${value.closedCycleCount} دورة مغلقة',
+          caption: '${value.closedCycleCount} closed cycles',
         ),
         GmStatCard(
-          label: 'استهلاك هذا الشهر',
-          value: '${gmFormatNumber(value.currentMonthConsumption)} م³',
+          label: 'Consumption this month',
+          value: '${gmFormatNumber(value.currentMonthConsumption)} m³',
           icon: Icons.calendar_month,
           color: const Color(0xFFEF6C00),
-          caption: 'مقارنة بالفترة السابقة',
+          caption: 'vs. previous period',
         ),
       ],
     );
@@ -501,9 +501,9 @@ class GmDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'الاستهلاك بين الفترات',
+            title: 'Consumption over time',
             icon: Icons.show_chart,
-            subtitle: 'آخر ستة أشهر',
+            subtitle: 'Last six months',
             trailing: GmChangeBadge(
               percent: value.overallChangePercent,
               showZero: true,
@@ -514,7 +514,7 @@ class GmDashboardView extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _periodBox(
-                  'هذا الشهر',
+                  'This month',
                   value.currentMonthConsumption,
                   gmPrimary,
                 ),
@@ -522,7 +522,7 @@ class GmDashboardView extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _periodBox(
-                  'الشهر الماضي',
+                  'Last month',
                   value.previousMonthConsumption,
                   Colors.blueGrey,
                 ),
@@ -543,7 +543,7 @@ class GmDashboardView extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'يُحسب الاستهلاك من الدورات المغلقة حسب تاريخ نهاية الدورة أو إغلاقها.',
+            'Consumption is computed from closed cycles, by end or close date.',
             style: TextStyle(
               fontSize: 9.5,
               color: Colors.grey.shade500,
@@ -583,7 +583,7 @@ class GmDashboardView extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              '${gmFormatNumber(value)} م³',
+              '${gmFormatNumber(value)} m³',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -613,17 +613,17 @@ class GmDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'تحليل الاستهلاك حسب القرية',
+            title: 'Consumption by village',
             icon: Icons.home_work,
             subtitle: villages.isEmpty
-                ? 'لا توجد قرى مسجلة'
-                : 'أعلى ${villages.length} قرى في الاستهلاك',
+                ? 'No villages registered'
+                : 'Top ${villages.length} villages by consumption',
           ),
           const SizedBox(height: 14),
           if (villages.isEmpty)
             const GmEmptyState(
-              title: 'لا توجد قرى',
-              message: 'أضف القرى من تهيئة البيانات لتظهر هنا.',
+              title: 'No villages',
+              message: 'Add villages in Setup to see them here.',
               icon: Icons.home_outlined,
             )
           else
@@ -632,7 +632,7 @@ class GmDashboardView extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: GmProgressBar(
                   label: village.name,
-                  value: '${gmFormatNumber(village.consumption)} م³',
+                  value: '${gmFormatNumber(village.consumption)} m³',
                   ratio: maxValue <= 0
                       ? 0
                       : village.consumption / maxValue,
@@ -641,7 +641,7 @@ class GmDashboardView extends StatelessWidget {
                     percent: village.changePercentOrNull,
                   ),
                   caption:
-                      '${village.wellCount} آبار • ${gmFormatNumber(village.subscribers)} مشترك',
+                      '${village.wellCount} wells • ${gmFormatNumber(village.subscribers)} subscribers',
                 ),
               ),
             ),
@@ -652,7 +652,7 @@ class GmDashboardView extends StatelessWidget {
               onPressed: onOpenMap,
               icon: const Icon(Icons.map_outlined, size: 17),
               label: const Text(
-                'عرض القرى على الخريطة',
+                'Show villages on the map',
                 style: TextStyle(fontSize: 11.5),
               ),
               style: OutlinedButton.styleFrom(
@@ -685,17 +685,17 @@ class GmDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'استهلاك الآبار',
+            title: 'Consumption by well',
             icon: Icons.water_drop,
             subtitle: wells.isEmpty
-                ? 'لا توجد آبار مسجلة'
-                : 'أعلى ${wells.length} آبار في الاستهلاك',
+                ? 'No wells registered'
+                : 'Top ${wells.length} wells by consumption',
           ),
           const SizedBox(height: 14),
           if (wells.isEmpty)
             const GmEmptyState(
-              title: 'لا توجد آبار',
-              message: 'أضف الآبار من تهيئة البيانات لتظهر هنا.',
+              title: 'No wells',
+              message: 'Add wells in Setup to see them here.',
               icon: Icons.water_drop_outlined,
             )
           else
@@ -704,14 +704,14 @@ class GmDashboardView extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: GmProgressBar(
                   label: well.name,
-                  value: '${gmFormatNumber(well.consumption)} م³',
+                  value: '${gmFormatNumber(well.consumption)} m³',
                   ratio: maxValue <= 0
                       ? 0
                       : well.consumption / maxValue,
                   color: gmPrimary,
                   badge: well.needsReview
                       ? const GmPill(
-                          label: 'مراجعة',
+                          label: 'Review',
                           color: Color(0xFFD32F2F),
                           icon: Icons.warning_amber_rounded,
                         )
@@ -720,7 +720,7 @@ class GmDashboardView extends StatelessWidget {
                         ),
                   caption:
                       '${well.villageName.isEmpty ? well.provinceName : well.villageName} • '
-                      'المشرف: ${well.hasSupervisor ? well.supervisorName : 'غير مرتبط'}',
+                      'Supervisor: ${well.hasSupervisor ? well.supervisorName : 'غير مرتبط'}',
                 ),
               ),
             ),
@@ -730,7 +730,7 @@ class GmDashboardView extends StatelessWidget {
   }
 
   // ==========================================================
-  // المشرفون والآبار
+  // الSupervisors والآبار
   // ==========================================================
 
   Widget _supervisorsCard(GmDashboardData value) {
@@ -742,10 +742,10 @@ class GmDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'المشرفون والآبار',
+            title: 'Supervisors and wells',
             icon: Icons.supervisor_account,
             subtitle:
-                'كل مشرف يدير بئره فقط، وتظهر بياناته في الإحصائيات المركزية',
+                'Each supervisor runs their own well; their numbers roll up here.',
             trailing: GmPill(
               label: '${supervisors.length}',
               icon: Icons.people_alt,
@@ -754,9 +754,9 @@ class GmDashboardView extends StatelessWidget {
           const SizedBox(height: 14),
           if (supervisors.isEmpty)
             const GmEmptyState(
-              title: 'لا يوجد مشرفون',
+              title: 'No supervisors',
               message:
-                  'أضف المشرفين من تهيئة البيانات واربط كل مشرف ببئر.',
+                  'Add supervisors in Setup and link each one to a well.',
               icon: Icons.person_off,
             )
           else
@@ -767,7 +767,7 @@ class GmDashboardView extends StatelessWidget {
           if (supervisors.length > 5) ...<Widget>[
             const SizedBox(height: 2),
             Text(
-              'و${supervisors.length - 5} مشرفين آخرين...',
+              'and ${supervisors.length - 5} more supervisors…',
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey.shade500,
@@ -784,7 +784,7 @@ class GmDashboardView extends StatelessWidget {
                 size: 17,
               ),
               label: const Text(
-                'إدارة المشرفين',
+                'Manage supervisors',
                 style: TextStyle(fontSize: 11.5),
               ),
               style: OutlinedButton.styleFrom(
@@ -805,9 +805,9 @@ class GmDashboardView extends StatelessWidget {
   Widget _supervisorRow(GmSupervisorData supervisor) {
     final String subtitle = supervisor.hasWell
         ? (supervisor.locationLabel.isEmpty
-            ? 'البئر: ${supervisor.wellName}'
-            : 'البئر: ${supervisor.wellName} • ${supervisor.locationLabel}')
-        : 'غير مرتبط ببئر';
+            ? 'Well: ${supervisor.wellName}'
+            : 'Well: ${supervisor.wellName} • ${supervisor.locationLabel}')
+        : 'Not linked to a well';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -861,7 +861,7 @@ class GmDashboardView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               Text(
-                '${gmFormatNumber(supervisor.currentMonthConsumption)} م³',
+                '${gmFormatNumber(supervisor.currentMonthConsumption)} m³',
                 style: const TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.bold,
@@ -870,7 +870,7 @@ class GmDashboardView extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'هذا الشهر',
+                'This month',
                 style: TextStyle(
                   fontSize: 8.5,
                   color: Colors.grey.shade500,
@@ -893,9 +893,9 @@ class GmDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GmSectionTitle(
-            title: 'التنبيهات الذكية',
+            title: 'Smart alerts',
             icon: Icons.notifications_active,
-            subtitle: 'تحليل تلقائي لبيانات النظام',
+            subtitle: 'Automatic analysis of your data',
             trailing: TextButton(
               onPressed: onOpenAnalytics,
               style: TextButton.styleFrom(
@@ -905,7 +905,7 @@ class GmDashboardView extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: const Text(
-                'الكل',
+                'All',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -937,10 +937,10 @@ class GmDashboardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           const GmSectionTitle(
-            title: 'هيكل التهيئة',
+            title: 'Setup structure',
             icon: Icons.account_tree,
             subtitle:
-                'المحافظات ← المديريات ← العُزل ← القرى ← الآبار',
+                'Governorates → Districts → Sub-districts → Villages → Wells',
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -948,31 +948,31 @@ class GmDashboardView extends StatelessWidget {
             runSpacing: 8,
             children: <Widget>[
               GmPill(
-                label: 'محافظات ${value.provinceCount}',
+                label: 'Governorates ${value.provinceCount}',
                 icon: Icons.location_city,
               ),
               GmPill(
-                label: 'مديريات ${value.districtCount}',
+                label: 'Districts ${value.districtCount}',
                 icon: Icons.map,
                 color: gmAccent,
               ),
               GmPill(
-                label: 'عُزل ${value.hamletCount}',
+                label: 'Sub-districts ${value.hamletCount}',
                 icon: Icons.home_work,
                 color: const Color(0xFF5E35B1),
               ),
               GmPill(
-                label: 'قرى ${value.villageCount}',
+                label: 'Villages ${value.villageCount}',
                 icon: Icons.home,
                 color: const Color(0xFF00838F),
               ),
               GmPill(
-                label: 'آبار ${value.wellCount}',
+                label: 'Wells ${value.wellCount}',
                 icon: Icons.water_drop,
                 color: const Color(0xFF0277BD),
               ),
               GmPill(
-                label: 'مشرفون ${value.supervisorCount}',
+                label: 'Supervisors ${value.supervisorCount}',
                 icon: Icons.supervisor_account,
                 color: const Color(0xFF6A1B9A),
               ),
@@ -985,7 +985,7 @@ class GmDashboardView extends StatelessWidget {
               onPressed: onOpenSetup,
               icon: const Icon(Icons.tune, size: 18),
               label: const Text(
-                'إدارة التهيئة والمشرفين',
+                'Setup and supervisors',
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.bold,
