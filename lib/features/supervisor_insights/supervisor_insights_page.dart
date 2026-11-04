@@ -1,7 +1,7 @@
 // ============================================================
 // supervisor_insights_page.dart
-// شاشة «التحليل الذكي للمشرفين» — بطاقة لكل مشرف بئر،
-// بدرجة من 100، وقراءة نصية، ومخاطر، وخطوات مقترحة.
+// شاشة «التحليل الذكي للsupervisorsين» — بطاقة لكل supervisors بئر،
+// بدرجة من 100، وقراءة نصية، ومخاطر، وSuggested steps.
 //
 // التحليل محلي بالكامل: لا يستدعي أي خدمة خارجية.
 // ============================================================
@@ -61,7 +61,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
 
       setState(() {
         _loading = false;
-        _error = 'تعذّر تحميل بيانات المشرفين: $error';
+        _error = 'Could not load the supervisor data: $error';
       });
     }
   }
@@ -123,7 +123,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
           icon: Icons.insights,
           actions: <Widget>[
             IconButton(
-              tooltip: 'تحديث',
+              tooltip: 'Refresh',
               onPressed: _loading ? null : _load,
               icon: const Icon(Icons.refresh),
             ),
@@ -167,7 +167,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
             FilledButton.icon(
               onPressed: _load,
               icon: const Icon(Icons.refresh),
-              label: const Text('إعادة المحاولة'),
+              label: const Text('Retry'),
             ),
           ],
         ),
@@ -217,7 +217,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  'قراءة الأداء الميداني',
+                  'Field performance',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -237,7 +237,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'متوسط الدرجات لجميع المشرفين',
+            'Average score across all supervisors',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.8),
               fontSize: 11.5,
@@ -248,28 +248,28 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
             children: <Widget>[
               _summaryChip(
                 '${result.supervisorCount}',
-                'مشرف',
+                'supervisors',
                 Icons.person_outline,
               ),
               const SizedBox(width: 8),
               _summaryChip(
                 '${result.needsFollowUp}',
-                'يحتاج متابعة',
+                'Needs follow-up',
                 Icons.flag_outlined,
               ),
               const SizedBox(width: 8),
               _summaryChip(
                 '${result.withoutCycles}',
-                'بلا دورات',
+                'No cycles',
                 Icons.hourglass_empty,
               ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            'التحليل مبني على نشاط الدورات، والانتظام، والتغطية، '
-            'وجودة البيانات — لا على انطباع. '
-            'آخر تحديث ${_formatDate(result.generatedAt)}.',
+            'The analysis rests on cycle activity, regularity, coverage '
+            'and data quality — not on impressions. '
+            'Last updated ${_formatDate(result.generatedAt)}.',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.75),
               fontSize: 10.5,
@@ -349,10 +349,10 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
 
   Widget _buildFilters() {
     final List<List<String>> options = <List<String>>[
-      <String>['all', 'الكل'],
-      <String>['follow', 'يحتاج متابعة'],
-      <String>['noCycles', 'بلا دورات'],
-      <String>['great', 'متميز'],
+      <String>['all', 'All'],
+      <String>['follow', 'Needs follow-up'],
+      <String>['noCycles', 'No cycles'],
+      <String>['great', 'Excellent'],
     ];
 
     return SingleChildScrollView(
@@ -404,7 +404,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
           ),
           const SizedBox(height: 10),
           const Text(
-            'لا يوجد مشرف مطابق لهذا الفلتر.',
+            'No supervisor matches this filter.',
             style: TextStyle(fontSize: 13, color: _dark),
           ),
         ],
@@ -413,7 +413,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
   }
 
   // ----------------------------------------------------------
-  // بطاقة المشرف
+  // بطاقة الsupervisors
   // ----------------------------------------------------------
 
   Widget _buildCard(SupervisorScore score) {
@@ -472,7 +472,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
                           kpi.hasWell
                               ? '${kpi.wellName.isEmpty ? 'بئر بلا اسم' : kpi.wellName}'
                                   '${kpi.locationLabel.isEmpty ? '' : ' · ${kpi.locationLabel}'}'
-                              : 'غير مرتبط ببئر',
+                              : 'Not linked to a well',
                           style: TextStyle(
                             fontSize: 11,
                             color: _dark.withValues(alpha: 0.55),
@@ -515,21 +515,21 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
                 children: <Widget>[
                   _metric(
                     '${kpi.subscribers}',
-                    'مشترك',
+                    'subscribers',
                   ),
                   const SizedBox(width: 14),
                   _metric(
                     '${kpi.closedCycles}',
-                    'دورة مغلقة',
+                    'closed cycles',
                   ),
                   const SizedBox(width: 14),
                   _metric(
                     '${_formatNumber(kpi.consumption)}',
-                    'م³',
+                    'm³',
                   ),
                   const Spacer(),
                   Text(
-                    'آخر دورة: ${_formatDate(kpi.lastCycleDate)}',
+                    'Last cycle: ${_formatDate(kpi.lastCycleDate)}',
                     style: TextStyle(
                       fontSize: 10,
                       color: _dark.withValues(alpha: 0.5),
@@ -662,21 +662,21 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
                     _breakdown(score),
                     const SizedBox(height: 12),
                     _section(
-                      'المؤشرات',
+                      'Metrics',
                       <String>[
-                        'البئر: ${score.kpi.wellName.isEmpty ? '—' : score.kpi.wellName}',
-                        'المشتركون: ${score.kpi.subscribers}',
-                        'الدورات المغلقة: ${score.kpi.closedCycles}',
-                        'دورات آخر 90 يوماً: ${score.kpi.cyclesLast90}',
-                        'إجمالي الاستهلاك: ${_formatNumber(score.kpi.consumption)} م³',
-                        'آخر دورة: ${_formatDate(score.kpi.lastCycleDate)} '
+                        'Well: ${score.kpi.wellName.isEmpty ? '—' : score.kpi.wellName}',
+                        'Subscribers: ${score.kpi.subscribers}',
+                        'Closed cycles: ${score.kpi.closedCycles}',
+                        'Cycles in the last 90 days: ${score.kpi.cyclesLast90}',
+                        'Total consumption: ${_formatNumber(score.kpi.consumption)} m³',
+                        'Last cycle: ${_formatDate(score.kpi.lastCycleDate)} '
                             '(${score.kpi.daysSinceLastCycle == null ? 'بلا تاريخ' : 'قبل ${score.kpi.daysSinceLastCycle} يوماً'})',
-                        'الهاتف: ${score.kpi.hasPhone ? score.kpi.phone : 'غير مسجّل'}',
+                        'Phone: ${score.kpi.hasPhone ? score.kpi.phone : 'غير مسجّل'}',
                       ],
                     ),
-                    _section('نقاط القوة', score.strengths),
-                    _section('المخاطر', score.risks),
-                    _section('خطوات مقترحة', score.actions),
+                    _section('Strengths', score.strengths),
+                    _section('Risks', score.risks),
+                    _section('Suggested steps', score.actions),
                   ],
                 ),
               ),
@@ -684,7 +684,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('إغلاق'),
+                child: const Text('Close'),
               ),
             ],
           ),
@@ -695,10 +695,10 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
 
   Widget _breakdown(SupervisorScore score) {
     final List<List<dynamic>> rows = <List<dynamic>>[
-      <dynamic>['النشاط', score.activity, 30],
-      <dynamic>['الانتظام', score.regularity, 25],
-      <dynamic>['التغطية', score.coverage, 25],
-      <dynamic>['جودة البيانات', score.dataQuality, 20],
+      <dynamic>['Activity', score.activity, 30],
+      <dynamic>['Regularity', score.regularity, 25],
+      <dynamic>['Coverage', score.coverage, 25],
+      <dynamic>['Data quality', score.dataQuality, 20],
     ];
 
     return Column(
