@@ -10,6 +10,7 @@ import 'screens/payment_voucher_screen.dart';
 import 'screens/set_up_mshrf/setup_mshrf_screen.dart';
 
 import 'features/ai_agent/ai_agent_page.dart';
+import 'features/challenge_brief/challenge_brief_page.dart';
 import 'widgets/my_app_bar.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -167,6 +168,17 @@ class HomeScreen extends StatelessWidget {
                   wellId: wellId,
                   wellName: wellName,
                 ),
+              ),
+
+              // ==============================================
+              // ملف تحدي المياه - AYC Youth Pitches
+              // ==============================================
+              _menuCard(
+                context,
+                title: 'ملف تحدي المياه',
+                icon: Icons.assignment_outlined,
+                color: Colors.cyan.shade700,
+                page: const ChallengeBriefPage(),
               ),
 
               // ==============================================
