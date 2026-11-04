@@ -31,17 +31,17 @@ class _HamletsScreenState extends State<HamletsScreen> {
     final name = hamletController.text.trim();
 
     if (provinceId == null) {
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return;
     }
 
     if (districtId == null) {
-      showMessage("اختر المديرية");
+      showMessage("Choose district");
       return;
     }
 
     if (name.isEmpty) {
-      showMessage("اكتب اسم العزلة");
+      showMessage("Enter the sub-district name");
       return;
     }
 
@@ -70,7 +70,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
         loading = false;
       });
 
-      showMessage("تمت إضافة العزلة بنجاح");
+      showMessage("Sub-district added");
     } catch (e) {
       if (!mounted) return;
 
@@ -170,7 +170,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
 
         if (docs.isEmpty) {
           return const Text(
-            "لا توجد محافظات",
+            "No governorates yet",
             style: TextStyle(
               color: Colors.red,
             ),
@@ -181,7 +181,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
           value: provinceId,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: "اختر المحافظة",
+            labelText: "Choose governorate",
             border: OutlineInputBorder(),
             prefixIcon: Icon(
               Icons.location_on,
@@ -224,7 +224,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
               "================================",
             );
             debugPrint(
-              "تم اختيار المحافظة",
+              "Governorate selected",
             );
             debugPrint(
               "provinceId = $provinceId",
@@ -278,13 +278,13 @@ class _HamletsScreenState extends State<HamletsScreen> {
           "================================",
         );
         debugPrint(
-          "تحميل المديريات",
+          "Loading districts",
         );
         debugPrint(
           "provinceId = $provinceId",
         );
         debugPrint(
-          "عدد المديريات = ${docs.length}",
+          "districts = ${docs.length}",
         );
         debugPrint(
           "================================",
@@ -324,7 +324,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
               : null,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: "اختر المديرية",
+            labelText: "Choose district",
             border: OutlineInputBorder(),
             prefixIcon: Icon(
               Icons.location_city,
@@ -359,7 +359,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
             });
 
             debugPrint(
-              "تم اختيار المديرية",
+              "District selected",
             );
             debugPrint(
               "districtId = $districtId",
@@ -382,8 +382,8 @@ class _HamletsScreenState extends State<HamletsScreen> {
       controller: hamletController,
       textDirection: TextDirection.rtl,
       decoration: const InputDecoration(
-        labelText: "اسم العزلة",
-        hintText: "مثال: عزلة بني فلان",
+        labelText: "Sub-district name",
+        hintText: "e.g. Bani Fulan",
         border: OutlineInputBorder(),
         prefixIcon: Icon(
           Icons.home_work,
@@ -417,8 +417,8 @@ class _HamletsScreenState extends State<HamletsScreen> {
             : const Icon(Icons.save),
         label: Text(
           loading
-              ? "جاري الحفظ..."
-              : "إضافة العزلة",
+              ? "Saving…"
+              : "Add sub-district",
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -467,7 +467,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
         if (docs.isEmpty) {
           return const Center(
             child: Text(
-              "لا توجد عزل مسجلة",
+              "No sub-districts registered",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
@@ -572,7 +572,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "تهيئة العزل",
+            "Sub-district setup",
           ),
           centerTitle: true,
           backgroundColor: Colors.blue,
@@ -628,7 +628,7 @@ class _HamletsScreenState extends State<HamletsScreen> {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      "العزل المسجلة",
+                      "Registered sub-districts",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight:

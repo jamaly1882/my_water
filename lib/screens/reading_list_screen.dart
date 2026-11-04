@@ -91,7 +91,7 @@ class _ReadingListScreenState
         "======================================",
       );
 
-      debugPrint("تحميل الأدوار المفتوحة");
+      debugPrint("Loading open cycles");
 
       debugPrint(
         "supervisorId = ${widget.supervisorId}",
@@ -202,7 +202,7 @@ class _ReadingListScreenState
 
       query = query.where(
         "status",
-        isEqualTo: "مفتوح",
+        isEqualTo: "Open",
       );
 
       // ========================================================
@@ -213,7 +213,7 @@ class _ReadingListScreenState
           await query.get();
 
       debugPrint(
-        "عدد النتائج: ${result.docs.length}",
+        "Results: ${result.docs.length}",
       );
 
       final List<Map<String, dynamic>> temp = [];
@@ -256,7 +256,7 @@ class _ReadingListScreenState
               data["customerId"] ?? "",
 
           "customerName":
-              data["customerName"] ?? "غير معروف",
+              data["customerName"] ?? "Unknown",
 
           "customerPhone":
               data["customerPhone"] ?? "",
@@ -448,7 +448,7 @@ class _ReadingListScreenState
 
               children: [
                 const Text(
-                  "إدخال القراءة الحالية",
+                  "Enter the current reading",
 
                   style: TextStyle(
                     color: Colors.white,
@@ -462,8 +462,8 @@ class _ReadingListScreenState
                 Text(
                   widget.wellName == null ||
                           widget.wellName!.trim().isEmpty
-                      ? "جميع الأدوار المفتوحة"
-                      : "البئر: ${widget.wellName}",
+                      ? "All open cycles"
+                      : "Well: ${widget.wellName}",
 
                   style: const TextStyle(
                     color: Colors.white70,
@@ -556,7 +556,7 @@ class _ReadingListScreenState
 
                     children: [
                       Text(
-                        "البئر: ${widget.wellName ?? "غير محدد"}",
+                        "Well: ${widget.wellName ?? "غير محدد"}",
 
                         style: const TextStyle(
                           fontSize: 17,
@@ -567,7 +567,7 @@ class _ReadingListScreenState
                       const SizedBox(height: 4),
 
                       Text(
-                        "القرية: ${widget.villageName ?? "غير محددة"}",
+                        "Village: ${widget.villageName ?? "غير محددة"}",
 
                         style: TextStyle(
                           color: Colors.grey.shade700,
@@ -582,7 +582,7 @@ class _ReadingListScreenState
                 // =================================================
 
                 IconButton(
-                  tooltip: "تحديث",
+                  tooltip: "Refresh",
 
                   onPressed:
                       loading ? null : loadOpenCycles,
@@ -661,7 +661,7 @@ class _ReadingListScreenState
                 const SizedBox(width: 7),
 
                 Text(
-                  "الأدوار المفتوحة: ${cycles.length}",
+                  "Open cycles: ${cycles.length}",
 
                   style: TextStyle(
                     color: Colors.green.shade700,
@@ -816,7 +816,7 @@ class _ReadingListScreenState
 
                         Text(
                           customerPhone.isEmpty
-                              ? "لا يوجد هاتف"
+                              ? "No phone"
                               : customerPhone,
 
                           style: TextStyle(
@@ -862,7 +862,7 @@ class _ReadingListScreenState
                 children: [
                   Expanded(
                     child: _readingBox(
-                      "القراءة السابقة",
+                      "Previous reading",
                       previousReading,
                       Icons.history,
                       Colors.orange,
@@ -873,9 +873,9 @@ class _ReadingListScreenState
 
                   Expanded(
                     child: _readingBox(
-                      "القراءة الحالية",
+                      "Current reading",
                       currentReading == "0"
-                          ? "لم تدخل"
+                          ? "Not entered"
                           : currentReading,
                       Icons.speed,
                       currentReading == "0"
@@ -900,7 +900,7 @@ class _ReadingListScreenState
                     const SizedBox(width: 6),
 
                     Text(
-                      "الاستخدام: $waterUsage",
+                      "Usage: $waterUsage",
 
                       style: const TextStyle(
                         fontSize: 13,
@@ -943,7 +943,7 @@ class _ReadingListScreenState
                   ),
 
                   label: const Text(
-                    "إدخال القراءة الحالية",
+                    "Enter the current reading",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -1068,7 +1068,7 @@ class _ReadingListScreenState
         columns: const [
           DataColumn(
             label: Text(
-              "الدور",
+              "Cycle",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -1077,7 +1077,7 @@ class _ReadingListScreenState
 
           DataColumn(
             label: Text(
-              "الزبون",
+              "Subscriber",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -1086,7 +1086,7 @@ class _ReadingListScreenState
 
           DataColumn(
             label: Text(
-              "الهاتف",
+              "Phone",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -1095,7 +1095,7 @@ class _ReadingListScreenState
 
           DataColumn(
             label: Text(
-              "السابقة",
+              "Previous",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -1104,7 +1104,7 @@ class _ReadingListScreenState
 
           DataColumn(
             label: Text(
-              "الحالية",
+              "Current",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -1113,7 +1113,7 @@ class _ReadingListScreenState
 
           DataColumn(
             label: Text(
-              "القراءة",
+              "Reading",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
@@ -1162,7 +1162,7 @@ class _ReadingListScreenState
                 DataCell(
                   IconButton(
                     tooltip:
-                        "إدخال القراءة الحالية",
+                        "Enter the current reading",
 
                     icon: const Icon(
                       Icons.edit,
@@ -1238,7 +1238,7 @@ class _ReadingListScreenState
 
           const Center(
             child: Text(
-              "لا توجد أدوار مفتوحة لهذا البئر",
+              "No open cycles on this well",
 
               style: TextStyle(
                 fontSize: 18,
@@ -1252,7 +1252,7 @@ class _ReadingListScreenState
 
           const Center(
             child: Text(
-              "اسحب للأسفل لتحديث البيانات",
+              "Pull down to refresh",
 
               style: TextStyle(
                 color: Colors.grey,
@@ -1279,7 +1279,7 @@ class _ReadingListScreenState
         // ========================================================
 
         appBar: const MyAppBar(
-          title: "القراءات الحالية",
+          title: "Current readings",
         ),
 
         // ========================================================

@@ -23,8 +23,8 @@ class _CloseCycleScreenState
 
   final List<String> cycles = [
 
-    "دور شهر 7 - 2026",
-    "دور شهر 8 - 2026",
+    "July 2026 cycle",
+    "August 2026 cycle",
 
   ];
 
@@ -54,14 +54,14 @@ class _CloseCycleScreenState
 
           title:
           const Text(
-              "تأكيد إغلاق الدور"
+              "Confirm closing the cycle"
           ),
 
 
           content:
           const Text(
 
-              "بعد إغلاق الدور لن يمكن تعديل القراءات والفواتير"
+              "Once closed, readings and invoices can no longer be edited"
 
           ),
 
@@ -80,7 +80,7 @@ class _CloseCycleScreenState
 
               child:
               const Text(
-                  "إلغاء"
+                  "Cancel"
               ),
 
             ),
@@ -102,7 +102,7 @@ class _CloseCycleScreenState
 
                     content:
                     Text(
-                        "تم إغلاق الدور بنجاح"
+                        "Cycle closed"
                     ),
 
                   ),
@@ -115,7 +115,7 @@ class _CloseCycleScreenState
 
               child:
               const Text(
-                  "إغلاق"
+                  "Close"
               ),
 
             ),
@@ -156,7 +156,7 @@ class _CloseCycleScreenState
 
           title:
           const Text(
-              "إغلاق الدور"
+              "Close cycle"
           ),
 
           centerTitle:true,
@@ -190,7 +190,7 @@ class _CloseCycleScreenState
                 const InputDecoration(
 
                   labelText:
-                  "اختيار الدور",
+                  "Choose the cycle",
 
                   border:
                   OutlineInputBorder(),
@@ -252,7 +252,7 @@ class _CloseCycleScreenState
 
                   title:
                   const Text(
-                      "عدد القراءات"
+                      "Readings"
                   ),
 
                   trailing:
@@ -286,7 +286,7 @@ class _CloseCycleScreenState
 
                   title:
                   const Text(
-                      "عدد الفواتير"
+                      "Invoices"
                   ),
 
 
@@ -316,7 +316,7 @@ class _CloseCycleScreenState
 
                   title:
                   const Text(
-                      "إجمالي الفواتير"
+                      "Invoice total"
                   ),
 
 
@@ -371,7 +371,7 @@ class _CloseCycleScreenState
 
                   label:
                   const Text(
-                      "إغلاق الدور"
+                      "Close cycle"
                   ),
 
 

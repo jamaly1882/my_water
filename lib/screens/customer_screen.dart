@@ -243,7 +243,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
         if (docs.isEmpty) {
           return _warningBox(
-            'لا توجد أنواع استخدام مياه مسجلة',
+            'No water usage types are registered',
           );
         }
 
@@ -265,7 +265,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
           decoration:
               InputDecoration(
             labelText:
-                'نوع استخدام المياه',
+                'Water usage type',
             prefixIcon:
                 const Icon(
               Icons.water_drop,
@@ -471,7 +471,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
             .trim()
             .isEmpty) {
       return _errorBox(
-        'لم يتم تحديد قرية المشرف',
+        'The supervisor village is not set',
       );
     }
 
@@ -508,7 +508,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       .start,
               children: [
                 const Text(
-                  'قرية المشرف',
+                  'Supervisor village',
                   style: TextStyle(
                     fontSize: 13,
                     color:
@@ -523,7 +523,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                               null ||
                           villageName
                               .isEmpty
-                      ? 'غير محددة'
+                      ? 'Not set'
                       : villageName,
                   style:
                       const TextStyle(
@@ -581,7 +581,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 width: 8,
               ),
               Text(
-                'معلومات الموقع',
+                'Location',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight:
@@ -596,19 +596,19 @@ class _CustomerScreenState extends State<CustomerScreen> {
             height: 10,
           ),
           _locationRow(
-            'المحافظة',
+            'Governorate',
             widget.provinceName,
           ),
           _locationRow(
-            'المديرية',
+            'District',
             widget.districtName,
           ),
           _locationRow(
-            'العزلة',
+            'Sub-district',
             widget.hamletName,
           ),
           _locationRow(
-            'القرية',
+            'Village',
             widget.villageName,
           ),
         ],
@@ -627,7 +627,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     final text =
         value == null ||
                 value.trim().isEmpty
-            ? 'غير محدد'
+            ? 'Not set'
             : value;
 
     return Padding(
@@ -772,7 +772,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
         .trim()
         .isEmpty) {
       message(
-        'لم يتم تحديد المشرف',
+        'The supervisor is not set',
         color: Colors.orange,
       );
       return;
@@ -784,7 +784,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
             .trim()
             .isEmpty) {
       message(
-        'لم يتم تحديد قرية المشرف',
+        'The supervisor village is not set',
         color: Colors.orange,
       );
       return;
@@ -792,7 +792,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
     if (name.isEmpty) {
       message(
-        'أدخل اسم الزبون',
+        'Enter the subscriber name',
         color: Colors.orange,
       );
       return;
@@ -800,7 +800,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
     if (phone.isEmpty) {
       message(
-        'أدخل رقم الهاتف',
+        'Enter the phone number',
         color: Colors.orange,
       );
       return;
@@ -812,7 +812,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
             .trim()
             .isEmpty) {
       message(
-        'اختر نوع استخدام المياه',
+        'Choose the water usage type',
         color: Colors.orange,
       );
       return;
@@ -840,7 +840,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
       if (exists) {
         message(
-          'رقم الهاتف موجود مسبقاً',
+          'That phone number already exists',
           color: Colors.orange,
         );
         return;
@@ -992,7 +992,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
       // ========================================================
 
       message(
-        'تم إضافة الزبون بنجاح',
+        'Subscriber added',
         color: Colors.green,
       );
 
@@ -1030,7 +1030,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     if (selectedCustomerId ==
         null) {
       message(
-        'اختر زبوناً من القائمة أولاً',
+        'Choose a subscriber from the list first',
         color: Colors.orange,
       );
       return;
@@ -1047,7 +1047,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
     if (name.isEmpty) {
       message(
-        'أدخل اسم الزبون',
+        'Enter the subscriber name',
         color: Colors.orange,
       );
       return;
@@ -1055,7 +1055,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
     if (phone.isEmpty) {
       message(
-        'أدخل رقم الهاتف',
+        'Enter the phone number',
         color: Colors.orange,
       );
       return;
@@ -1067,7 +1067,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
             .trim()
             .isEmpty) {
       message(
-        'اختر نوع استخدام المياه',
+        'Choose the water usage type',
         color: Colors.orange,
       );
       return;
@@ -1087,7 +1087,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
       if (exists) {
         message(
-          'رقم الهاتف مستخدم لزبون آخر',
+          'That phone number belongs to another subscriber',
           color: Colors.orange,
         );
         return;
@@ -1114,7 +1114,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
       });
 
       message(
-        'تم تعديل بيانات الزبون بنجاح',
+        'Subscriber updated',
         color: Colors.green,
       );
 
@@ -1144,7 +1144,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     if (selectedCustomerId ==
         null) {
       message(
-        'اختر زبوناً من القائمة أولاً',
+        'Choose a subscriber from the list first',
         color: Colors.orange,
       );
       return;
@@ -1173,13 +1173,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   width: 8,
                 ),
                 Text(
-                  'تأكيد الحذف',
+                  'Confirm delete',
                 ),
               ],
             ),
             content:
                 const Text(
-              'هل تريد حذف الزبون المحدد؟',
+              'Delete the selected subscriber?',
             ),
             actions: [
               TextButton(
@@ -1191,7 +1191,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 },
                 child:
                     const Text(
-                  'إلغاء',
+                  'Cancel',
                   style:
                       TextStyle(
                     color:
@@ -1221,7 +1221,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 ),
                 label:
                     const Text(
-                  'حذف',
+                  'Delete',
                 ),
               ),
             ],
@@ -1250,7 +1250,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
           .delete();
 
       message(
-        'تم حذف الزبون بنجاح',
+        'Subscriber deleted',
         color: Colors.green,
       );
 
@@ -1397,7 +1397,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   height: 8,
                 ),
                 Text(
-                  'لا توجد زبائن مسجلين',
+                  'No subscribers registered',
                   style:
                       TextStyle(
                     color:
@@ -1492,7 +1492,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     width: 8,
                   ),
                   Text(
-                    'الزبائن المسجلون',
+                    'Registered subscribers',
                     style:
                         TextStyle(
                       color:
@@ -1634,7 +1634,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     ),
                     subtitle:
                         Text(
-                      'الهاتف: $phone'
+                      'Phone: $phone'
                       '${usage.isEmpty ? '' : '\nالاستخدام: $usage'}',
                     ),
                     isThreeLine:
@@ -1704,8 +1704,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
             label:
                 Text(
               loading
-                  ? 'جاري الإضافة...'
-                  : 'إضافة',
+                  ? 'Adding…'
+                  : 'Add',
               style:
                   const TextStyle(
                 fontWeight:
@@ -1763,7 +1763,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ),
             label:
                 const Text(
-              'تعديل',
+              'Edit',
               style:
                   TextStyle(
                 fontWeight:
@@ -1821,7 +1821,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ),
             label:
                 const Text(
-              'حذف',
+              'Delete',
               style:
                   TextStyle(
                 fontWeight:
@@ -1886,7 +1886,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
         appBar:
             const MyAppBar(
           title:
-              'إدارة الزبائن',
+              'Subscribers',
           icon:
               Icons.people,
         ),
@@ -1933,7 +1933,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 controller:
                     customerNoController,
                 label:
-                    'رقم الزبون',
+                    'Subscriber no.',
                 icon:
                     Icons.tag,
                 readOnly:
@@ -1962,7 +1962,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 controller:
                     nameController,
                 label:
-                    'اسم الزبون',
+                    'Subscriber name',
                 icon:
                     Icons.person,
                 textInputAction:
@@ -1982,7 +1982,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 controller:
                     phoneController,
                 label:
-                    'رقم الهاتف',
+                    'Phone',
                 icon:
                     Icons.phone,
                 keyboardType:
@@ -2005,7 +2005,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 controller:
                     addressController,
                 label:
-                    'العنوان',
+                    'Address',
                 icon:
                     Icons.home,
                 maxLines:

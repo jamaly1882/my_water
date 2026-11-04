@@ -70,7 +70,7 @@ class SetupScreen extends StatelessWidget {
 
             _item(
               context,
-              'إضافة زبون',
+              'Add subscriber',
               Icons.person_add_alt_1,
               Colors.blue,
               CustomerScreen(
@@ -92,7 +92,7 @@ class SetupScreen extends StatelessWidget {
 
             _item(
               context,
-              'إضافة زبون بئر',
+              'Add well subscriber',
               Icons.water_drop,
               Colors.cyan,
               WellCustomerScreen(
@@ -112,7 +112,7 @@ class SetupScreen extends StatelessWidget {
 
             _item(
               context,
-              'نوع استخدام المياه',
+              'Water usage type',
               Icons.category,
               Colors.green,
               const WaterUsageScreen(),
@@ -124,7 +124,7 @@ class SetupScreen extends StatelessWidget {
 
             _item(
               context,
-              'نوع المعدة',
+              'Meter type',
               Icons.speed,
               Colors.orange,
 
@@ -146,7 +146,7 @@ class SetupScreen extends StatelessWidget {
 
             _item(
               context,
-              'إنشاء الحسابات المالية',
+              'Create financial accounts',
               Icons.point_of_sale,
               Colors.red,
               CreateSalesAccountScreen(

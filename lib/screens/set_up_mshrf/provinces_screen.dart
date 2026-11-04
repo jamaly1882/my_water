@@ -50,7 +50,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
     final name = nameController.text.trim();
 
     if (name.isEmpty) {
-      showMessage("أدخل اسم المحافظة");
+      showMessage("Enter the governorate name");
       return;
     }
 
@@ -68,13 +68,13 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
 
       if (mounted) {
         showMessage(
-          "تمت إضافة المحافظة بنجاح",
+          "Governorate added",
         );
       }
     } catch (e) {
       if (mounted) {
         showMessage(
-          "حدث خطأ أثناء إضافة المحافظة: $e",
+          "Could not add the governorate: $e",
         );
       }
     } finally {
@@ -118,7 +118,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
         if (snapshot.hasError) {
           return const Center(
             child: Text(
-              "حدث خطأ في تحميل المحافظات",
+              "Could not load governorates",
               style: TextStyle(
                 color: Colors.red,
               ),
@@ -134,7 +134,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
             snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
-              "لا توجد محافظات",
+              "No governorates yet",
               style: TextStyle(
                 color: Colors.grey,
               ),
@@ -230,7 +230,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
         // ========================================================
 
         appBar: const MyAppBar(
-          title: "تهيئة المحافظات",
+          title: "Governorate setup",
           showBackButton: true,
         ),
 
@@ -258,7 +258,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
                 decoration:
                     InputDecoration(
                   labelText:
-                      "اسم المحافظة",
+                      "Governorate name",
 
                   prefixIcon:
                       const Icon(
@@ -362,8 +362,8 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
 
                   label: Text(
                     loading
-                        ? "جاري الحفظ..."
-                        : "إضافة المحافظة",
+                        ? "Saving…"
+                        : "Add governorate",
 
                     style:
                         const TextStyle(
@@ -389,7 +389,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
                     Alignment.centerRight,
 
                 child: Text(
-                  "المحافظات المسجلة",
+                  "Registered governorates",
 
                   style:
                       TextStyle(

@@ -58,13 +58,13 @@ class _PaymentVoucherListScreenState
       builder: (context) {
         return AlertDialog(
           title: const Text(
-            'حذف سند الصرف',
+            'Delete payment voucher',
             textDirection: TextDirection.rtl,
           ),
           content: Text(
-            'هل تريد حذف سند الصرف بمبلغ '
+            'Delete the payment voucher for '
             '$amount ريال؟\n\n'
-            'سيتم عكس القيد المحاسبي أيضاً.',
+            'The accounting entry will be reversed as well.',
             textDirection: TextDirection.rtl,
           ),
           actions: [
@@ -75,7 +75,7 @@ class _PaymentVoucherListScreenState
                   false,
                 );
               },
-              child: const Text('إلغاء'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -90,7 +90,7 @@ class _PaymentVoucherListScreenState
                     Colors.red,
               ),
               child: const Text(
-                'حذف',
+                'Delete',
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -215,7 +215,7 @@ class _PaymentVoucherListScreenState
       if (!mounted) return;
 
       showMessage(
-        'تم حذف سند الصرف وعكس القيد بنجاح',
+        'Payment voucher deleted and the entry reversed',
         false,
       );
     } catch (e) {
@@ -370,7 +370,7 @@ class _PaymentVoucherListScreenState
                     CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'إجمالي المصروف',
+                    'Total paid',
                     style: TextStyle(
                       color:
                           Colors.white70,
@@ -381,7 +381,7 @@ class _PaymentVoucherListScreenState
                     height: 5,
                   ),
                   Text(
-                    '${total.toStringAsFixed(2)} ريال',
+                    '${total.toStringAsFixed(2)} YER',
                     style:
                         const TextStyle(
                       color:
@@ -423,7 +423,7 @@ class _PaymentVoucherListScreenState
           ),
         ),
         title: const Text(
-          'البئر',
+          'Well',
           style: TextStyle(
             color: Colors.grey,
             fontSize: 13,
@@ -431,7 +431,7 @@ class _PaymentVoucherListScreenState
         ),
         subtitle: Text(
           widget.wellName ??
-              'غير محدد',
+              'Not set',
           style:
               const TextStyle(
             fontSize: 18,
@@ -488,7 +488,7 @@ class _PaymentVoucherListScreenState
               ),
               SizedBox(height: 12),
               Text(
-                'لا توجد سندات صرف لهذا البئر',
+                'No payment vouchers for this well',
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
@@ -521,12 +521,12 @@ class _PaymentVoucherListScreenState
         final debitName =
             data['debitAccountName']
                     ?.toString() ??
-                'غير محدد';
+                'Not set';
 
         final creditName =
             data['creditAccountName']
                     ?.toString() ??
-                'صندوق البئر';
+                'Well fund';
 
         final amount =
             double.tryParse(
@@ -539,7 +539,7 @@ class _PaymentVoucherListScreenState
         final statement =
             data['statement']
                     ?.toString() ??
-                'سند صرف';
+                'Payment voucher';
 
         final date =
             formatDate(
@@ -579,7 +579,7 @@ class _PaymentVoucherListScreenState
                             CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'سند صرف ${index + 1}',
+                            'Payment voucher ${index + 1}',
                             style:
                                 const TextStyle(
                               fontWeight:
@@ -601,7 +601,7 @@ class _PaymentVoucherListScreenState
                     ),
 
                     Text(
-                      '${amount.toStringAsFixed(2)} ريال',
+                      '${amount.toStringAsFixed(2)} YER',
                       style:
                           const TextStyle(
                         color: Colors.red,
@@ -638,7 +638,7 @@ class _PaymentVoucherListScreenState
                                 width: 8,
                               ),
                               Text(
-                                'حذف',
+                                'Delete',
                               ),
                             ],
                           ),
@@ -651,19 +651,19 @@ class _PaymentVoucherListScreenState
                 const Divider(),
 
                 _row(
-                  'المدين',
+                  'Debit',
                   debitName,
                   Colors.red,
                 ),
 
                 _row(
-                  'الدائن',
+                  'Credit',
                   creditName,
                   mainColor,
                 ),
 
                 _row(
-                  'البيان',
+                  'Description',
                   statement,
                   Colors.grey,
                 ),
@@ -742,7 +742,7 @@ class _PaymentVoucherListScreenState
           ),
           body: const Center(
             child: Text(
-              'لم يتم تحديد البئر',
+              'No well selected',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight:

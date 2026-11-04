@@ -24,22 +24,22 @@ class _InvoiceScreenState
   final List<Map<String,dynamic>> invoices = [
 
     {
-      "customer":"محمد أحمد",
+      "customer":"Mohammed Ahmed",
       "account":"100001",
       "consumption":50,
       "price":10,
       "amount":500,
-      "status":"جاهز"
+      "status":"Ready"
     },
 
 
     {
-      "customer":"أحمد علي",
+      "customer":"Ahmed Ali",
       "account":"100002",
       "consumption":80,
       "price":10,
       "amount":800,
-      "status":"جاهز"
+      "status":"Ready"
     },
 
   ];
@@ -48,8 +48,8 @@ class _InvoiceScreenState
 
   final List<String> cycles=[
 
-    "دور شهر 7 - 2026",
-    "دور شهر 8 - 2026",
+    "July 2026 cycle",
+    "August 2026 cycle",
 
   ];
 
@@ -67,7 +67,7 @@ class _InvoiceScreenState
 
         content:
         Text(
-          "تم إصدار الفواتير",
+          "Invoices issued",
         ),
 
       ),
@@ -100,7 +100,7 @@ class _InvoiceScreenState
 
           title:
           const Text(
-              "إصدار الفواتير"
+              "Issue invoices"
           ),
 
           centerTitle:true,
@@ -130,7 +130,7 @@ class _InvoiceScreenState
                 const InputDecoration(
 
                   labelText:
-                  "اختيار الدور",
+                  "Choose the cycle",
 
                   border:
                   OutlineInputBorder(),
@@ -288,7 +288,7 @@ class _InvoiceScreenState
 
                   label:
                   const Text(
-                      "إصدار الفواتير"
+                      "Issue invoices"
                   ),
 
 

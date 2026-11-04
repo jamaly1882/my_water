@@ -52,11 +52,11 @@ class AccountReportTypeScreen extends StatelessWidget {
         // ========================================================
 
         appBar: MyAppBar(
-          title: "تقارير الحساب",
+          title: "Account reports",
 
           subtitle: accountName.isNotEmpty
               ? accountName
-              : "اختر نوع التقرير",
+              : "Choose report type",
 
           icon:
               Icons.account_balance_wallet,
@@ -165,7 +165,7 @@ class AccountReportTypeScreen extends StatelessWidget {
 
                               children: [
                                 const Text(
-                                  "الحساب",
+                                  "Account",
 
                                   style:
                                       TextStyle(
@@ -229,7 +229,7 @@ class AccountReportTypeScreen extends StatelessWidget {
 
                             Expanded(
                               child: Text(
-                                "البئر: $wellName",
+                                "Well: $wellName",
 
                                 style:
                                     const TextStyle(
@@ -278,7 +278,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                               ),
 
                               Text(
-                                "رقم البئر: $wellId",
+                                "Well number: $wellId",
 
                                 style:
                                     TextStyle(
@@ -356,7 +356,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                     // ==========================================
 
                     Text(
-                      "اختر نوع التقرير",
+                      "Choose report type",
 
                       style:
                           TextStyle(
@@ -400,7 +400,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                     _reportCard(
                       context,
 
-                      "التقرير اليومي",
+                      "Daily report",
 
                       Icons.today,
 
@@ -428,7 +428,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                     _reportCard(
                       context,
 
-                      "التقرير الشهري",
+                      "Monthly report",
 
                       Icons.calendar_month,
 
@@ -456,7 +456,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                     _reportCard(
                       context,
 
-                      "التقرير السنوي",
+                      "Yearly report",
 
                       Icons.date_range,
 
@@ -622,7 +622,7 @@ class AccountReportTypeScreen extends StatelessWidget {
                 // ================================================
 
                 Text(
-                  "عرض التقرير",
+                  "View report",
 
                   style:
                       TextStyle(

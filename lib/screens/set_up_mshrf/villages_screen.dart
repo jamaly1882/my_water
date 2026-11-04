@@ -51,22 +51,22 @@ class _VillagesScreenState extends State<VillagesScreen> {
     final name = villageController.text.trim();
 
     if (provinceId == null) {
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return;
     }
 
     if (districtId == null) {
-      showMessage("اختر المديرية");
+      showMessage("Choose district");
       return;
     }
 
     if (hamletId == null) {
-      showMessage("اختر العزلة");
+      showMessage("Choose sub-district");
       return;
     }
 
     if (name.isEmpty) {
-      showMessage("أدخل اسم القرية");
+      showMessage("Enter the village name");
       return;
     }
 
@@ -94,7 +94,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
 
       if (existing.docs.isNotEmpty) {
         showMessage(
-          "هذه القرية موجودة مسبقاً في نفس العزلة",
+          "This village already exists in the same sub-district",
         );
 
         if (mounted) {
@@ -127,10 +127,10 @@ class _VillagesScreenState extends State<VillagesScreen> {
 
       villageController.clear();
 
-      showMessage("تمت إضافة القرية بنجاح");
+      showMessage("Village added");
     } catch (e) {
       showMessage(
-        "حدث خطأ أثناء إضافة القرية: $e",
+        "Could not add the village: $e",
       );
     }
 
@@ -161,7 +161,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل المحافظات",
+            "Could not load governorates",
           );
         }
 
@@ -171,7 +171,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
           value: provinceId,
           isExpanded: true,
           decoration: InputDecoration(
-            labelText: "اختر المحافظة",
+            labelText: "Choose governorate",
             prefixIcon: const Icon(
               Icons.location_city,
             ),
@@ -244,7 +244,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل المديريات",
+            "Could not load districts",
           );
         }
 
@@ -254,7 +254,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
           value: districtId,
           isExpanded: true,
           decoration: InputDecoration(
-            labelText: "اختر المديرية",
+            labelText: "Choose district",
             prefixIcon: const Icon(
               Icons.map,
             ),
@@ -324,7 +324,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل العُزل",
+            "Could not load sub-districts",
           );
         }
 
@@ -334,7 +334,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
           value: hamletId,
           isExpanded: true,
           decoration: InputDecoration(
-            labelText: "اختر العزلة",
+            labelText: "Choose sub-district",
             prefixIcon: const Icon(
               Icons.home_work,
             ),
@@ -398,8 +398,8 @@ class _VillagesScreenState extends State<VillagesScreen> {
               ),
         label: Text(
           loading
-              ? "جاري الحفظ..."
-              : "إضافة القرية",
+              ? "Saving…"
+              : "Add village",
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -437,7 +437,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
         if (snapshot.hasError) {
           return const Center(
             child: Text(
-              "حدث خطأ في تحميل القرى",
+              "Could not load villages",
             ),
           );
         }
@@ -447,7 +447,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
         if (docs.isEmpty) {
           return const Center(
             child: Text(
-              "لا توجد قرى حتى الآن",
+              "No villages yet",
               style: TextStyle(
                 fontSize: 16,
               ),
@@ -538,7 +538,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
         // ======================================================
 
         appBar: const MyAppBar(
-          title: "تهيئة القرى",
+          title: "Village setup",
         ),
 
         // ======================================================
@@ -584,8 +584,8 @@ class _VillagesScreenState extends State<VillagesScreen> {
                 textInputAction:
                     TextInputAction.done,
                 decoration: InputDecoration(
-                  labelText: "اسم القرية",
-                  hintText: "أدخل اسم القرية",
+                  labelText: "Village name",
+                  hintText: "Enter the village name",
                   prefixIcon: const Icon(
                     Icons.home,
                   ),
@@ -621,7 +621,7 @@ class _VillagesScreenState extends State<VillagesScreen> {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      "القرى المسجلة",
+                      "Registered villages",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight:

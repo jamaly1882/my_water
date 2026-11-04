@@ -61,11 +61,11 @@ class CycleReportMenuScreen extends StatelessWidget {
         // ========================================================
 
         appBar: MyAppBar(
-          title: "تقارير الأدوار",
+          title: "Cycle reports",
 
           subtitle: hasWell
-              ? "البئر: ${wellName!}"
-              : "اختر نوع التقرير",
+              ? "Well: ${wellName!}"
+              : "Choose report type",
 
           icon: Icons.water_drop,
         ),
@@ -142,7 +142,7 @@ class CycleReportMenuScreen extends StatelessWidget {
                   // =================================================
 
                   Text(
-                    "اختر نوع التقرير",
+                    "Choose report type",
 
                     style: TextStyle(
                       color: Colors.white,
@@ -184,10 +184,10 @@ class CycleReportMenuScreen extends StatelessWidget {
                       context,
 
                       title:
-                          "التقرير اليومي",
+                          "Daily report",
 
                       subtitle:
-                          "عرض تقرير اليوم",
+                          "View daily report",
 
                       icon:
                           Icons.today,
@@ -213,10 +213,10 @@ class CycleReportMenuScreen extends StatelessWidget {
                       context,
 
                       title:
-                          "التقرير الشهري",
+                          "Monthly report",
 
                       subtitle:
-                          "عرض تقرير الشهر",
+                          "View monthly report",
 
                       icon:
                           Icons.calendar_month,
@@ -242,10 +242,10 @@ class CycleReportMenuScreen extends StatelessWidget {
                       context,
 
                       title:
-                          "التقرير السنوي",
+                          "Yearly report",
 
                       subtitle:
-                          "عرض تقرير السنة",
+                          "View yearly report",
 
                       icon:
                           Icons.date_range,
