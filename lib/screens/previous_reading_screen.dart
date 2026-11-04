@@ -177,7 +177,7 @@ class _PreviousReadingScreenState
 
       if (!doc.exists) {
         showMessage(
-          'الدورة غير موجودة',
+          'Cycle not found',
           error: true,
         );
         return;
@@ -187,7 +187,7 @@ class _PreviousReadingScreenState
 
       if (data == null) {
         showMessage(
-          'بيانات الدورة غير موجودة',
+          'Cycle data not found',
           error: true,
         );
         return;
@@ -306,7 +306,7 @@ class _PreviousReadingScreenState
                 meterWellId.isNotEmpty &&
                 meterWellId != wellId) {
               showMessage(
-                'نوع العداد لا يتبع هذا البئر',
+                'This meter type does not belong to the well',
                 error: true,
               );
 
@@ -484,7 +484,7 @@ Future<void> readMeterImage() async {
 
     if (result.trim().isEmpty) {
       showMessage(
-        'لم يتم العثور على قراءة من 7 خانات',
+        'No 7-digit reading was found',
         error: true,
       );
       return;
@@ -500,7 +500,7 @@ Future<void> readMeterImage() async {
     if (!_isSevenDigits(number)) {
       showMessage(
         'القراءة يجب أن تكون 7 خانات بالضبط\n'
-        'القراءة المستخرجة: $number',
+        'Extracted reading: $number',
         error: true,
       );
       return;
@@ -512,7 +512,7 @@ Future<void> readMeterImage() async {
 
     if (reading == null) {
       showMessage(
-        'القراءة المستخرجة غير صحيحة',
+        'The extracted reading is invalid',
         error: true,
       );
       return;
@@ -522,7 +522,7 @@ Future<void> readMeterImage() async {
       showMessage(
         'القراءة الحالية أقل من القراءة السابقة\n'
         'السابقة: $previousReading\n'
-        'الحالية: $number',
+        'Current: $number',
         error: true,
       );
       return;
@@ -534,7 +534,7 @@ Future<void> readMeterImage() async {
 
     if (!mounted) return;
 
-    showMessage('تم التعرف على القراءة: $number');
+    showMessage('Reading recognised: $number');
 
     setState(() {});
   } catch (e, stackTrace) {
@@ -691,7 +691,7 @@ Future<void> readMeterImage() async {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'إدخال القراءة يدوياً',
+                      'Enter the reading manually',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight:
@@ -721,9 +721,9 @@ Future<void> readMeterImage() async {
                   decoration:
                       const InputDecoration(
                     labelText:
-                        'القراءة الحالية',
+                        'Current reading',
                     hintText:
-                        'مثال: 9142037',
+                        'e.g. 9142037',
                     prefixIcon:
                         Icon(
                       Icons.speed,
@@ -737,7 +737,7 @@ Future<void> readMeterImage() async {
                   alignment:
                       Alignment.centerRight,
                   child: Text(
-                    'يمكن إدخال القراءة اليدوية بأي عدد من الخانات',
+                    'A manual reading can have any number of digits',
                     style: TextStyle(
                       color:
                           Colors.grey.shade700,
@@ -749,7 +749,7 @@ Future<void> readMeterImage() async {
                   alignment:
                       Alignment.centerRight,
                   child: Text(
-                    'القراءة السابقة: $previousReading',
+                    'Previous reading: $previousReading',
                     style: TextStyle(
                       color:
                           Colors.grey.shade700,
@@ -772,7 +772,7 @@ Future<void> readMeterImage() async {
 
                       if (!_isManualDigits(value)) {
                         showMessage(
-                          'القراءة اليدوية يجب أن تحتوي على أرقام فقط',
+                          'A manual reading must contain digits only',
                           error: true,
                         );
                         return;
@@ -783,7 +783,7 @@ Future<void> readMeterImage() async {
 
                       if (reading == null) {
                         showMessage(
-                          'أدخل رقماً صحيحاً',
+                          'Enter a valid number',
                           error: true,
                         );
                         return;
@@ -792,7 +792,7 @@ Future<void> readMeterImage() async {
                       if (reading <
                           BigInt.from(previousReading)) {
                         showMessage(
-                          'القراءة الحالية أقل من القراءة السابقة',
+                          'The current reading is lower than the previous one',
                           error: true,
                         );
                         return;
@@ -815,7 +815,7 @@ Future<void> readMeterImage() async {
                     ),
                     label:
                         const Text(
-                      'اعتماد القراءة',
+                      'Confirm the reading',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight:
@@ -890,7 +890,7 @@ Future<void> readMeterImage() async {
                     height: 18,
                   ),
                   const Text(
-                    'طريقة إدخال القراءة الحالية',
+                    'How to enter the current reading',
                     style: TextStyle(
                       fontSize: 19,
                       fontWeight:
@@ -929,7 +929,7 @@ Future<void> readMeterImage() async {
                       ),
                       title:
                           const Text(
-                        'تصوير العداد وقراءة الرقم',
+                        'Photograph the meter and read the number',
                         style: TextStyle(
                           color:
                               Colors.white,
@@ -939,7 +939,7 @@ Future<void> readMeterImage() async {
                       ),
                       subtitle:
                           const Text(
-                        'قص الصورة ثم قراءة 7 خانات تلقائياً',
+                        'Crop the photo, then 7 digits are read automatically',
                         style: TextStyle(
                           color:
                               Colors.white70,
@@ -986,7 +986,7 @@ Future<void> readMeterImage() async {
                       ),
                       title:
                           const Text(
-                        'إدخال القراءة يدوياً',
+                        'Enter the reading manually',
                         style: TextStyle(
                           color:
                               Colors.white,
@@ -996,7 +996,7 @@ Future<void> readMeterImage() async {
                       ),
                       subtitle:
                           const Text(
-                        'إدخال القراءة اليدوية بدون حد لعدد الخانات',
+                        'Manual entry with no digit limit',
                         style: TextStyle(
                           color:
                               Colors.white70,
@@ -1103,7 +1103,7 @@ Future<void> readMeterImage() async {
               ),
               SizedBox(width: 8),
               Text(
-                'بيانات القراءة',
+                'Reading details',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -1117,30 +1117,30 @@ Future<void> readMeterImage() async {
             color: Colors.white38,
           ),
           whiteInfoRow(
-            'القراءة السابقة',
+            'Previous reading',
             previousReading.toString(),
           ),
           whiteInfoRow(
-            'القراءة الحالية',
+            'Current reading',
             currentReading == 0
-                ? 'لم تسجل'
+                ? 'Not recorded'
                 : currentReading.toString(),
           ),
           whiteInfoRow(
-            'استهلاك الدورة الحالية',
-            '$consumption وحدة',
+            'Consumption this cycle',
+            '$consumption units',
           ),
           whiteInfoRow(
-            'إجمالي الوحدات السابقة',
-            '$meterUnitsCount وحدة',
+            'Units before this cycle',
+            '$meterUnitsCount units',
           ),
           whiteInfoRow(
-            'بعد إضافة الدورة الحالية',
-            '${meterUnitsCount + consumption} وحدة',
+            'After this cycle',
+            '${meterUnitsCount + consumption} units',
           ),
           whiteInfoRow(
-            'المبلغ',
-            '$amount ريال',
+            'Amount',
+            '$amount YER',
           ),
         ],
       ),
@@ -1172,7 +1172,7 @@ Future<void> readMeterImage() async {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'بيانات المشترك',
+                  'Subscriber details',
                   style: TextStyle(
                     color: Colors.blue,
                     fontSize: 18,
@@ -1184,36 +1184,36 @@ Future<void> readMeterImage() async {
             ),
             const Divider(),
             infoRow(
-              'اسم المشترك',
+              'Subscriber name',
               customerName,
             ),
             infoRow(
-              'رقم الحساب',
+              'Account number',
               accountId,
             ),
             infoRow(
-              'الهاتف',
+              'Phone',
               customerPhone,
             ),
             infoRow(
-              'البئر',
+              'Well',
               wellName,
             ),
             infoRow(
-              'نوع الاستخدام',
+              'Usage type',
               waterUsageTypeName,
             ),
             infoRow(
-              'نوع العداد',
+              'Meter type',
               meterTypeName,
             ),
             infoRow(
-              'سعر الوحدة',
-              '$unitPrice ريال',
+              'Unit price',
+              '$unitPrice YER',
             ),
             infoRow(
-              'عدد الوحدات المتراكم',
-              '$meterUnitsCount وحدة',
+              'Accumulated units',
+              '$meterUnitsCount units',
             ),
           ],
         ),
@@ -1251,7 +1251,7 @@ Future<void> readMeterImage() async {
           Flexible(
             child: Text(
               value.isEmpty
-                  ? 'غير محدد'
+                  ? 'Not set'
                   : value,
               textAlign:
                   TextAlign.end,
@@ -1298,7 +1298,7 @@ Future<void> readMeterImage() async {
       child: Column(
         children: [
           const Text(
-            'القراءة الحالية',
+            'Current reading',
             style: TextStyle(
               color: Colors.white70,
               fontSize: 15,
@@ -1330,7 +1330,7 @@ Future<void> readMeterImage() async {
             child: Column(
               children: [
                 Text(
-                  'استهلاك الدورة: $consumption وحدة',
+                  'Consumption this cycle: $consumption units',
                   style:
                       const TextStyle(
                     color: Colors.white,
@@ -1339,8 +1339,8 @@ Future<void> readMeterImage() async {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'الإجمالي بعد الإضافة: '
-                  '${meterUnitsCount + consumption} وحدة',
+                  'Total after adding: '
+                  '${meterUnitsCount + consumption} units',
                   style:
                       const TextStyle(
                     color: Colors.white,
@@ -1351,7 +1351,7 @@ Future<void> readMeterImage() async {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'المبلغ: $amount ريال',
+                  'Amount: $amount YER',
                   style:
                       const TextStyle(
                     color: Colors.white,
@@ -1403,7 +1403,7 @@ Future<void> readMeterImage() async {
               ),
               SizedBox(width: 8),
               Text(
-                'القيد المحاسبي',
+                'Accounting entry',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -1417,12 +1417,12 @@ Future<void> readMeterImage() async {
             color: Colors.white38,
           ),
           whiteInfoRow(
-            'مدين - حساب المشترك',
-            '$amount ريال',
+            'Debit — subscriber account',
+            '$amount YER',
           ),
           whiteInfoRow(
-            'دائن - مبيعات البئر',
-            '$amount ريال',
+            'Credit — well sales',
+            '$amount YER',
           ),
         ],
       ),
@@ -1493,7 +1493,7 @@ Future<void> readMeterImage() async {
 
     if (cycleId.isEmpty) {
       showMessage(
-        'رقم الدورة غير موجود',
+        'Cycle ID is missing',
         error: true,
       );
       return;
@@ -1510,7 +1510,7 @@ Future<void> readMeterImage() async {
 
     if (!_isManualDigits(value)) {
       showMessage(
-        'القراءة الحالية يجب أن تحتوي على أرقام فقط',
+        'The current reading must contain digits only',
         error: true,
       );
       return;
@@ -1521,7 +1521,7 @@ Future<void> readMeterImage() async {
 
     if (reading == null) {
       showMessage(
-        'القراءة يجب أن تكون رقماً صحيحاً',
+        'The reading must be a valid number',
         error: true,
       );
       return;
@@ -1529,7 +1529,7 @@ Future<void> readMeterImage() async {
 
     if (reading < BigInt.from(previousReading)) {
       showMessage(
-        'القراءة الحالية أقل من القراءة السابقة',
+        'The current reading is lower than the previous one',
         error: true,
       );
       return;
@@ -1539,7 +1539,7 @@ Future<void> readMeterImage() async {
 
     if (consumption < 0) {
       showMessage(
-        'قيمة الاستهلاك غير صحيحة',
+        'The consumption value is invalid',
         error: true,
       );
       return;
@@ -1547,7 +1547,7 @@ Future<void> readMeterImage() async {
 
     if (meterTypeId.isEmpty) {
       showMessage(
-        'رقم نوع العداد غير موجود في الدورة',
+        'The meter type ID is missing from the cycle',
         error: true,
       );
       return;
@@ -1555,7 +1555,7 @@ Future<void> readMeterImage() async {
 
     if (wellId.isEmpty) {
       showMessage(
-        'رقم البئر غير موجود',
+        'The well ID is missing',
         error: true,
       );
       return;
@@ -1594,7 +1594,7 @@ Future<void> readMeterImage() async {
 
           if (!cycleDoc.exists) {
             throw Exception(
-              'الدورة غير موجودة',
+              'Cycle not found',
             );
           }
 
@@ -1603,7 +1603,7 @@ Future<void> readMeterImage() async {
 
           if (cycleData == null) {
             throw Exception(
-              'بيانات الدورة غير موجودة',
+              'Cycle data not found',
             );
           }
 
@@ -1616,9 +1616,9 @@ Future<void> readMeterImage() async {
           // حماية من تسجيل نفس الدورة مرتين
           // ======================================================
 
-          if (status != 'مفتوح') {
+          if (status != 'Open') {
             throw Exception(
-              'هذه الدورة مغلقة مسبقاً',
+              'This cycle is already closed',
             );
           }
 
@@ -1637,7 +1637,7 @@ Future<void> readMeterImage() async {
 
           if (!meterDoc.exists) {
             throw Exception(
-              'نوع العداد غير موجود',
+              'Meter type not found',
             );
           }
 
@@ -1646,7 +1646,7 @@ Future<void> readMeterImage() async {
 
           if (meterData == null) {
             throw Exception(
-              'بيانات نوع العداد غير موجودة',
+              'Meter type data not found',
             );
           }
 
@@ -1662,7 +1662,7 @@ Future<void> readMeterImage() async {
           if (meterWellId.isNotEmpty &&
               meterWellId != wellId) {
             throw Exception(
-              'نوع العداد لا يتبع البئر المحدد',
+              'This meter type does not belong to the selected well',
             );
           }
 
@@ -1792,13 +1792,13 @@ Future<void> readMeterImage() async {
 
           if (salesQuery.docs.isEmpty) {
             throw Exception(
-              'لم يتم العثور على حساب المبيعات للبئر',
+              'No sales account found for the well',
             );
           }
 
           if (customerQuery.docs.isEmpty) {
             throw Exception(
-              'لم يتم العثور على الحساب المالي للمشترك',
+              'No financial account found for the subscriber',
             );
           }
 
@@ -1887,7 +1887,7 @@ Future<void> readMeterImage() async {
                   amount,
 
               'status':
-                  'مغلق',
+                  'Closed',
 
               // لا نلمس endDate
               //
@@ -2016,7 +2016,7 @@ Future<void> readMeterImage() async {
                       amount,
 
               'description':
-                  'مبيعات مياه - قراءة العداد',
+                  'Water sales — meter reading',
 
               'createdAt':
                   FieldValue.serverTimestamp(),
@@ -2084,7 +2084,7 @@ Future<void> readMeterImage() async {
                       amount,
 
               'description':
-                  'استهلاك مياه - قراءة العداد',
+                  'Water consumption — meter reading',
 
               'createdAt':
                   FieldValue.serverTimestamp(),
@@ -2104,8 +2104,8 @@ Future<void> readMeterImage() async {
 
       showMessage(
         'تم حفظ القراءة وإغلاق الدورة\n'
-        'استهلاك الدورة: $consumption وحدة\n'
-        'إجمالي وحدات نوع العداد: $meterUnitsCount وحدة',
+        'Consumption this cycle: $consumption units\n'
+        'Meter type units total: $meterUnitsCount units',
       );
 
       await Future.delayed(
@@ -2164,7 +2164,7 @@ Future<void> readMeterImage() async {
         appBar:
             const MyAppBar(
           title:
-              'تسجيل القراءة',
+              'Save the reading',
           showBackButton: true,
           icon: Icons.speed,
         ),
@@ -2242,7 +2242,7 @@ Future<void> readMeterImage() async {
                                 Text(
                                   customerName
                                           .isEmpty
-                                      ? 'المشترك'
+                                      ? 'Subscriber'
                                       : customerName,
                                   style:
                                       const TextStyle(
@@ -2259,7 +2259,7 @@ Future<void> readMeterImage() async {
                                   height: 5,
                                 ),
                                 Text(
-                                  'القراءة السابقة: $previousReading',
+                                  'Previous reading: $previousReading',
                                   style:
                                       const TextStyle(
                                     color:
@@ -2271,7 +2271,7 @@ Future<void> readMeterImage() async {
                                 if (wellName
                                     .isNotEmpty)
                                   Text(
-                                    'البئر: $wellName',
+                                    'Well: $wellName',
                                     style:
                                         const TextStyle(
                                       color:
@@ -2283,7 +2283,7 @@ Future<void> readMeterImage() async {
                                 if (meterTypeName
                                     .isNotEmpty)
                                   Text(
-                                    'نوع العداد: $meterTypeName',
+                                    'Meter type: $meterTypeName',
                                     style:
                                         const TextStyle(
                                       color:
@@ -2323,8 +2323,8 @@ Future<void> readMeterImage() async {
                       icon:
                           Icons.speed,
                       text: isReadingImage
-                          ? 'جاري قراءة العداد...'
-                          : 'إدخال القراءة الحالية',
+                          ? 'Reading the meter…'
+                          : 'Enter the current reading',
                       loading:
                           isReadingImage,
                     ),
@@ -2354,8 +2354,8 @@ Future<void> readMeterImage() async {
                       icon: Icons
                           .account_balance,
                       text: isSaving
-                          ? 'جاري الحفظ...'
-                          : 'ترحيل القيد وإغلاق الدورة',
+                          ? 'Saving…'
+                          : 'Post the entry and close the cycle',
                       loading:
                           isSaving,
                     ),
