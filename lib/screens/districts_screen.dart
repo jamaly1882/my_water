@@ -40,7 +40,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
-              Text("اختر المحافظة"),
+              Text("Choose governorate"),
         ),
       );
 
@@ -55,7 +55,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
-              Text("أدخل اسم المديرية"),
+              Text("Enter the district name"),
         ),
       );
 
@@ -103,7 +103,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
       const SnackBar(
         content:
-            Text("تمت إضافة المديرية"),
+            Text("District added"),
       ),
 
     );
@@ -129,7 +129,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
           title:
               const Text(
-            "تهيئة المديريات",
+            "District setup",
           ),
 
           centerTitle: true,
@@ -190,7 +190,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
                         const InputDecoration(
 
                       labelText:
-                          "اختر المحافظة",
+                          "Choose governorate",
 
                       border:
                           OutlineInputBorder(),
@@ -286,7 +286,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
                     const InputDecoration(
 
                   labelText:
-                      "اسم المديرية",
+                      "District name",
 
                   border:
                       OutlineInputBorder(),
@@ -330,7 +330,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
                   label:
                       const Text(
-                    "إضافة المديرية",
+                    "Add district",
                   ),
 
                 ),

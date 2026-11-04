@@ -105,31 +105,31 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
   bool validateLocation() {
     if (provinceId == null ||
         provinceId!.trim().isEmpty) {
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return false;
     }
 
     if (districtId == null ||
         districtId!.trim().isEmpty) {
-      showMessage("اختر المديرية");
+      showMessage("Choose district");
       return false;
     }
 
     if (hamletId == null ||
         hamletId!.trim().isEmpty) {
-      showMessage("اختر العزلة");
+      showMessage("Choose sub-district");
       return false;
     }
 
     if (villageId == null ||
         villageId!.trim().isEmpty) {
-      showMessage("اختر القرية");
+      showMessage("Choose village");
       return false;
     }
 
     if (wellId == null ||
         wellId!.trim().isEmpty) {
-      showMessage("اختر البئر");
+      showMessage("Choose well");
       return false;
     }
 
@@ -147,18 +147,18 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
     final phone = phoneController.text.trim();
 
     if (name.isEmpty) {
-      showMessage("أدخل اسم المشرف");
+      showMessage("Enter the supervisor name");
       return;
     }
 
     if (phone.isEmpty) {
-      showMessage("أدخل رقم الدخول");
+      showMessage("Enter the sign-in ID");
       return;
     }
 
     if (phone.toLowerCase() == "demo") {
       showMessage(
-        "اسم الدخول demo مخصص للحساب التجريبي",
+        'The login "demo" is reserved for the demo account',
       );
       return;
     }
@@ -190,7 +190,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
       if (phoneExists.docs.isNotEmpty) {
         showMessage(
-          "رقم الدخول مستخدم مسبقاً",
+          "That sign-in ID is already taken",
         );
         return;
       }
@@ -213,7 +213,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
       if (wellExists.docs.isNotEmpty) {
         showMessage(
-          "يوجد مشرف مسجل لهذا البئر بالفعل",
+          "This well already has a supervisor",
         );
         return;
       }
@@ -239,7 +239,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
       if (firebaseUser == null) {
         showMessage(
-          "تعذر إنشاء حساب المشرف",
+          "Could not create the supervisor account",
         );
         return;
       }
@@ -287,7 +287,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
       if (!mounted) return;
 
       await showLoginDialog(
-        title: "تم إنشاء المشرف",
+        title: "Supervisor created",
         username: phone,
         password: password,
       );
@@ -316,25 +316,25 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
         showMessage(
-          "رقم الدخول مستخدم مسبقاً",
+          "That sign-in ID is already taken",
         );
       } else if (e.code == "weak-password") {
         showMessage(
-          "كلمة السر ضعيفة",
+          "The password is too weak",
         );
       } else if (e.code == "invalid-email") {
         showMessage(
-          "رقم الدخول غير صالح",
+          "Invalid sign-in ID",
         );
       } else {
         showMessage(
           e.message ??
-              "حدث خطأ في إنشاء المستخدم",
+              "Could not create the user",
         );
       }
     } catch (e) {
       showMessage(
-        "حدث خطأ: $e",
+        "Error: $e",
       );
     } finally {
       if (mounted) {
@@ -380,7 +380,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
       if (existingDemo.docs.isNotEmpty) {
         showMessage(
-          "الحساب التجريبي موجود مسبقاً",
+          "The demo account already exists",
         );
         return;
       }
@@ -404,7 +404,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
       if (wellExists.docs.isNotEmpty) {
         showMessage(
-          "يوجد مشرف مرتبط بهذا البئر بالفعل",
+          "This well already has a linked supervisor",
         );
         return;
       }
@@ -431,7 +431,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
       } on FirebaseAuthException catch (e) {
         if (e.code == "email-already-in-use") {
           showMessage(
-            "حساب demo موجود مسبقاً في Firebase Authentication",
+            'A "demo" account already exists in Firebase Authentication',
           );
           return;
         }
@@ -443,7 +443,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
       if (demoUser == null) {
         showMessage(
-          "تعذر إنشاء الحساب التجريبي",
+          "Could not create the demo account",
         );
         return;
       }
@@ -460,7 +460,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
           .set({
         "uid": uid,
 
-        "name": "مشرف تجريبي",
+        "name": "Demo supervisor",
         "phone": demoUsername,
         "email": demoEmail,
 
@@ -500,7 +500,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
       if (!mounted) return;
 
       await showLoginDialog(
-        title: "تم إنشاء الحساب التجريبي",
+        title: "Demo account created",
         username: demoUsername,
         password: demoPassword,
         demo: true,
@@ -508,11 +508,11 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
     } on FirebaseAuthException catch (e) {
       showMessage(
         e.message ??
-            "حدث خطأ في إنشاء الحساب التجريبي",
+            "Could not create the demo account",
       );
     } catch (e) {
       showMessage(
-        "حدث خطأ: $e",
+        "Error: $e",
       );
     } finally {
       if (mounted) {
@@ -582,7 +582,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                       ),
                     ),
                     child: const Text(
-                      "هذا الحساب مخصص للجهة التي ستقوم بتقييم النظام.",
+                      "This account is for whoever evaluates the system.",
                       style: TextStyle(
                         fontWeight:
                             FontWeight.bold,
@@ -591,7 +591,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                   ),
 
                 const Text(
-                  "بيانات تسجيل الدخول",
+                  "Sign-in details",
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -623,7 +623,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "اسم المستخدم",
+                        "Username",
                         style: TextStyle(
                           fontWeight:
                               FontWeight.bold,
@@ -667,7 +667,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "كلمة المرور",
+                        "Password",
                         style: TextStyle(
                           fontWeight:
                               FontWeight.bold,
@@ -709,7 +709,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                   ).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        "تم نسخ بيانات الدخول",
+                        "Sign-in details copied",
                       ),
                     ),
                   );
@@ -719,7 +719,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                   color: mainColor,
                 ),
                 label: const Text(
-                  "نسخ البيانات",
+                  "Copy details",
                   style: TextStyle(
                     color: mainColor,
                   ),
@@ -732,7 +732,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                   );
                 },
                 child:
-                    const Text("إغلاق"),
+                    const Text("Close"),
               ),
             ],
           ),
@@ -767,7 +767,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل المحافظات",
+            "Could not load governorates",
             style: TextStyle(
               color: Colors.red,
             ),
@@ -777,7 +777,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         if (!snapshot.hasData ||
             snapshot.data!.docs.isEmpty) {
           return const Text(
-            "لا توجد محافظات",
+            "No governorates yet",
             style: TextStyle(
               color: Colors.grey,
             ),
@@ -797,7 +797,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
           isExpanded: true,
           decoration:
               const InputDecoration(
-            labelText: "اختر المحافظة",
+            labelText: "Choose governorate",
             border:
                 OutlineInputBorder(),
             focusedBorder:
@@ -892,7 +892,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل المديريات",
+            "Could not load districts",
             style: TextStyle(
               color: Colors.red,
             ),
@@ -902,7 +902,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         if (!snapshot.hasData ||
             snapshot.data!.docs.isEmpty) {
           return const Text(
-            "لا توجد مديريات لهذه المحافظة",
+            "No districts in this governorate",
             style: TextStyle(
               color: Colors.grey,
             ),
@@ -922,7 +922,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
           isExpanded: true,
           decoration:
               const InputDecoration(
-            labelText: "اختر المديرية",
+            labelText: "Choose district",
             border:
                 OutlineInputBorder(),
             focusedBorder:
@@ -1014,7 +1014,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل العُزل",
+            "Could not load sub-districts",
             style: TextStyle(
               color: Colors.red,
             ),
@@ -1024,7 +1024,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         if (!snapshot.hasData ||
             snapshot.data!.docs.isEmpty) {
           return const Text(
-            "لا توجد عُزل لهذه المديرية",
+            "No sub-districts in this district",
             style: TextStyle(
               color: Colors.grey,
             ),
@@ -1044,7 +1044,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
           isExpanded: true,
           decoration:
               const InputDecoration(
-            labelText: "اختر العزلة",
+            labelText: "Choose sub-district",
             border:
                 OutlineInputBorder(),
             focusedBorder:
@@ -1133,7 +1133,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل القرى",
+            "Could not load villages",
             style: TextStyle(
               color: Colors.red,
             ),
@@ -1143,7 +1143,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         if (!snapshot.hasData ||
             snapshot.data!.docs.isEmpty) {
           return const Text(
-            "لا توجد قرى لهذه العزلة",
+            "No villages in this sub-district",
             style: TextStyle(
               color: Colors.grey,
             ),
@@ -1163,7 +1163,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
           isExpanded: true,
           decoration:
               const InputDecoration(
-            labelText: "اختر القرية",
+            labelText: "Choose village",
             border:
                 OutlineInputBorder(),
             focusedBorder:
@@ -1249,7 +1249,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
 
         if (snapshot.hasError) {
           return const Text(
-            "حدث خطأ في تحميل الآبار",
+            "Could not load wells",
             style: TextStyle(
               color: Colors.red,
             ),
@@ -1259,7 +1259,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         if (!snapshot.hasData ||
             snapshot.data!.docs.isEmpty) {
           return const Text(
-            "لا توجد آبار لهذه القرية",
+            "No wells in this village",
             style: TextStyle(
               color: Colors.grey,
             ),
@@ -1279,7 +1279,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
           isExpanded: true,
           decoration:
               const InputDecoration(
-            labelText: "اختر البئر",
+            labelText: "Choose well",
             border:
                 OutlineInputBorder(),
             focusedBorder:
@@ -1356,7 +1356,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         if (snapshot.hasError) {
           return const Center(
             child: Text(
-              "حدث خطأ في تحميل المشرفين",
+              "Could not load supervisors",
               style: TextStyle(
                 color: Colors.red,
               ),
@@ -1368,7 +1368,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
             snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
-              "لا توجد بيانات مشرفين",
+              "No supervisor data",
               style: TextStyle(
                 color: Colors.grey,
               ),
@@ -1470,7 +1470,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         ),
                         child:
                             const Text(
-                          "تجريبي",
+                          "Demo",
                           style:
                               TextStyle(
                             color:
@@ -1493,7 +1493,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                     "المحافظة: $province\n"
                     "المديرية: $district\n"
                     "القرية: $village\n"
-                    "البئر: $well",
+                    "Well: $well",
                   ),
                 ),
               ),
@@ -1517,7 +1517,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
         backgroundColor:
             backgroundColor,
         appBar: const MyAppBar(
-          title: "تهيئة المشرفين",
+          title: "Supervisor setup",
           showBackButton: true,
         ),
         body: Padding(
@@ -1537,7 +1537,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                 decoration:
                     const InputDecoration(
                   labelText:
-                      "اسم المشرف",
+                      "Supervisor name",
                   border:
                       OutlineInputBorder(),
                   focusedBorder:
@@ -1576,9 +1576,9 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                 decoration:
                     const InputDecoration(
                   labelText:
-                      "رقم الدخول",
+                      "Sign-in ID",
                   hintText:
-                      "مثال: 777123456",
+                      "e.g. 777123456",
                   border:
                       OutlineInputBorder(),
                   focusedBorder:
@@ -1708,8 +1708,8 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         ),
                   label: Text(
                     loading
-                        ? "جاري الحفظ..."
-                        : "حفظ المشرف",
+                        ? "Saving…"
+                        : "Save supervisor",
                     style:
                         const TextStyle(
                       color:
@@ -1778,8 +1778,8 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                         ),
                   label: Text(
                     demoLoading
-                        ? "جاري إنشاء الحساب..."
-                        : "إنشاء حساب تجريبي للتقييم",
+                        ? "Creating the account…"
+                        : "Create a demo account for evaluation",
                     style:
                         const TextStyle(
                       fontSize: 16,
@@ -1802,7 +1802,7 @@ class _SupervisorsScreenState extends State<SupervisorsScreen> {
                 alignment:
                     Alignment.centerRight,
                 child: Text(
-                  "المشرفون المسجلون",
+                  "Registered supervisors",
                   style:
                       TextStyle(
                     fontSize: 18,

@@ -27,7 +27,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("أدخل اسم المحافظة"),
+          content: Text("Enter the governorate name"),
         ),
       );
       return;
@@ -59,7 +59,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("تمت إضافة المحافظة"),
+        content: Text("Governorate added"),
       ),
     );
 
@@ -90,7 +90,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
         appBar: AppBar(
 
           title:
-              const Text("تهيئة المحافظات"),
+              const Text("Governorate setup"),
 
           centerTitle: true,
 
@@ -124,7 +124,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
                     InputDecoration(
 
                   labelText:
-                      "اسم المحافظة",
+                      "Governorate name",
 
                   prefixIcon:
                       const Icon(
@@ -195,7 +195,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
 
                   label:
                       const Text(
-                    "إضافة المحافظة",
+                    "Add governorate",
                   ),
 
                 ),
@@ -252,7 +252,7 @@ class _ProvincesScreenState extends State<ProvincesScreen> {
 
                         child:
                             Text(
-                          "لا توجد محافظات",
+                          "No governorates yet",
                         ),
 
                       );

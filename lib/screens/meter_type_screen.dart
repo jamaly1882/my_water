@@ -166,7 +166,7 @@ class _EquipmentTypeScreenState
                       CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'البئر',
+                      'Well',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
@@ -176,7 +176,7 @@ class _EquipmentTypeScreenState
                     Text(
                       selectedWellName ??
                           widget.wellName ??
-                          'البئر المحدد',
+                          'Selected well',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -237,7 +237,7 @@ class _EquipmentTypeScreenState
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'حدث خطأ في تحميل الآبار',
+                    'Could not load the wells',
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
@@ -277,7 +277,7 @@ class _EquipmentTypeScreenState
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'لا توجد آبار',
+                    'No wells yet',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.orange,
@@ -309,7 +309,7 @@ class _EquipmentTypeScreenState
               value: currentValue,
               isExpanded: true,
               decoration: const InputDecoration(
-                labelText: 'البئر',
+                labelText: 'Well',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(
                   Icons.water,
@@ -322,7 +322,7 @@ class _EquipmentTypeScreenState
                 final name =
                     data['name']?.toString() ??
                         data['wellName']?.toString() ??
-                        'بدون اسم';
+                        'No name';
 
                 return DropdownMenuItem<String>(
                   value: doc.id,
@@ -354,7 +354,7 @@ class _EquipmentTypeScreenState
                                   ?.toString() ??
                               data['wellName']
                                   ?.toString() ??
-                              'بدون اسم';
+                              'No name';
 
                       setState(() {
                         selectedWellId =
@@ -380,8 +380,8 @@ class _EquipmentTypeScreenState
       textInputAction:
           TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'نوع المعدة',
-        hintText: 'مثال: ديزل',
+        labelText: 'Meter type',
+        hintText: 'e.g. Diesel',
         border: OutlineInputBorder(),
         prefixIcon: Icon(
           Icons.precision_manufacturing,
@@ -405,8 +405,8 @@ class _EquipmentTypeScreenState
       textInputAction:
           TextInputAction.done,
       decoration: const InputDecoration(
-        labelText: 'سعر الوحدة',
-        hintText: 'مثال: 130',
+        labelText: 'Unit price',
+        hintText: 'e.g. 130',
         border: OutlineInputBorder(),
         prefixIcon: Icon(
           Icons.payments,
@@ -431,7 +431,7 @@ class _EquipmentTypeScreenState
     if (selectedWellId == null ||
         selectedWellId!.trim().isEmpty) {
       showMessage(
-        'يرجى تحديد البئر',
+        'Choose the well',
         error: true,
       );
       return;
@@ -439,7 +439,7 @@ class _EquipmentTypeScreenState
 
     if (name.isEmpty) {
       showMessage(
-        'يرجى إدخال نوع المعدة',
+        'Enter the meter type',
         error: true,
       );
       return;
@@ -447,7 +447,7 @@ class _EquipmentTypeScreenState
 
     if (priceText.isEmpty) {
       showMessage(
-        'يرجى إدخال سعر الوحدة',
+        'Enter the unit price',
         error: true,
       );
       return;
@@ -459,7 +459,7 @@ class _EquipmentTypeScreenState
     if (price == null ||
         price < 0) {
       showMessage(
-        'سعر الوحدة غير صحيح',
+        'Invalid unit price',
         error: true,
       );
       return;
@@ -532,7 +532,7 @@ class _EquipmentTypeScreenState
       if (!mounted) return;
 
       showMessage(
-        'تم إضافة نوع المعدة بنجاح',
+        'Meter type added',
       );
 
       newRecord(
@@ -570,7 +570,7 @@ class _EquipmentTypeScreenState
     if (selectedWellId == null ||
         selectedWellId!.trim().isEmpty) {
       showMessage(
-        'يرجى تحديد البئر',
+        'Choose the well',
         error: true,
       );
       return;
@@ -578,7 +578,7 @@ class _EquipmentTypeScreenState
 
     if (name.isEmpty) {
       showMessage(
-        'يرجى إدخال نوع المعدة',
+        'Enter the meter type',
         error: true,
       );
       return;
@@ -586,7 +586,7 @@ class _EquipmentTypeScreenState
 
     if (priceText.isEmpty) {
       showMessage(
-        'يرجى إدخال سعر الوحدة',
+        'Enter the unit price',
         error: true,
       );
       return;
@@ -598,7 +598,7 @@ class _EquipmentTypeScreenState
     if (price == null ||
         price < 0) {
       showMessage(
-        'سعر الوحدة غير صحيح',
+        'Invalid unit price',
         error: true,
       );
       return;
@@ -666,7 +666,7 @@ class _EquipmentTypeScreenState
       if (!mounted) return;
 
       showMessage(
-        'تم تعديل نوع المعدة بنجاح',
+        'Meter type updated',
       );
 
       newRecord(
@@ -701,10 +701,10 @@ class _EquipmentTypeScreenState
       builder: (context) {
         return AlertDialog(
           title: const Text(
-            'تأكيد الحذف',
+            'Confirm delete',
           ),
           content: const Text(
-            'هل أنت متأكد من حذف نوع المعدة المحدد؟',
+            'Delete the selected meter type?',
           ),
           actions: [
             TextButton(
@@ -715,7 +715,7 @@ class _EquipmentTypeScreenState
                 );
               },
               child: const Text(
-                'إلغاء',
+                'Cancel',
               ),
             ),
             ElevatedButton(
@@ -731,7 +731,7 @@ class _EquipmentTypeScreenState
                 );
               },
               child: const Text(
-                'حذف',
+                'Delete',
               ),
             ),
           ],
@@ -758,7 +758,7 @@ class _EquipmentTypeScreenState
       if (!mounted) return;
 
       showMessage(
-        'تم حذف نوع المعدة',
+        'Meter type deleted',
       );
 
       newRecord(
@@ -802,8 +802,8 @@ class _EquipmentTypeScreenState
                 Expanded(
                   child: Text(
                     isEditing
-                        ? 'تعديل نوع المعدة'
-                        : 'إضافة نوع معدة جديدة',
+                        ? 'Edit meter type'
+                        : 'Add meter type',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight:
@@ -820,7 +820,7 @@ class _EquipmentTypeScreenState
               alignment:
                   Alignment.centerRight,
               child: Text(
-                'حدد البئر ونوع المعدة والسعر',
+                'Pick the well, the meter type and the price',
                 style: TextStyle(
                   color:
                       Colors.grey.shade700,
@@ -882,8 +882,8 @@ class _EquipmentTypeScreenState
                           ),
                     label: Text(
                       isEditing
-                          ? 'حفظ التعديل'
-                          : 'إضافة',
+                          ? 'Save changes'
+                          : 'Add',
                     ),
                     style:
                         ElevatedButton.styleFrom(
@@ -915,7 +915,7 @@ class _EquipmentTypeScreenState
                         Icons.clear,
                       ),
                       label: const Text(
-                        'إلغاء',
+                        'Cancel',
                       ),
                       style:
                           OutlinedButton
@@ -948,7 +948,7 @@ class _EquipmentTypeScreenState
                     color: Colors.red,
                   ),
                   label: const Text(
-                    'حذف نوع المعدة',
+                    'Delete meter type',
                     style: TextStyle(
                       color: Colors.red,
                     ),
@@ -1066,7 +1066,7 @@ class _EquipmentTypeScreenState
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'حدث خطأ في تحميل أنواع المعدات',
+                    'Could not load the meter types',
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight:
@@ -1106,7 +1106,7 @@ class _EquipmentTypeScreenState
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'لا توجد أنواع معدات',
+                    'No meter types yet',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight:
@@ -1117,8 +1117,8 @@ class _EquipmentTypeScreenState
                   const SizedBox(height: 5),
                   Text(
                     hasFixedWell
-                        ? 'لا توجد أنواع معدات لهذا البئر'
-                        : 'قم بإضافة نوع معدة جديد',
+                        ? 'No meter types on this well'
+                        : 'Add a new meter type',
                     textAlign:
                         TextAlign.center,
                     style: const TextStyle(
@@ -1151,7 +1151,7 @@ class _EquipmentTypeScreenState
 
             final name =
                 data['name']?.toString() ??
-                    'بدون اسم';
+                    'No name';
 
             final price =
                 readPrice(
@@ -1302,9 +1302,9 @@ class _EquipmentTypeScreenState
                               icon:
                                   Icons.payments,
                               title:
-                                  'سعر الوحدة',
+                                  'Unit price',
                               value:
-                                  '${formatPrice(price)} ريال',
+                                  '${formatPrice(price)} YER',
                             ),
                           ),
 
@@ -1314,7 +1314,7 @@ class _EquipmentTypeScreenState
                                   Icons
                                       .calculate_outlined,
                               title:
-                                  'الرصيد التراكمي',
+                                  'Running balance',
                               value:
                                   unitsCount
                                       .toString(),
@@ -1391,7 +1391,7 @@ class _EquipmentTypeScreenState
       child: Scaffold(
         appBar: const MyAppBar(
           title:
-              'تهيئة أنواع المعدات والأسعار',
+              'Meter types and prices setup',
           icon: Icons.precision_manufacturing,
         ),
         body: SingleChildScrollView(
@@ -1409,7 +1409,7 @@ class _EquipmentTypeScreenState
                   alignment:
                       Alignment.centerRight,
                   child: Text(
-                    'أنواع المعدات المسجلة',
+                    'Registered meter types',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight:

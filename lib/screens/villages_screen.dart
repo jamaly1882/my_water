@@ -54,7 +54,7 @@ class _VillagesScreenState
 
     if (provinceId == null) {
 
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return;
 
     }
@@ -62,7 +62,7 @@ class _VillagesScreenState
 
     if (districtId == null) {
 
-      showMessage("اختر المديرية");
+      showMessage("Choose district");
       return;
 
     }
@@ -70,7 +70,7 @@ class _VillagesScreenState
 
     if (hamletId == null) {
 
-      showMessage("اختر العزلة");
+      showMessage("Choose sub-district");
       return;
 
     }
@@ -78,7 +78,7 @@ class _VillagesScreenState
 
     if (name.isEmpty) {
 
-      showMessage("أدخل اسم القرية");
+      showMessage("Enter the village name");
       return;
 
     }
@@ -134,7 +134,7 @@ class _VillagesScreenState
 
 
 
-    showMessage("تمت إضافة القرية");
+    showMessage("Village added");
 
   }
 
@@ -183,7 +183,7 @@ class _VillagesScreenState
 
           title:
               const Text(
-            "تهيئة القرى",
+            "Village setup",
           ),
 
           centerTitle: true,
@@ -246,7 +246,7 @@ class _VillagesScreenState
                     const InputDecoration(
 
                       labelText:
-                      "اختر المحافظة",
+                      "Choose governorate",
 
                       border:
                       OutlineInputBorder(),
@@ -383,7 +383,7 @@ class _VillagesScreenState
                           const InputDecoration(
 
                         labelText:
-                            "اختر المديرية",
+                            "Choose district",
 
                         border:
                             OutlineInputBorder(),
@@ -502,7 +502,7 @@ class _VillagesScreenState
                           const InputDecoration(
 
                         labelText:
-                            "اختر العزلة",
+                            "Choose sub-district",
 
                         border:
                             OutlineInputBorder(),
@@ -596,7 +596,7 @@ class _VillagesScreenState
                     const InputDecoration(
 
                   labelText:
-                      "اسم القرية",
+                      "Village name",
 
                   border:
                       OutlineInputBorder(),
@@ -656,7 +656,7 @@ class _VillagesScreenState
 
                   label:
                       const Text(
-                    "إضافة القرية",
+                    "Add village",
                   ),
 
                 ),
@@ -708,7 +708,7 @@ class _VillagesScreenState
 
                         child:
                             Text(
-                          "لا توجد قرى",
+                          "No villages yet",
                         ),
 
                       );

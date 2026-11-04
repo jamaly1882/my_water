@@ -35,27 +35,27 @@ class _WellsScreenState extends State<WellsScreen> {
     final name = wellController.text.trim();
 
     if (provinceId == null) {
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return;
     }
 
     if (districtId == null) {
-      showMessage("اختر المديرية");
+      showMessage("Choose district");
       return;
     }
 
     if (hamletId == null) {
-      showMessage("اختر العزلة");
+      showMessage("Choose sub-district");
       return;
     }
 
     if (villageId == null) {
-      showMessage("اختر القرية");
+      showMessage("Choose village");
       return;
     }
 
     if (name.isEmpty) {
-      showMessage("اكتب اسم أو رقم البئر");
+      showMessage("Type the well name or number");
       return;
     }
 
@@ -90,7 +90,7 @@ class _WellsScreenState extends State<WellsScreen> {
         loading = false;
       });
 
-      showMessage("تمت إضافة البئر بنجاح");
+      showMessage("Well added");
     } catch (e) {
       if (!mounted) return;
 
@@ -187,7 +187,7 @@ class _WellsScreenState extends State<WellsScreen> {
 
         if (docs.isEmpty) {
           return const Text(
-            "لا توجد محافظات",
+            "No governorates yet",
             style: TextStyle(color: Colors.red),
           );
         }
@@ -196,7 +196,7 @@ class _WellsScreenState extends State<WellsScreen> {
           value: provinceId,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: "اختر المحافظة",
+            labelText: "Choose governorate",
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.location_on),
           ),
@@ -302,8 +302,8 @@ class _WellsScreenState extends State<WellsScreen> {
             ),
             child: Text(
               "لا توجد مديريات مرتبطة بالمحافظة:\n$provinceName\n\n"
-              "تأكد أن حقل provinceId داخل مجموعة districts "
-              "يساوي ID المحافظة.",
+              "Make sure provinceId inside the districts collection "
+              "equals the governorate ID.",
               style: TextStyle(
                 color: Colors.orange.shade900,
               ),
@@ -335,7 +335,7 @@ class _WellsScreenState extends State<WellsScreen> {
           value: districtExists ? districtId : null,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: "اختر المديرية",
+            labelText: "Choose district",
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.location_city),
           ),
@@ -437,7 +437,7 @@ class _WellsScreenState extends State<WellsScreen> {
           value: hamletExists ? hamletId : null,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: "اختر العزلة",
+            labelText: "Choose sub-district",
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.account_tree),
           ),
@@ -535,7 +535,7 @@ class _WellsScreenState extends State<WellsScreen> {
           value: villageExists ? villageId : null,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: "اختر القرية",
+            labelText: "Choose village",
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.home_work),
           ),
@@ -581,8 +581,8 @@ class _WellsScreenState extends State<WellsScreen> {
       controller: wellController,
       textDirection: TextDirection.rtl,
       decoration: const InputDecoration(
-        labelText: "اسم / رقم البئر",
-        hintText: "مثال: بئر رقم 1",
+        labelText: "Well name / number",
+        hintText: "e.g. Well 1",
         border: OutlineInputBorder(),
         prefixIcon: Icon(
           Icons.water_drop,
@@ -613,7 +613,7 @@ class _WellsScreenState extends State<WellsScreen> {
               )
             : const Icon(Icons.save),
         label: Text(
-          loading ? "جاري الحفظ..." : "إضافة البئر",
+          loading ? "Saving…" : "Add well",
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -661,7 +661,7 @@ class _WellsScreenState extends State<WellsScreen> {
         if (docs.isEmpty) {
           return const Center(
             child: Text(
-              "لا توجد آبار",
+              "No wells yet",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
@@ -764,7 +764,7 @@ class _WellsScreenState extends State<WellsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "تهيئة الآبار",
+            "Well setup",
           ),
           centerTitle: true,
           backgroundColor: Colors.blue,
@@ -839,7 +839,7 @@ class _WellsScreenState extends State<WellsScreen> {
                     ),
                     const SizedBox(width: 8),
                     const Text(
-                      "الآبار المسجلة",
+                      "Registered wells",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

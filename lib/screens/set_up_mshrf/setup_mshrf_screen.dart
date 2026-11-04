@@ -91,7 +91,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
       setState(() {
         _loading = false;
         _error =
-            'تعذر تحميل بيانات لوحة المؤشرات. تحقق من الاتصال وصلاحيات الحساب.';
+            'Could not load the dashboard data. Check the connection and account permissions.';
       });
     }
   }
@@ -133,7 +133,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
             IconButton(
               onPressed: _loading ? null : _load,
               icon: const Icon(Icons.refresh),
-              tooltip: 'تحديث البيانات',
+              tooltip: 'Refresh data',
             ),
           ],
         ),
@@ -199,7 +199,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                 Icons.dashboard,
                 color: gmPrimary,
               ),
-              label: 'الرئيسية',
+              label: 'Overview',
             ),
             NavigationDestination(
               icon: Icon(Icons.map_outlined),
@@ -207,7 +207,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                 Icons.map,
                 color: gmPrimary,
               ),
-              label: 'الخريطة',
+              label: 'Map',
             ),
             NavigationDestination(
               icon: Icon(Icons.psychology),
@@ -215,7 +215,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                 Icons.psychology,
                 color: gmPrimary,
               ),
-              label: 'التحليل',
+              label: 'Analytics',
             ),
             NavigationDestination(
               icon: Icon(Icons.tune),
@@ -223,7 +223,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                 Icons.tune,
                 color: gmPrimary,
               ),
-              label: 'التهيئة',
+              label: 'Setup',
             ),
           ],
         ),
@@ -251,11 +251,11 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
           const SizedBox(height: 16),
 
           GmSectionTitle(
-            title: 'تهيئة البيانات',
+            title: 'Data setup',
             icon: Icons.account_tree,
             subtitle:
-                'ينشئ المشرف الرئيسي المحافظات والمديريات والعُزل '
-                'والقرى والآبار والمشرفين',
+                'The main supervisor creates governorates, districts, sub-districts, '
+                'villages, wells and supervisors',
             trailing: data == null
                 ? null
                 : GmPill(
@@ -276,37 +276,37 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
 
             children: <Widget>[
               _menuCard(
-                title: 'المحافظات',
+                title: 'Governorates',
                 icon: Icons.location_city,
                 page: const ProvincesScreen(),
                 count: data?.provinceCount,
               ),
               _menuCard(
-                title: 'المديريات',
+                title: 'Districts',
                 icon: Icons.map,
                 page: const DistrictsScreen(),
                 count: data?.districtCount,
               ),
               _menuCard(
-                title: 'العُزل',
+                title: 'Sub-districts',
                 icon: Icons.home_work,
                 page: const HamletsScreen(),
                 count: data?.hamletCount,
               ),
               _menuCard(
-                title: 'القرى',
+                title: 'Villages',
                 icon: Icons.home,
                 page: const VillagesScreen(),
                 count: data?.villageCount,
               ),
               _menuCard(
-                title: 'الآبار',
+                title: 'Wells',
                 icon: Icons.water_drop,
                 page: const WellsScreen(),
                 count: data?.wellCount,
               ),
               _menuCard(
-                title: 'المشرفون',
+                title: 'Supervisors',
                 icon: Icons.supervisor_account,
                 page: const SupervisorsScreen(),
                 count: data?.supervisorCount,
@@ -325,7 +325,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
           const SizedBox(height: 12),
 
           Text(
-            'نظام إدارة المياه — المشرف الرئيسي',
+            'Azal Soft Platform — main supervisor',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 9.5,
@@ -387,7 +387,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                       CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'المشرف الرئيسي',
+                      'Main supervisor',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 17,
@@ -396,8 +396,8 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'صلاحية كاملة: إنشاء البيانات والمشرفين '
-                      'ومشاهدة جميع الآبار والقرى والإحصائيات.',
+                      'Full permissions: create data and supervisors '
+                      'and view every well, village and figure.',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 10.5,
@@ -415,14 +415,14 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
               children: <Widget>[
                 _headerChip(
                   '${data.provinceCount}',
-                  'محافظة',
+                  'governorates',
                 ),
                 const SizedBox(width: 8),
-                _headerChip('${data.wellCount}', 'بئر'),
+                _headerChip('${data.wellCount}', 'wells'),
                 const SizedBox(width: 8),
                 _headerChip(
                   '${data.supervisorCount}',
-                  'مشرف',
+                  'supervisors',
                 ),
               ],
             ),
@@ -617,7 +617,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
         onPressed: _logout,
         icon: const Icon(Icons.logout, size: 18),
         label: const Text(
-          'تسجيل الخروج',
+          'Sign out',
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.bold,
@@ -645,14 +645,14 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
           textDirection: TextDirection.rtl,
           child: AlertDialog(
             title: const Text(
-              'تسجيل الخروج',
+              'Sign out',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             content: const Text(
-              'هل تريد تسجيل الخروج من حساب المشرف الرئيسي؟',
+              'Sign out of the main supervisor account?',
               style: TextStyle(fontSize: 12.5),
             ),
             actions: <Widget>[
@@ -660,13 +660,13 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
                 onPressed: () {
                   Navigator.pop(dialogContext, false);
                 },
-                child: const Text('إلغاء'),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(dialogContext, true);
                 },
-                child: const Text('خروج'),
+                child: const Text('Sign out'),
               ),
             ],
           ),
