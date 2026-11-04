@@ -38,7 +38,7 @@ class _AiAgentPageState
 
     if (message.isEmpty) {
       setState(() {
-        _error = 'اكتب سؤالك أولاً.';
+        _error = 'Type your question first.';
       });
 
       return;
@@ -88,7 +88,7 @@ class _AiAgentPageState
         _messages.add(
           _ChatMessage(
             text: answer.isEmpty
-                ? 'لم يتم إرجاع إجابة.'
+                ? 'No answer was returned.'
                 : answer,
             isUser: false,
           ),
@@ -218,8 +218,8 @@ class _AiAgentPageState
                 ),
                 Text(
                   isUser
-                      ? 'أنت'
-                      : 'مساعد البئر',
+                      ? 'You'
+                      : 'Well assistant',
                   style:
                       const TextStyle(
                     fontWeight:
@@ -269,7 +269,7 @@ class _AiAgentPageState
                 ),
                 const Expanded(
                   child: Text(
-                    'مساعد إدارة البئر',
+                    'Well assistant',
                     style:
                         TextStyle(
                       fontSize: 21,
@@ -285,8 +285,8 @@ class _AiAgentPageState
             ),
             Text(
               _wellName.isEmpty
-                  ? 'اسألني عن بيانات البئر المرتبط بحسابك.'
-                  : 'البئر الحالي: $_wellName',
+                  ? 'Ask me about the wells, villages, subscribers and consumption in your system.'
+                  : 'Current well: $_wellName',
               style:
                   TextStyle(
                 color:
@@ -298,7 +298,7 @@ class _AiAgentPageState
               height: 12,
             ),
             const Text(
-              'يمكنك أن تسأل بطريقة طبيعية، مثل:',
+              'You can ask in plain language, for example:',
               style:
                   TextStyle(
                 fontWeight:
@@ -309,13 +309,13 @@ class _AiAgentPageState
               height: 8,
             ),
             const Text(
-              '• اعرض لي عملائي\n'
-              '• اعرض قراءات عملائي\n'
-              '• اعرض حساباتهم\n'
-              '• من عليه مديونية؟\n'
-              '• اعرض سندات الصرف\n'
-              '• كم إجمالي الاستهلاك؟\n'
-              '• اعرض قيمة صقر عبد الله جمال',
+              '• Summary of the portfolio\n'
+              '• Which well consumes the most?\n'
+              '• Which villages are rising?\n'
+              '• What needs review?\n'
+              '• How many subscribers are linked?\n'
+              '• Consumption trend\n'
+              '• Where are the wells?',
               style:
                   TextStyle(
                 height: 1.8,
@@ -343,7 +343,7 @@ class _AiAgentPageState
           actions: [
             if (_messages.isNotEmpty)
               IconButton(
-                tooltip: 'مسح المحادثة',
+                tooltip: 'Clear conversation',
                 onPressed: _loading
                     ? null
                     : _clearChat,
@@ -414,7 +414,7 @@ class _AiAgentPageState
                               width: 10,
                             ),
                             Text(
-                              'جاري التفكير والبحث...',
+                              'Analysing your data…',
                             ),
                           ],
                         ),
@@ -490,7 +490,7 @@ class _AiAgentPageState
                         decoration:
                             InputDecoration(
                           hintText:
-                              'اكتب سؤالك هنا...',
+                              'Type your question…',
                           border:
                               const OutlineInputBorder(),
                           filled: true,

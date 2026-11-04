@@ -1,11 +1,11 @@
 {
-    "name": "my_water",
-    "short_name": "my_water",
+    "name": "Azal Soft Platform",
+    "short_name": "Azal Soft",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Well subscription and meter-reading management for 10 wells and 60 subscribers.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

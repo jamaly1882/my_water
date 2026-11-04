@@ -25,7 +25,7 @@ class MyWaterApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      title: 'نظام إدارة المياه',
+      title: 'Azal Soft Platform',
 
       // =========================================================
       // اللغة العربية
