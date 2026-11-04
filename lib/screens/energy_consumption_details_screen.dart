@@ -98,18 +98,18 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
       if (text.contains('شمس') ||
           text.contains('solar') ||
           text.contains('sun')) {
-        return 'طاقة شمسية';
+        return 'Solar';
       }
 
       if (text.contains('ديزل') ||
           text.contains('diesel') ||
           text.contains('مولد') ||
           text.contains('generator')) {
-        return 'ديزل';
+        return 'Diesel';
       }
     }
 
-    return 'غير محدد';
+    return 'Not set';
   }
 
   // ============================================================
@@ -294,7 +294,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
     Duration duration,
   ) {
     if (duration.isNegative) {
-      return '0 دقيقة';
+      return '0 min';
     }
 
     final days = duration.inDays;
@@ -302,14 +302,14 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
     final minutes = duration.inMinutes % 60;
 
     if (days > 0) {
-      return '$days يوم و $hours ساعة';
+      return '$days d $hours h';
     }
 
     if (hours > 0) {
-      return '$hours ساعة و $minutes دقيقة';
+      return '$hours h $minutes min';
     }
 
-    return '$minutes دقيقة';
+    return '$minutes min';
   }
 
   // ============================================================
@@ -348,11 +348,11 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
   IconData getEnergyIcon(
     String energyType,
   ) {
-    if (energyType == 'طاقة شمسية') {
+    if (energyType == 'Solar') {
       return Icons.wb_sunny;
     }
 
-    if (energyType == 'ديزل') {
+    if (energyType == 'Diesel') {
       return Icons.local_gas_station;
     }
 
@@ -483,7 +483,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
                             .start,
                     children: [
                       Text(
-                        'الدورة رقم ${getCycleNumber(cycle)}',
+                        'Cycle no. ${getCycleNumber(cycle)}',
                         style:
                             const TextStyle(
                           fontSize: 17,
@@ -523,7 +523,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
             buildInfoRow(
               icon:
                   Icons.person_outline,
-              title: 'العميل',
+              title: 'Subscriber',
               value:
                   getCustomerName(
                 cycle,
@@ -532,7 +532,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
 
             buildInfoRow(
               icon: Icons.speed,
-              title: 'القراءة السابقة',
+              title: 'Previous reading',
               value:
                   getPreviousReading(
                 cycle,
@@ -542,7 +542,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
             buildInfoRow(
               icon:
                   Icons.speed_outlined,
-              title: 'القراءة الحالية',
+              title: 'Current reading',
               value:
                   getCurrentReading(
                 cycle,
@@ -552,7 +552,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
             buildInfoRow(
               icon:
                   Icons.water_drop_outlined,
-              title: 'الاستهلاك',
+              title: 'Consumption',
               value:
                   formatNumber(
                 consumption,
@@ -561,7 +561,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
 
             buildInfoRow(
               icon: Icons.timelapse,
-              title: 'مدة الدورة',
+              title: 'Cycle duration',
               value:
                   formatDuration(
                 duration,
@@ -571,7 +571,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
             buildInfoRow(
               icon:
                   Icons.play_arrow_outlined,
-              title: 'بداية الدورة',
+              title: 'Cycle start',
               value:
                   formatDate(
                 startDate,
@@ -581,7 +581,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
             buildInfoRow(
               icon:
                   Icons.stop_outlined,
-              title: 'نهاية الدورة',
+              title: 'Cycle end',
               value:
                   formatDate(
                 endDate,
@@ -621,7 +621,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 7),
                   Text(
-                    'الدورة مغلقة',
+                    'Cycle closed',
                     style: TextStyle(
                       color: Colors.green,
                       fontWeight:
@@ -654,13 +654,13 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
             backgroundColor,
 
         appBar: MyAppBar(
-          title: 'تفاصيل الدورات',
+          title: 'Cycle details',
         ),
 
         body: cycles.isEmpty
             ? const Center(
                 child: Text(
-                  'لا توجد دورات مغلقة',
+                  'No closed cycles',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight:
@@ -716,7 +716,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
 
                           Expanded(
                             child: Text(
-                              'البئر: $wellName',
+                              'Well: $wellName',
                               style:
                                   const TextStyle(
                                 fontSize: 16,
@@ -766,7 +766,7 @@ class EnergyConsumptionDetailsScreen extends StatelessWidget {
                         ),
 
                         Text(
-                          'إجمالي الدورات: ${cycles.length}',
+                          'Cycles: ${cycles.length}',
                           style:
                               const TextStyle(
                             fontSize: 16,

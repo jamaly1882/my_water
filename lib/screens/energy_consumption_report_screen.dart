@@ -120,11 +120,11 @@ class _EnergyConsumptionReportScreenState
       }
 
       if (isSolar(candidate)) {
-        return 'الطاقة الشمسية';
+        return 'Solar';
       }
 
       if (isDiesel(candidate)) {
-        return 'الديزل';
+        return 'Diesel';
       }
     }
 
@@ -134,7 +134,7 @@ class _EnergyConsumptionReportScreenState
       }
     }
 
-    return 'غير محدد';
+    return 'Not set';
   }
 
   String getRawMeterTypeName(Map<String, dynamic> data) {
@@ -165,7 +165,7 @@ class _EnergyConsumptionReportScreenState
 
   String formatDuration(Duration duration) {
     if (duration.isNegative) {
-      return '0 دقيقة';
+      return '0 min';
     }
 
     final totalMinutes = duration.inMinutes;
@@ -173,18 +173,18 @@ class _EnergyConsumptionReportScreenState
     final minutes = totalMinutes % 60;
 
     if (hours == 0 && minutes == 0) {
-      return '0 دقيقة';
+      return '0 min';
     }
 
     if (hours == 0) {
-      return '$minutes دقيقة';
+      return '$minutes min';
     }
 
     if (minutes == 0) {
-      return '$hours ساعة';
+      return '$hours h';
     }
 
-    return '$hours ساعة و$minutes دقيقة';
+    return '$hours h $minutes min';
   }
 
   Future<void> loadReport() async {
@@ -334,10 +334,10 @@ class _EnergyConsumptionReportScreenState
   String get wellTitle {
     if (widget.wellName == null ||
         widget.wellName!.trim().isEmpty) {
-      return 'جميع البيانات';
+      return 'All data';
     }
 
-    return 'البئر: ${widget.wellName}';
+    return 'Well: ${widget.wellName}';
   }
 
   Widget buildSummaryCard({
@@ -383,19 +383,19 @@ class _EnergyConsumptionReportScreenState
             const Divider(),
             const SizedBox(height: 8),
             _summaryRow(
-              'الاستهلاك',
-              '${formatNumber(consumption)} وحدة',
+              'Consumption',
+              '${formatNumber(consumption)} units',
               Icons.water_drop,
             ),
             const SizedBox(height: 7),
             _summaryRow(
-              'عدد الساعات',
+              'Hours',
               formatDuration(duration),
               Icons.access_time,
             ),
             const SizedBox(height: 7),
             _summaryRow(
-              'عدد الأدوار',
+              'Cycles',
               cyclesCount.toString(),
               Icons.loop,
             ),
@@ -467,7 +467,7 @@ class _EnergyConsumptionReportScreenState
             ),
             const SizedBox(height: 15),
             const Text(
-              'لا توجد دورات مغلقة لهذا البئر',
+              'No closed cycles on this well',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 17,
@@ -476,7 +476,7 @@ class _EnergyConsumptionReportScreenState
             ),
             const SizedBox(height: 8),
             Text(
-              'سيظهر تقرير استهلاك الطاقة بعد إغلاق الدورات.',
+              'The energy report appears once cycles are closed.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.grey.shade600,
@@ -495,7 +495,7 @@ class _EnergyConsumptionReportScreenState
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: MyAppBar(
-          title: 'تقرير استهلاك الطاقة',
+          title: 'Energy consumption report',
           subtitle: wellTitle,
           icon: Icons.bolt,
           showBackButton: true,
@@ -527,7 +527,7 @@ class _EnergyConsumptionReportScreenState
                               child:
                                   buildSummaryCard(
                                 title:
-                                    'الطاقة الشمسية',
+                                    'Solar',
                                 icon:
                                     Icons.wb_sunny,
                                 consumption:
@@ -542,7 +542,7 @@ class _EnergyConsumptionReportScreenState
                             Expanded(
                               child:
                                   buildSummaryCard(
-                                title: 'الديزل',
+                                title: 'Diesel',
                                 icon:
                                     Icons.local_gas_station,
                                 consumption:
@@ -610,7 +610,7 @@ class _EnergyConsumptionReportScreenState
                   CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'استهلاك الطاقة',
+                  'Energy consumption',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 19,
@@ -645,7 +645,7 @@ class _EnergyConsumptionReportScreenState
         child: Column(
           children: [
             const Text(
-              'الإجمالي',
+              'Total',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -656,19 +656,19 @@ class _EnergyConsumptionReportScreenState
               children: [
                 Expanded(
                   child: _totalBox(
-                    'الاستهلاك',
+                    'Consumption',
                     formatNumber(
                       solarConsumption +
                           dieselConsumption,
                     ),
-                    'وحدة',
+                    'units',
                     Icons.water_drop,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _totalBox(
-                    'الساعات',
+                    'Hours',
                     formatDuration(
                       solarDuration +
                           dieselDuration,
@@ -723,7 +723,7 @@ class _EnergyConsumptionReportScreenState
                       CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'تفاصيل الدورات',
+                      'Cycle details',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight:
@@ -732,7 +732,7 @@ class _EnergyConsumptionReportScreenState
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'عرض جميع الدورات وتفاصيل استهلاك الطاقة',
+                      'All cycles with their energy details',
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 12,
@@ -768,7 +768,7 @@ class _EnergyConsumptionReportScreenState
             ),
             const SizedBox(height: 12),
             const Text(
-              'حدث خطأ أثناء تحميل التقرير',
+              'Could not load the report',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -788,7 +788,7 @@ class _EnergyConsumptionReportScreenState
               onPressed: loadReport,
               icon: const Icon(Icons.refresh),
               label:
-                  const Text('إعادة المحاولة'),
+                  const Text('Retry'),
               style:
                   ElevatedButton.styleFrom(
                 backgroundColor: mainColor,
