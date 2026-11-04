@@ -163,3 +163,87 @@ Future<void> stopSystemAudio() async {
     // تجاهل
   }
 }
+
+Future<bool> captionsSupported() async {
+  final dynamic voice = _voice();
+
+  if (voice == null) return false;
+
+  try {
+    return js_util.callMethod<bool>(
+      voice,
+      'captionsSupported',
+      <dynamic>[],
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+Future<bool> openCaptions() async {
+  final dynamic voice = _voice();
+
+  if (voice == null) return false;
+
+  try {
+    final dynamic result = js_util.callMethod<dynamic>(
+      voice,
+      'openCaptions',
+      <dynamic>[],
+    );
+
+    final dynamic opened =
+        await js_util.promiseToFuture<dynamic>(result);
+
+    return opened == true;
+  } catch (_) {
+    return false;
+  }
+}
+
+Future<void> updateCaptions({
+  required String arabic,
+  required String original,
+}) async {
+  final dynamic voice = _voice();
+
+  if (voice == null) return;
+
+  try {
+    js_util.callMethod<dynamic>(
+      voice,
+      'updateCaptions',
+      <dynamic>[arabic, original],
+    );
+  } catch (_) {
+    // تجاهل
+  }
+}
+
+Future<void> closeCaptions() async {
+  final dynamic voice = _voice();
+
+  if (voice == null) return;
+
+  try {
+    js_util.callMethod<dynamic>(voice, 'closeCaptions', <dynamic>[]);
+  } catch (_) {
+    // تجاهل
+  }
+}
+
+Future<bool> isCaptionsOpen() async {
+  final dynamic voice = _voice();
+
+  if (voice == null) return false;
+
+  try {
+    return js_util.callMethod<bool>(
+      voice,
+      'isCaptionsOpen',
+      <dynamic>[],
+    );
+  } catch (_) {
+    return false;
+  }
+}

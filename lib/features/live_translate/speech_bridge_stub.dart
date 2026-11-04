@@ -36,3 +36,16 @@ Future<void> startSystemAudio({
 }
 
 Future<void> stopSystemAudio() async {}
+
+Future<bool> captionsSupported() async => false;
+
+Future<bool> openCaptions() async => false;
+
+Future<void> updateCaptions({
+  required String arabic,
+  required String original,
+}) async {}
+
+Future<void> closeCaptions() async {}
+
+Future<bool> isCaptionsOpen() async => false;

@@ -65,6 +65,7 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
   bool _supportsSystemAudio = false;
 
   bool _saving = false;
+  bool _captionsOpen = false;
 
   String _status = 'جاهز. اختر المصدر ثم اضغط «ابدأ الاستماع».';
   String _partial = '';
@@ -187,6 +188,8 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
         _partial = clean;
       });
 
+      _pushCaptions('…', clean);
+
       return;
     }
 
@@ -241,6 +244,8 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
         segment.arabic = arabic;
         segment.pending = false;
       });
+
+      _pushCaptions(arabic, segment.original);
     } catch (error) {
       if (!mounted) return;
 
@@ -459,6 +464,55 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
   }
 
   // ----------------------------------------------------------
+  // النافذة العائمة فوق Zoom
+  // ----------------------------------------------------------
+
+  Future<void> _toggleCaptions() async {
+    if (_captionsOpen) {
+      await SpeechBridge.closeCaptions();
+
+      if (!mounted) return;
+
+      setState(() {
+        _captionsOpen = false;
+      });
+
+      return;
+    }
+
+    final bool supported = await SpeechBridge.captionsSupported();
+
+    if (!supported) {
+      _snack(
+        'النافذة العائمة تحتاج Chrome 116 أو أحدث على الحاسوب.',
+        error: true,
+      );
+      return;
+    }
+
+    final bool opened = await SpeechBridge.openCaptions();
+
+    if (!mounted) return;
+
+    setState(() {
+      _captionsOpen = opened;
+    });
+
+    if (opened) {
+      _snack('نافذة الترجمة العائمة مفتوحة — يمكنك تصغير المتصفح وفتح Zoom.');
+    }
+  }
+
+  Future<void> _pushCaptions(String arabic, String original) async {
+    if (!_captionsOpen) return;
+
+    await SpeechBridge.updateCaptions(
+      arabic: arabic,
+      original: original,
+    );
+  }
+
+  // ----------------------------------------------------------
   // البناء
   // ----------------------------------------------------------
 
@@ -473,6 +527,15 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
           subtitle: 'Live speech → Arabic',
           icon: Icons.translate,
           actions: <Widget>[
+            IconButton(
+              tooltip: 'ترجمة عائمة فوق التطبيقات',
+              onPressed: _toggleCaptions,
+              icon: Icon(
+                _captionsOpen
+                    ? Icons.picture_in_picture_alt
+                    : Icons.picture_in_picture_alt_outlined,
+              ),
+            ),
             IconButton(
               tooltip: 'الإعدادات',
               onPressed: _openSettings,
@@ -566,8 +629,9 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
           const SizedBox(height: 10),
           Text(
             systemMode
-                ? 'يشارك التبويب ويعترض صوته، ثم يرسله إلى خدمة التفريغ. '
-                    'اختر «مشاركة صوت التبويب» في نافذة المشاركة.'
+                ? 'لمتابعة Zoom المكتبي: اختر «الشاشة الكاملة» ثم فعّل '
+                    '«مشاركة صوت النظام» (Chrome على ويندوز). '
+                    'لاجتماع في تبويب متصفح: اختر «تبويب Chrome» مع «مشاركة صوت التبويب».'
                 : 'يستمع إلى الميكروفون مباشرة في المتصفح. '
                     'تكلّم بالإنجليزية وستظهر الترجمة العربية تلقائياً.',
             style: TextStyle(

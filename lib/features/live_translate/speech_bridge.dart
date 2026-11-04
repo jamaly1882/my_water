@@ -73,4 +73,32 @@ class SpeechBridge {
   static Future<void> stopSystemAudio() {
     return impl.stopSystemAudio();
   }
+
+  /// هل نافذة الترجمة العائمة مدعومة (Chrome 116+)؟
+  static Future<bool> captionsSupported() {
+    return impl.captionsSupported();
+  }
+
+  /// فتح نافذة ترجمة عائمة تبقى فوق Zoom وبقية التطبيقات.
+  static Future<bool> openCaptions() {
+    return impl.openCaptions();
+  }
+
+  /// تحديث نص النافذة العائمة: الترجمة العربية والأصل الإنجليزي.
+  static Future<void> updateCaptions({
+    required String arabic,
+    required String original,
+  }) {
+    return impl.updateCaptions(arabic: arabic, original: original);
+  }
+
+  /// إغلاق النافذة العائمة.
+  static Future<void> closeCaptions() {
+    return impl.closeCaptions();
+  }
+
+  /// هل النافذة العائمة مفتوحة الآن؟
+  static Future<bool> isCaptionsOpen() {
+    return impl.isCaptionsOpen();
+  }
 }

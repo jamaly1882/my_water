@@ -141,12 +141,18 @@ Seven steps, all present in the code:
 
 ### 3.1 Who decides
 
-| Decision level | Body | What they actually decide |
-|---|---|---|
-| Operations | well committee / owner | adopting the system in the well, appointing the operator, accepting the invoice |
-| Local regulation and funding | local council / local authority | including the well in a plan, approving public funding |
-| Sector | urban water and sanitation utility | reading and billing standards if we approach the urban network |
-| Funding and scale | donor / international organisation | financing the pilot, requiring measurement and transparency |
+| Institution (as mapped in Wednesday's session) | Who it is in your territory | What it holds and decides | Says yes to a first pilot? |
+|---|---|---|---|
+| **Ministry / national agency** | Ministry of Water and Environment | policy, sector plans, budgets | yes, as direction — but it neither runs a well nor reads a meter |
+| **Regulator / standard-setter** | specifications and quality authority | service standards, permits | conditional: it will not object, and may require approval of the reading method |
+| **Utility / operator** | the local water utility | network, data, field staff | yes if the well sits in its area — the biggest and slowest route |
+| **Municipality / site owner** | local council or municipality | the site, assets, physical access | **yes — and this is the priority:** without field access there is no pilot |
+| **Industrial operator** | well, farm or plant owner | their water, their effluent, their money | yes — the fastest, because they decide and pay themselves |
+| **Development partner / funder** | donor or international organisation | finance and de-risking | yes — pays for measurement and reporting |
+
+**Of the six, only two answers matter:** the "yes" comes from the **site owner / local council** (access) and the **industrial operator** (decision and payment). The "no" can come from the **regulator** (permit) or the **utility** (refusing access to its data). So the first pilot is built on the first two, and the other two are left for the scale stage.
+
+**The question the facilitator asks tomorrow:** which of the six can say *no* to your pilot? If you cannot name one, you have not yet identified your institutions.
 
 [assumption — needs your data: name the well committee and local council in your area. A real name opens doors faster than a general category.]
 
