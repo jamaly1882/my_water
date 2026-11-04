@@ -40,10 +40,10 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
   static const Color backgroundColor = Color(0xffF5F9FF);
 
   static const List<String> _titles = <String>[
-    'لوحة المدير العام',
-    'الخريطة التفاعلية',
-    'التحليل الذكي',
-    'تهيئة البيانات',
+    'Dashboard',
+    'Interactive Map',
+    'Smart Analytics',
+    'Data Setup',
   ];
 
   final GmDashboardService _service =
@@ -125,7 +125,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
         backgroundColor: backgroundColor,
 
         appBar: MyAppBar(
-          title: 'المشرف الرئيسي',
+          title: 'Supervisor Setup',
           subtitle: _titles[_tab],
           icon: Icons.admin_panel_settings,
           showBackButton: true,

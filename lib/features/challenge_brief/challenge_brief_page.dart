@@ -411,8 +411,7 @@ class _ChallengeBriefPageState extends State<ChallengeBriefPage> {
       child: Scaffold(
         backgroundColor: _pageBackground,
         appBar: MyAppBar(
-          title: 'ملف تحدي المياه',
-          subtitle: 'Water Challenge Brief',
+          title: 'Challenge Brief',
           icon: Icons.assignment_outlined,
           actions: <Widget>[
             _saving

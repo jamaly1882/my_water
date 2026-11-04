@@ -54,7 +54,7 @@ class SetupScreen extends StatelessWidget {
         // ==========================================================
 
         appBar: const MyAppBar(
-          title: 'التهيئة',
+          title: 'Setup',
         ),
 
         // ==========================================================

@@ -119,8 +119,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
       child: Scaffold(
         backgroundColor: _bg,
         appBar: MyAppBar(
-          title: 'التحليل الذكي للمشرفين',
-          subtitle: 'Supervisor Insights',
+          title: 'Supervisor Insights',
           icon: Icons.insights,
           actions: <Widget>[
             IconButton(

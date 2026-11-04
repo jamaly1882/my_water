@@ -47,26 +47,6 @@ match /water_challenge_briefs/{uid} {
 
 ---
 
-## الترجمة الصوتية — Live speech → Arabic
-
-شاشة تستمع إلى الكلام (ميكروفون أو صوت اجتماع)، تحوّله إلى نص، وتترجمه إلى العربية سطراً بسطر، مع نسخ المحضر وحفظه في Firestore.
-
-| الملف | الدور |
-|---|---|
-| `lib/features/live_translate/voice_translate_page.dart` | الواجهة والمحضر |
-| `lib/features/live_translate/speech_bridge*.dart` | جسر الاستماع (ويب / بقية المنصات) |
-| `lib/features/live_translate/translation_service.dart` | نداء `POST /api/translate/` |
-| `web/voice_translate.js` | Web Speech API + التقاط صوت التبويب |
-| `docs/voice_translation.md` | العقد الكامل مع الخادم + مثال FastAPI + حدود الميزة |
-
-- **الميكروفون:** يعمل بلا خادم للتفريغ (Chrome/Edge على الحاسوب، HTTPS أو localhost).
-- **الترجمة:** تحتاج خادماً يملك `POST /api/translate/` (عقد الطلب/الرد في المستند).
-- **صوت الاجتماع (Zoom/Meet):** يحتاج خدمة تفريغ عبر WebSocket — المتصفح لا يمرّر صوت التبويب إلى محرّك التعرّف المدمج.
-
-**التخزين:** مجموعة Firestore باسم `voice_sessions` (القاعدة في `docs/voice_translation.md`).
-
----
-
 ## التحليل الذكي للمشرفين — Supervisor Insights
 
 شاشة تُحلّل أداء كل مشرف بئر من بيانات النظام نفسها (بلا خدمة خارجية):
@@ -89,6 +69,21 @@ match /water_challenge_briefs/{uid} {
 
 **ملاحظة صريحة داخل الشاشة:** المشرف بلا دورة واحدة يُقرأ «غير مقيس» لا «سيئ»؛ المؤشرات صفرية لغياب البيانات لا لسوء الأداء.
 
-## الأسماء الإنجليزية في الوجهات
+## أسماء الوجهات بالإنجليزية فقط
 
-بطاقات الصفحة الرئيسية تحمل الآن سطراً إنجليزياً تحت كل عنوان: Setup · Reading Cycle · Inquiry · Reports · Receipt Voucher · Payment Voucher · Challenge Brief · Live Translation · AI Agent · Supervisor Insights · Supervisor Setup.
+عناوين البطاقات العشر إنجليزية بالكامل، ولا يوجد نص عربي عليها، وعنوان كل شاشة داخلية مطابق لعنوان بطاقتها:
+
+| البطاقة | عنوان الشاشة الداخلية |
+|---|---|
+| Setup | `setup_screen.dart` |
+| Reading Cycle | `cycle_screen.dart` |
+| Inquiry | `search_screen.dart` |
+| Reports | `reports_screen.dart` |
+| Receipt Voucher | `receipt_voucher_screen.dart` |
+| Payment Voucher | `payment_voucher_list_screen.dart` |
+| Challenge Brief | `challenge_brief_page.dart` |
+| AI Agent | `ai_agent_page.dart` |
+| Supervisor Insights | `supervisor_insights_page.dart` |
+| Supervisor Setup | `setup_mshrf_screen.dart` |
+
+**التفاصيل:** النص الإنجليزي في البطاقة يُرسم بـ `textDirection: TextDirection.ltr` داخل واجهة RTL، بخط 12.5 عريض ولون الأيقونة نفسه، وسطرين كحد أقصى. الحقول والنصوص داخل الشاشات ما زالت عربية — التغيير يشمل العناوين فقط.

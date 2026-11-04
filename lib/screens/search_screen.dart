@@ -34,7 +34,7 @@ class SearchScreen extends StatelessWidget {
         // ======================================================
 
         appBar: const MyAppBar(
-          title: 'الاستعلام',
+          title: 'Inquiry',
           icon: Icons.search,
         ),
 
