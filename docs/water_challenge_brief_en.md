@@ -146,7 +146,7 @@ Seven steps, all present in the code:
 | **Ministry / national agency** | Ministry of Water and Environment | policy, sector plans, budgets | yes, as direction — but it neither runs a well nor reads a meter |
 | **Regulator / standard-setter** | specifications and quality authority | service standards, permits | conditional: it will not object, and may require approval of the reading method |
 | **Utility / operator** | the local water utility | network, data, field staff | yes if the well sits in its area — the biggest and slowest route |
-| **Municipality / site owner** | local council or municipality | the site, assets, physical access | **yes — and this is the priority:** without field access there is no pilot |
+| **Municipality / site owner** | **the local council of Al-Radmah district** (Ibb governorate) | the site, assets, physical access | **yes — and this is the priority:** without field access there is no pilot |
 | **Industrial operator** | well, farm or plant owner | their water, their effluent, their money | yes — the fastest, because they decide and pay themselves |
 | **Development partner / funder** | donor or international organisation | finance and de-risking | yes — pays for measurement and reporting |
 
