@@ -47,26 +47,6 @@ match /water_challenge_briefs/{uid} {
 
 ---
 
-## الترجمة الصوتية — Live speech → Arabic
-
-شاشة تستمع إلى الكلام (ميكروفون أو صوت اجتماع)، تحوّله إلى نص، وتترجمه إلى العربية سطراً بسطر، مع نسخ المحضر وحفظه في Firestore.
-
-| الملف | الدور |
-|---|---|
-| `lib/features/live_translate/voice_translate_page.dart` | الواجهة والمحضر |
-| `lib/features/live_translate/speech_bridge*.dart` | جسر الاستماع (ويب / بقية المنصات) |
-| `lib/features/live_translate/translation_service.dart` | نداء `POST /api/translate/` |
-| `web/voice_translate.js` | Web Speech API + التقاط صوت التبويب |
-| `docs/voice_translation.md` | العقد الكامل مع الخادم + مثال FastAPI + حدود الميزة |
-
-- **الميكروفون:** يعمل بلا خادم للتفريغ (Chrome/Edge على الحاسوب، HTTPS أو localhost).
-- **الترجمة:** تحتاج خادماً يملك `POST /api/translate/` (عقد الطلب/الرد في المستند).
-- **صوت الاجتماع (Zoom/Meet):** يحتاج خدمة تفريغ عبر WebSocket — المتصفح لا يمرّر صوت التبويب إلى محرّك التعرّف المدمج.
-
-**التخزين:** مجموعة Firestore باسم `voice_sessions` (القاعدة في `docs/voice_translation.md`).
-
----
-
 ## التحليل الذكي للمشرفين — Supervisor Insights
 
 شاشة تُحلّل أداء كل مشرف بئر من بيانات النظام نفسها (بلا خدمة خارجية):
@@ -91,4 +71,4 @@ match /water_challenge_briefs/{uid} {
 
 ## الأسماء الإنجليزية في الوجهات
 
-بطاقات الصفحة الرئيسية تحمل الآن سطراً إنجليزياً تحت كل عنوان: Setup · Reading Cycle · Inquiry · Reports · Receipt Voucher · Payment Voucher · Challenge Brief · Live Translation · AI Agent · Supervisor Insights · Supervisor Setup.
+بطاقات الصفحة الرئيسية تحمل الآن سطراً إنجليزياً تحت كل عنوان: Setup · Reading Cycle · Inquiry · Reports · Receipt Voucher · Payment Voucher · Challenge Brief · AI Agent · Supervisor Insights · Supervisor Setup.

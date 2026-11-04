@@ -11,7 +11,6 @@ import 'screens/set_up_mshrf/setup_mshrf_screen.dart';
 
 import 'features/ai_agent/ai_agent_page.dart';
 import 'features/challenge_brief/challenge_brief_page.dart';
-import 'features/live_translate/voice_translate_page.dart';
 import 'features/supervisor_insights/supervisor_insights_page.dart';
 import 'widgets/my_app_bar.dart';
 
@@ -188,18 +187,6 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.assignment_outlined,
                 color: Colors.cyan.shade700,
                 page: const ChallengeBriefPage(),
-              ),
-
-              // ==============================================
-              // الترجمة الصوتية - استماع وترجمة إلى العربية
-              // ==============================================
-              _menuCard(
-                context,
-                title: 'الترجمة الصوتية',
-                titleEn: 'Live Translation',
-                icon: Icons.translate,
-                color: Colors.purple,
-                page: const VoiceTranslatePage(),
               ),
 
               // ==============================================
