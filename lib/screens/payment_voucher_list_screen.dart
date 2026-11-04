@@ -736,7 +736,7 @@ class _PaymentVoucherListScreenState
           appBar:
               const MyAppBar(
             title:
-                'سندات الصرف',
+                'Payment Voucher',
             icon:
                 Icons.money_off,
           ),
@@ -780,7 +780,7 @@ class _PaymentVoucherListScreenState
         appBar:
             const MyAppBar(
           title:
-              'سندات الصرف',
+              'Payment Voucher',
           icon:
               Icons.money_off,
         ),

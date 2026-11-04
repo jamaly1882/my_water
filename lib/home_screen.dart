@@ -73,8 +73,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'التهيئة',
-                titleEn: 'Setup',
+                title: 'Setup',
                 icon: Icons.settings,
                 color: Colors.blue,
                 page: SetupScreen(
@@ -97,8 +96,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'الدور لإدخال القراءات',
-                titleEn: 'Reading Cycle',
+                title: 'Reading Cycle',
                 icon: Icons.speed,
                 color: Colors.deepPurple,
                 page: CycleScreen(
@@ -121,8 +119,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'الاستعلام',
-                titleEn: 'Inquiry',
+                title: 'Inquiry',
                 icon: Icons.search,
                 color: Colors.orange,
                 page: SearchScreen(),
@@ -133,8 +130,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'التقارير',
-                titleEn: 'Reports',
+                title: 'Reports',
                 icon: Icons.bar_chart,
                 color: Colors.green,
                 page: ReportsScreen(
@@ -148,8 +144,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'سند قبض',
-                titleEn: 'Receipt Voucher',
+                title: 'Receipt Voucher',
                 icon: Icons.receipt_long,
                 color: Colors.teal,
                 page: ReceiptVoucherScreen(
@@ -165,8 +160,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'سند صرف',
-                titleEn: 'Payment Voucher',
+                title: 'Payment Voucher',
                 icon: Icons.money_off,
                 color: Colors.red,
                 page: PaymentVoucherScreen(
@@ -182,8 +176,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'ملف تحدي المياه',
-                titleEn: 'Challenge Brief',
+                title: 'Challenge Brief',
                 icon: Icons.assignment_outlined,
                 color: Colors.cyan.shade700,
                 page: const ChallengeBriefPage(),
@@ -194,8 +187,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'وكيل الذكاء الاصطناعي',
-                titleEn: 'AI Agent',
+                title: 'AI Agent',
                 icon: Icons.psychology,
                 color: Colors.indigo,
                 page: const AiAgentPage(),
@@ -206,8 +198,7 @@ class HomeScreen extends StatelessWidget {
               // ==============================================
               _menuCard(
                 context,
-                title: 'التحليل الذكي للمشرفين',
-                titleEn: 'Supervisor Insights',
+                title: 'Supervisor Insights',
                 icon: Icons.insights,
                 color: Colors.blueGrey,
                 page: const SupervisorInsightsPage(),
@@ -219,8 +210,7 @@ class HomeScreen extends StatelessWidget {
               if (isAdmin)
                 _menuCard(
                   context,
-                  title: 'تهيئة بيانات المشرفين',
-                titleEn: 'Supervisor Setup',
+                  title: 'Supervisor Setup',
                   icon: Icons.supervisor_account,
                   color: Colors.indigo,
                   page: const SetupMshrfScreen(),
@@ -238,7 +228,6 @@ class HomeScreen extends StatelessWidget {
   Widget _menuCard(
     BuildContext context, {
     required String title,
-    required String titleEn,
     required IconData icon,
     required Color color,
     required Widget page,
@@ -276,23 +265,14 @@ class HomeScreen extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                titleEn,
-                textAlign: TextAlign.center,
-                maxLines: 1,
+                textDirection: TextDirection.ltr,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 10,
-                  letterSpacing: 0.2,
-                  color: color.withValues(alpha: 0.85),
+                  fontSize: 12.5,
+                  height: 1.15,
+                  fontWeight: FontWeight.bold,
+                  color: color.withValues(alpha: 0.92),
                 ),
               ),
             ],

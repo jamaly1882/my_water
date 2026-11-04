@@ -77,7 +77,7 @@ class CycleScreen extends StatelessWidget {
         // ======================================================
 
         appBar: const MyAppBar(
-          title: 'الدور لإدخال القراءات',
+          title: 'Reading Cycle',
           icon: Icons.speed,
         ),
 

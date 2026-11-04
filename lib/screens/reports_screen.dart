@@ -26,12 +26,12 @@ class ReportsScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: MyAppBar(
-          title: 'التقارير',
+          title: 'Reports',
           subtitle:
               wellName == null ||
                       wellName!.trim().isEmpty
-                  ? 'جميع التقارير'
-                  : 'البئر: $wellName',
+                  ? 'All reports'
+                  : 'Well: $wellName',
           icon: Icons.assessment,
         ),
         body: Padding(

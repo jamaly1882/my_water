@@ -337,7 +337,7 @@ class _AiAgentPageState
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            'مساعد البئر بالذكاء الاصطناعي',
+            'AI Agent',
           ),
           centerTitle: true,
           actions: [

@@ -1139,7 +1139,7 @@ class _ReceiptVoucherScreenState
         appBar:
             const MyAppBar(
           title:
-              "سند قبض جديد",
+              'Receipt Voucher',
 
           icon:
               Icons.receipt_long,
