@@ -25,7 +25,7 @@ class MyWaterApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      title: 'نظام إدارة المياه',
+      title: 'Water Management System',
 
       // =========================================================
       // اللغة العربية
