@@ -19,7 +19,9 @@ samples, guidance on mobile development, and a full API reference.
 
 ## ملف تحدي المياه — Water Challenge Brief
 
-تطبيق إطار **AYC Youth Pitches** (الأسبوع الأول) على مشروع `my_water`:
+تطبيق إطار **AYC Youth Pitches** (الأسبوع الأول) على مشروع `my_water`.
+
+**نطاق المشروع:** 10 آبار · 60 مشتركًا · 720 قراءة في السنة — كل أرقام الملف محسوبة على هذا النطاق.
 
 | المخرج | المسار |
 |---|---|

@@ -13,6 +13,10 @@
 > - **[target to validate]** — a target that has not yet been measured in the field.
 > - **[assumption — needs your data]** — a cell only you can fill from well and subscriber records.
 
+> **Defined scope:** **10 wells** and **60 subscribers** (6 per well on average).
+> Every calculation in this brief uses that scope, not generic figures. If you meant 60 subscribers
+> **per well**, multiply the revenue and market lines by ten — everything else still holds.
+
 ---
 
 ## Layer 1 · Our place on the map
@@ -24,6 +28,8 @@
 **Stage:** a working product in a limited pilot phase — not a paper idea.
 
 **Domain:** digital — operations of well water networks: meters, readings, cycles, invoices, accounts, reporting.
+
+**Deployment scope:** 10 wells and 60 subscribers. We are not sampling inside one well; we run the system on **100% of the meters in scope**: all ten wells are created in the hierarchy (province → district → hamlet → village → well), all sixty subscribers are registered with their meters, and one cycle is opened for all of them. Small in wells, complete in readings — which is exactly what makes the resulting number defensible in front of a committee.
 
 **What already exists [in code]:**
 
@@ -115,12 +121,15 @@ Seven steps, all present in the code:
 
 ### 2.5 The test that would strengthen it
 
-**Design:**
-- **Sample:** 3 wells, 500 meters, 2 field supervisors, two weeks.
-- **Ground truth:** double manual reading (supervisor + manager) of the same meter, recorded before recognition.
-- **Measured:** reading time, share accepted automatically, error after review, retake rate, rejection due to quality.
-- **Success:** ≥ 85% auto-acceptance, ≤ 1% error, ≤ 30 seconds per reading, reproducible on a second well.
-- **Output:** one "before/after" page over 500 meters, attached to the Venture Blueprint on 13 November.
+**Design — on your scope: 10 wells and 60 subscribers:**
+- **Sample:** all sixty meters across the ten wells, over four reading cycles (monthly) = **240 readings available for measurement**. No meter excluded, no "clean" wells only.
+- **Ground truth:** two independent manual readings of the same meter (supervisor, then manager on the same day), recorded **before** recognition; the gap between them is reported as the human baseline — we cannot blame the machine before we know the paper error.
+- **Measured:** time per reading, share accepted automatically, error after review, retake rate, quality-rejection rate, and coverage (how many of the sixty were actually read in their cycle).
+- **Success:** ≥ 85% auto-acceptance, ≤ 1% error after review, ≤ 30 seconds per reading, ≥ 95% coverage each cycle.
+- **Limits of inference, stated to the jury:** 60 meters × 4 cycles detects a clear shift in acceptance (about 3 points), not a 0.1% accuracy claim. Our claim is "no automatic reading reaches the invoice without confidence", not "absolute accuracy".
+- **Output:** a one-page before/after over 60 meters and 240 readings, attached to the Blueprint on 13 November.
+
+**Why this test is cheap for you:** the ten wells and sixty subscribers already exist, and one cycle makes the system run end to end. No hiring, no hardware — four cycles and one committed operator.
 
 **A sub-test that matters:** meters in direct sun, dust-covered, or with a warped display — the real case, not the office case.
 
@@ -161,15 +170,20 @@ Rule: **the person who signs is not always the person who releases the cheque.**
 
 ### 3.4 Our pilot entry point
 
-**Proposal:** one well in one district, 4–6 weeks, three before/after indicators only:
+**Proposal — staged, not in one drop:** the ten wells do not go live on the same day.
 
-1. Share of subscribers with a digitally traceable reading.
+- **Week one:** the first well (about 6 subscribers) through one complete cycle, from open to close, plus operator training.
+- **Weeks two to six:** the remaining nine wells, one well every two days, same operator and same pattern — so all sixty are inside the system before the end of week three.
+
+**Three before/after indicators only:**
+
+1. Share of subscribers with a digitally traceable reading (out of sixty).
 2. Difference in reported loss between the paper record and the digital record for the same cycle.
 3. Collection time and collection rate at cycle close.
 
-**One output:** a two-page audit report the committee chair can sign — not a slide deck.
+**One output:** a two-page audit report the committee chair can sign — one page per well, one summary page for the ten.
 
-**In exchange:** a nominal fee covering operator training [assumption — needs your data: set the figure] — a free pilot buys no commitment.
+**In exchange:** a nominal fee covering operator training [assumption — needs your data: set the figure] — a free pilot buys no commitment, and these ten wells are the reference for the next eleven in the district.
 
 ---
 
@@ -199,34 +213,53 @@ The **well committee** for operations; the **local council / funder** for fundin
 
 ### 4.4 The market, bottom-up
 
-**Formula:** number of wells × annual price per well = annual market.
+**The blunt verdict first:** at **10 wells and 60 subscribers** there is no "market" yet in the financial sense — there is **evidence**. Ten wells at USD 150 per well is USD 1,500 a year, which covers neither product development nor a month's salary. Pitching this stage as a market costs credibility with the jury; it is funded as a **paid pilot that generates evidence**, not as a commercial subscription.
 
-**Worked example with declared assumptions [assumption — needs your data: replace with your records]:**
+**Formula:** number of wells × annual price per well = annual revenue.
 
-- Wells in the starting territory (one district/governorate): **300**
-- Average subscribers per well: **250**
-- Total connections: **75,000**
-- Annual price per well: **USD 250** (≈ USD 0.33 per connection per year)
-- **Annual market in one governorate = 300 × 250 = USD 75,000**
+**Level 1 — your current scope (proof):**
 
-**Price test:** is USD 250 less than the value the well captures? Value = (reading hours saved × hourly wage) + (loss surfaced × price per m³). This exposes the real unit-economics question: **what is the cost of a cubic metre at the well?** Energy (diesel/solar) + operator + maintenance ÷ cubic metres sold. The app produces every term of that equation; the missing input is your numbers.
+| Item | Figure | Status |
+|---|---|---|
+| Wells | 10 | [given] |
+| Subscribers | 60 | [given] |
+| Average subscribers per well | 6 | [computed] |
+| Readings per year (12 cycles × 60) | 720 readings | [computed] |
+| Annual price per well | USD 150 | [assumption to validate] |
+| Revenue at current scope | USD 1,500 a year | [computed] |
+
+**Level 2 — the district (first expansion):** wells in the district × price. Illustrative: **100 wells → USD 15,000 a year**.
+**Level 3 — the governorate:** **300 wells × 150 = USD 45,000 a year** [assumption — needs your data: actually count your district's wells].
+
+**Price test at 6 subscribers per well:** is USD 150 defensible? At this size the value does not come from the operator's time — six readings a month save nothing worth naming, and the honest slide says so. It comes from three things the system measures:
+
+1. **Loss surfaced:** one cubic metre detected per day is 365 m³ a year × the local price — which can exceed the software price. That is the number to compute from your first cycle.
+2. **Dispute resolution:** a reading with a photo and a timestamp ends a quarrel that was costing the committee a whole subscriber.
+3. **Cash clarity:** whether the well's revenue covers diesel, maintenance and the operator — a question most wells cannot answer today.
+
+**The unit-economics number you must supply:** **cost per m³ at the well** = (diesel + operator + maintenance) ÷ cubic metres sold. The app assembles every term from the energy report (diesel/solar) and the cycle report; the missing inputs are your price per m³ and operating costs [assumption — needs your data].
 
 ### 4.5 The first customer
 
+You already hold what the framework asks for: **ten wells**. The first customer is not "the market" — it is **the first of the ten**, the well that goes into the setup first and opens its first cycle in the app.
+
 **Template to fill with real names [assumption — needs your data]:**
 
-> Well "______" in "______" district, committee chaired by "______", serving about ____ subscribers on a monthly cycle.
-> Stated need: "______" (reading dispute / late collection / cash deficit).
-> Offer: a six-week pilot at ____, including operator training and a final audit report.
+> Well "______" — well 1 of 10, in "______" district, committee chaired by "______", serving ____ of the sixty subscribers, with "______" type meters.
+> Stated need: "______" (reading dispute / late collection / cash deficit / nobody knows the loss).
+> Offer: one complete cycle run on the system + operator training + a final audit report, in exchange for ____.
 > Expected decision date: ____ / ____ / 2026.
+
+**Prepare the ten-well table first** (well name, village, subscriber count, meter type, committee yes/no, cash status): that table is your first Miro board, and the first well is chosen from it — pick the one with the easiest committee and the clearest problem, not the biggest.
 
 Never write "institutions" or "farmers" here. **One name, one place, one number, one date.**
 
 ### 4.6 The venture in 100 words
 
-> Across many water wells, meters are read on paper, figures are copied later, and the cash box is managed apart from the numbers. The result: loss nobody sees, a bill the subscriber cannot contest with evidence, and a committee that discovers the deficit at month-end.
-> my_water turns that chain into one digital record: a meter photo read automatically behind a confidence gate that refuses the doubtful digit, then consumption, then the invoice, then collection, then the cash box. Impact is measured in reading time, share of traceable readings, and the gap between paper and real loss.
-> What we ask for today: one well and six weeks to prove the number.
+> Across ten wells and sixty subscribers, meters are read on paper, figures are copied later, and the well's cash box is managed apart from the numbers. The result: loss nobody sees, a bill the subscriber cannot contest with a photo and a timestamp, and a committee that discovers the deficit at month-end.
+> my_water turns that chain into one digital record: the meter photo read automatically behind a confidence gate that refuses the doubtful digit before it reaches the invoice, then consumption, then the invoice, then collection, then the cash box.
+> We are running it now on the ten wells and sixty subscribers, measuring three numbers only: reading time, share of traceable readings, and the gap between paper and real loss.
+> What we ask for today: four cycles and forty minutes of operator training — to prove the number.
 
 ---
 
@@ -267,6 +300,48 @@ match /water_challenge_briefs/{uid} {
 2. Layer 3 names one body with a real signature line, not "the stakeholders".
 3. Layer 4 ends with one customer name and one date.
 4. The 100 words read aloud in 40 seconds with no marketing adjective.
+
+---
+
+## Annex D · Running the ten wells and sixty subscribers in the app
+
+The exact sequence for bringing your scope (10 wells, 60 subscribers) into the system, using the app's own screen names:
+
+| # | Screen | What you do | Output |
+|---|---|---|---|
+| 1 | Setup | build the hierarchy: province → district → hamlet → village → well, with the ten real well names, not codes | 10 well records |
+| 2 | Supervisor setup (manager only) | one supervisor for the ten wells, with a known username and password | a working supervisor account |
+| 3 | Create sales account | for each well: sales, cash, expenses, worker | 40 accounts (4 × 10) |
+| 4 | Subscribers | enter all sixty: name, phone, meter number, meter type, **signed opening reading** | 60 subscriber records |
+| 5 | Reading cycle | one cycle covering the ten wells, with an explicit start date | an open cycle |
+| 6 | Photo reading | per subscriber: photo → quality check → digit crop → accept or review | 60 traceable readings |
+| 7 | Close cycle | close, review consumption and the invoice before issuing | 60 invoices |
+| 8 | Receipt voucher | record every amount entering the cash box | a cash box that matches reality |
+| 9 | Reports | cycle report (daily/monthly), account report, energy report | 3 signable reports |
+| 10 | GM dashboard | monthly consumption, well ranking, alerts | one decision page |
+
+**Three mistakes that kill the pilot before it starts:**
+
+1. **A wrong opening reading.** If the opening reading is an estimate, every consumption figure after it is wrong. Take it from the meter in front of the subscriber and sign it.
+2. **Mixed units.** If some meters read in m³ and others in litres, wells cannot be compared. Unify the unit before the first cycle, not after.
+3. **Two supervisors on one cycle.** Put in writing who reads which well, or you will get two contradictory readings of the same meter — precisely the problem we came to solve.
+
+**The tracking table to fill before the first cycle (this is your first Miro board):**
+
+| # | Well | Village | Subscribers | Meter type | Committee? | Cash status | First cycle date |
+|---|---|---|---|---|---|---|---|
+| 1 | | | | | | | |
+| 2 | | | | | | | |
+| 3 | | | | | | | |
+| 4 | | | | | | | |
+| 5 | | | | | | | |
+| 6 | | | | | | | |
+| 7 | | | | | | | |
+| 8 | | | | | | | |
+| 9 | | | | | | | |
+| 10 | | | | | | | |
+
+**What the filled table tells you:** if the ten wells average six subscribers, you now know the real expansion question — does a well in your district actually serve six subscribers, or were these ten chosen small? The answer decides whether your price per well (not per subscriber) is the right pricing model. That is one more reason to state the claim per well.
 
 ---
 
