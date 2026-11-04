@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         : passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      message('أدخل اسم المستخدم وكلمة السر');
+      message('Enter your username and password');
       return;
     }
 
@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final User? user = result.user;
 
       if (user == null) {
-        message('تعذر الحصول على بيانات المستخدم');
+        message('Could not load user data');
         return;
       }
 
@@ -130,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!userDoc.exists) {
         await auth.signOut();
 
-        message('بيانات المستخدم غير موجودة');
+        message('User record not found');
         return;
       }
 
@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (data['active'] == false) {
         await auth.signOut();
 
-        message('هذا الحساب غير مفعل');
+        message('This account is not activated');
         return;
       }
 
@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (role != 'supervisor') {
         await auth.signOut();
 
-        message('ليس لديك صلاحية دخول');
+        message('You do not have access permission');
         return;
       }
 
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (demo && data['isDemo'] != true) {
         await auth.signOut();
 
-        message('هذا الحساب ليس حساباً تجريبياً');
+        message('This is not a demo account');
         return;
       }
 
@@ -225,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
           wellId.isEmpty) {
         await auth.signOut();
 
-        message('بيانات موقع المشرف غير مكتملة');
+        message('Supervisor location data is incomplete');
         return;
       }
 
@@ -261,43 +261,43 @@ class _LoginScreenState extends State<LoginScreen> {
 
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = 'المستخدم غير موجود';
+          errorMessage = 'User not found';
           break;
 
         case 'wrong-password':
-          errorMessage = 'كلمة السر غير صحيحة';
+          errorMessage = 'Wrong password';
           break;
 
         case 'invalid-email':
-          errorMessage = 'البريد غير صحيح';
+          errorMessage = 'Invalid email address';
           break;
 
         case 'invalid-credential':
           errorMessage =
-              'اسم المستخدم أو كلمة السر غير صحيحة';
+              'Wrong username or password';
           break;
 
         case 'user-disabled':
-          errorMessage = 'هذا الحساب معطل';
+          errorMessage = 'This account is disabled';
           break;
 
         case 'too-many-requests':
           errorMessage =
-              'تمت محاولات كثيرة، حاول مرة أخرى لاحقاً';
+              'Too many attempts — try again later';
           break;
 
         case 'network-request-failed':
-          errorMessage = 'تحقق من اتصال الإنترنت';
+          errorMessage = 'Check your internet connection';
           break;
 
         default:
           errorMessage =
-              e.message ?? 'خطأ في تسجيل الدخول';
+              e.message ?? 'Sign-in error';
       }
 
       message(errorMessage);
     } catch (e) {
-      message('حدث خطأ أثناء تسجيل الدخول');
+      message('Something went wrong while signing in');
     } finally {
       if (mounted) {
         setState(() {
@@ -361,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: const Color(0xffF5F9FF),
 
         appBar: const MyAppBar(
-          title: 'تسجيل الدخول',
+          title: 'Sign In',
           icon: Icons.login,
         ),
 
@@ -414,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // ======================================
 
                         const Text(
-                          'نظام إدارة المياه',
+                          'Water Management System',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -424,7 +424,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 6),
 
                         Text(
-                          'أدخل بيانات الدخول للمتابعة',
+                          'Sign in to continue',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade600,
@@ -443,8 +443,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.next,
 
                           decoration: InputDecoration(
-                            labelText: 'اسم المستخدم أو البريد',
-                            hintText: 'رقم المشرف أو بريد المدير',
+                            labelText: 'Username or email',
+                            hintText: 'Supervisor ID or manager email',
 
                             prefixIcon: const Icon(
                               Icons.person,
@@ -474,7 +474,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
 
                           decoration: InputDecoration(
-                            labelText: 'كلمة السر',
+                            labelText: 'Password',
 
                             prefixIcon: const Icon(
                               Icons.lock,
@@ -531,8 +531,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             label: Text(
                               loading
-                                  ? 'جاري الدخول...'
-                                  : 'دخول',
+                                  ? 'Signing in…'
+                                  : 'Sign in',
 
                               style: const TextStyle(
                                 fontSize: 17,
@@ -572,7 +572,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
 
                             label: const Text(
-                              'الدخول بحساب تجريبي',
+                              'Continue with the demo account',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -596,7 +596,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 10),
 
                         Text(
-                          'حساب مخصص لتقييم وتجربة النظام',
+                          'A demo account for evaluating the system',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -607,7 +607,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 18),
 
                         Text(
-                          'نظام إدارة المياه',
+                          'Water Management System',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade500,

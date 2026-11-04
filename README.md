@@ -87,3 +87,21 @@ match /water_challenge_briefs/{uid} {
 | Supervisor Setup | `setup_mshrf_screen.dart` |
 
 **التفاصيل:** النص الإنجليزي في البطاقة يُرسم بـ `textDirection: TextDirection.ltr` داخل واجهة RTL، بخط 12.5 عريض ولون الأيقونة نفسه، وسطرين كحد أقصى. الحقول والنصوص داخل الشاشات ما زالت عربية — التغيير يشمل العناوين فقط.
+
+---
+
+## لغة الواجهة — Interface language
+
+الشاشات التالية إنجليزية بالكامل (لا نص عربي فيها، بما فيها رسائل الخطأ والتحقق):
+
+| الشاشة | الملف | الحالة |
+|---|---|---|
+| Splash | `lib/screens/splash_screen.dart` | English |
+| Sign In | `lib/screens/login_screen.dart` | English |
+| Home | `lib/home_screen.dart` | English |
+| Reading Cycle | `lib/screens/cycle_screen.dart` | English |
+| Setup · Inquiry · Reports · Receipt Voucher · Payment Voucher · Challenge Brief · AI Agent · Supervisor Insights · Supervisor Setup | app bars فقط | English titles |
+
+**ما لم يُترجم بعد:** نصوص الحقول والجداول والأزرار والرسائل داخل بقية الشاشات (الدور، الاستعلام، التقارير، السندات، التهيئة، لوحة المشرف)، وأسماء البيانات نفسها (الآبار، القرى، المشتركون) عربية بطبيعتها.
+
+**ملاحظة تصميمية:** حاوية الشاشة ما زالت `TextDirection.rtl`؛ النص الإنجليزي يُعرض صحيحاً لكنه يصطف يميناً. تحويل الشاشة إلى `ltr` قرار تخطيطي منفصل — يُطلب عند الحاجة.

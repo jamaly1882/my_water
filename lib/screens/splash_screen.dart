@@ -79,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
         if (!mounted) return;
 
-        message("بيانات المستخدم غير موجودة");
+        message("User record not found");
 
         goToLogin();
 
@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
         if (!mounted) return;
 
-        message("ليس لديك صلاحية دخول");
+        message("You do not have access permission");
 
         goToLogin();
 
@@ -171,7 +171,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (!mounted) return;
 
-      message("تعذر التحقق من بيانات الدخول");
+      message("Could not verify your sign-in");
 
       goToLogin();
     }
@@ -271,7 +271,7 @@ class _SplashScreenState extends State<SplashScreen> {
               // ==================================================
 
               const Text(
-                "نظام إدارة المياه",
+                "Water Management System",
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
@@ -281,7 +281,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 10),
 
               Text(
-                "جاري التحقق من تسجيل الدخول...",
+                "Verifying your sign-in…",
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
