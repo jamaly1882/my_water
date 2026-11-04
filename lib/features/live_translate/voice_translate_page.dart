@@ -265,7 +265,7 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
   // الحفظ والتصدير
   // ----------------------------------------------------------
 
-  String _buildTranscript() {
+  String _buildTranscriptText() {
     final StringBuffer buffer = StringBuffer();
 
     buffer.writeln('محضر مترجم — my_water');
@@ -296,7 +296,7 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
     }
 
     await Clipboard.setData(
-      ClipboardData(text: _buildTranscript()),
+      ClipboardData(text: _buildTranscriptText()),
     );
 
     _snack('تم نسخ المحضر المترجم.');
@@ -531,9 +531,8 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
               tooltip: 'ترجمة عائمة فوق التطبيقات',
               onPressed: _toggleCaptions,
               icon: Icon(
-                _captionsOpen
-                    ? Icons.picture_in_picture_alt
-                    : Icons.picture_in_picture_alt_outlined,
+                Icons.picture_in_picture_alt,
+                color: _captionsOpen ? Colors.white : null,
               ),
             ),
             IconButton(
@@ -614,7 +613,7 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
               ),
               ChoiceChip(
                 selected: systemMode,
-                onSelected: _listening
+                onSelected: (_listening || !_supportsSystemAudio)
                     ? null
                     : (_) {
                         setState(() {
@@ -628,7 +627,10 @@ class _VoiceTranslatePageState extends State<VoiceTranslatePage> {
           ),
           const SizedBox(height: 10),
           Text(
-            systemMode
+            systemMode && !_supportsSystemAudio
+                ? 'هذا المتصفح لا يسمح بالتقاط صوت التبويب. '
+                    'استخدم Chrome على الحاسوب، أو اختر «الميكروفون».'
+                : systemMode
                 ? 'لمتابعة Zoom المكتبي: اختر «الشاشة الكاملة» ثم فعّل '
                     '«مشاركة صوت النظام» (Chrome على ويندوز). '
                     'لاجتماع في تبويب متصفح: اختر «تبويب Chrome» مع «مشاركة صوت التبويب».'
