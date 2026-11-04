@@ -55,12 +55,12 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
     if (selectedProvinceId == null ||
         selectedProvinceId!.trim().isEmpty) {
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return;
     }
 
     if (name.isEmpty) {
-      showMessage("أدخل اسم المديرية");
+      showMessage("Enter the district name");
       return;
     }
 
@@ -85,13 +85,13 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
       if (mounted) {
         showMessage(
-          "تمت إضافة المديرية بنجاح",
+          "District added",
         );
       }
     } catch (e) {
       if (mounted) {
         showMessage(
-          "حدث خطأ أثناء إضافة المديرية: $e",
+          "Could not add the district: $e",
         );
       }
     } finally {
@@ -150,7 +150,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
             ),
 
             child: const Text(
-              "حدث خطأ في تحميل المحافظات",
+              "Could not load governorates",
               style: TextStyle(
                 color: Colors.red,
               ),
@@ -177,7 +177,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
             ),
 
             child: const Text(
-              "لا توجد محافظات",
+              "No governorates yet",
               style: TextStyle(
                 color: Colors.orange,
               ),
@@ -209,7 +209,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
           decoration:
               const InputDecoration(
             labelText:
-                "اختر المحافظة",
+                "Choose governorate",
 
             border:
                 OutlineInputBorder(),
@@ -307,7 +307,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
         if (snapshot.hasError) {
           return const Center(
             child: Text(
-              "حدث خطأ في تحميل المديريات",
+              "Could not load districts",
               style: TextStyle(
                 color: Colors.red,
               ),
@@ -323,7 +323,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
             snapshot.data!.docs.isEmpty) {
           return const Center(
             child: Text(
-              "لا توجد مديريات",
+              "No districts yet",
               style: TextStyle(
                 color: Colors.grey,
               ),
@@ -420,7 +420,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
                       child: Text(
                         provinceName
                                 .isEmpty
-                            ? "المحافظة غير محددة"
+                            ? "No governorate selected"
                             : provinceName,
                       ),
                     ),
@@ -457,7 +457,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
         // ========================================================
 
         appBar: const MyAppBar(
-          title: "تهيئة المديريات",
+          title: "District setup",
           showBackButton: true,
         ),
 
@@ -495,7 +495,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
                 decoration:
                     const InputDecoration(
                   labelText:
-                      "اسم المديرية",
+                      "District name",
 
                   border:
                       OutlineInputBorder(),
@@ -592,8 +592,8 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
 
                   label: Text(
                     loading
-                        ? "جاري الحفظ..."
-                        : "إضافة المديرية",
+                        ? "Saving…"
+                        : "Add district",
 
                     style:
                         const TextStyle(
@@ -622,7 +622,7 @@ class _DistrictsScreenState extends State<DistrictsScreen> {
                     Alignment.centerRight,
 
                 child: Text(
-                  "المديريات المسجلة",
+                  "Registered districts",
 
                   style: TextStyle(
                     fontSize: 18,

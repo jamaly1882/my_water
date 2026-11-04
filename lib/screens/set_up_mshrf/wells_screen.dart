@@ -71,7 +71,7 @@ class _WellsScreenState extends State<WellsScreen> {
 
     if (provinceId == null ||
         provinceId!.isEmpty) {
-      showMessage("اختر المحافظة");
+      showMessage("Choose governorate");
       return;
     }
 
@@ -81,7 +81,7 @@ class _WellsScreenState extends State<WellsScreen> {
 
     if (districtId == null ||
         districtId!.isEmpty) {
-      showMessage("اختر المديرية");
+      showMessage("Choose district");
       return;
     }
 
@@ -91,7 +91,7 @@ class _WellsScreenState extends State<WellsScreen> {
 
     if (hamletId == null ||
         hamletId!.isEmpty) {
-      showMessage("اختر العزلة");
+      showMessage("Choose sub-district");
       return;
     }
 
@@ -101,7 +101,7 @@ class _WellsScreenState extends State<WellsScreen> {
 
     if (villageId == null ||
         villageId!.isEmpty) {
-      showMessage("اختر القرية");
+      showMessage("Choose village");
       return;
     }
 
@@ -110,7 +110,7 @@ class _WellsScreenState extends State<WellsScreen> {
     // ----------------------------------------------------------
 
     if (name.isEmpty) {
-      showMessage("اكتب اسم أو رقم البئر");
+      showMessage("Type the well name or number");
       return;
     }
 
@@ -143,13 +143,13 @@ class _WellsScreenState extends State<WellsScreen> {
       wellController.clear();
 
       showMessage(
-        "تمت إضافة البئر بنجاح",
+        "Well added",
       );
     } catch (e) {
       if (!mounted) return;
 
       showMessage(
-        "حدث خطأ أثناء إضافة البئر: $e",
+        "Could not add the well: $e",
       );
     } finally {
       if (mounted) {
@@ -182,7 +182,7 @@ class _WellsScreenState extends State<WellsScreen> {
         // ========================================================
 
         appBar: const MyAppBar(
-          title: "تهيئة الآبار",
+          title: "Well setup",
           showBackButton: true,
         ),
 
@@ -228,7 +228,7 @@ class _WellsScreenState extends State<WellsScreen> {
                             BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        "حدث خطأ في تحميل المحافظات",
+                        "Could not load governorates",
                         style: TextStyle(
                           color: Colors.red,
                         ),
@@ -249,7 +249,7 @@ class _WellsScreenState extends State<WellsScreen> {
                             BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        "لا توجد محافظات",
+                        "No governorates yet",
                         style: TextStyle(
                           color: Colors.orange,
                         ),
@@ -277,7 +277,7 @@ class _WellsScreenState extends State<WellsScreen> {
                     decoration:
                         const InputDecoration(
                       labelText:
-                          "اختر المحافظة",
+                          "Choose governorate",
 
                       border:
                           OutlineInputBorder(),
@@ -400,7 +400,7 @@ class _WellsScreenState extends State<WellsScreen> {
                           ),
                         ),
                         child: const Text(
-                          "حدث خطأ في تحميل المديريات",
+                          "Could not load districts",
                           style: TextStyle(
                             color: Colors.red,
                           ),
@@ -426,7 +426,7 @@ class _WellsScreenState extends State<WellsScreen> {
                           ),
                         ),
                         child: const Text(
-                          "لا توجد مديريات لهذه المحافظة",
+                          "No districts in this governorate",
                           style: TextStyle(
                             color:
                                 Colors.orange,
@@ -456,7 +456,7 @@ class _WellsScreenState extends State<WellsScreen> {
                       decoration:
                           const InputDecoration(
                         labelText:
-                            "اختر المديرية",
+                            "Choose district",
 
                         border:
                             OutlineInputBorder(),
@@ -577,7 +577,7 @@ class _WellsScreenState extends State<WellsScreen> {
                           ),
                         ),
                         child: const Text(
-                          "حدث خطأ في تحميل العزل",
+                          "Could not load sub-districts",
                           style: TextStyle(
                             color: Colors.red,
                           ),
@@ -603,7 +603,7 @@ class _WellsScreenState extends State<WellsScreen> {
                           ),
                         ),
                         child: const Text(
-                          "لا توجد عزل لهذه المديرية",
+                          "No sub-districts in this district",
                           style: TextStyle(
                             color:
                                 Colors.orange,
@@ -632,7 +632,7 @@ class _WellsScreenState extends State<WellsScreen> {
                       decoration:
                           const InputDecoration(
                         labelText:
-                            "اختر العزلة",
+                            "Choose sub-district",
 
                         border:
                             OutlineInputBorder(),
@@ -750,7 +750,7 @@ class _WellsScreenState extends State<WellsScreen> {
                           ),
                         ),
                         child: const Text(
-                          "حدث خطأ في تحميل القرى",
+                          "Could not load villages",
                           style: TextStyle(
                             color: Colors.red,
                           ),
@@ -776,7 +776,7 @@ class _WellsScreenState extends State<WellsScreen> {
                           ),
                         ),
                         child: const Text(
-                          "لا توجد قرى لهذه العزلة",
+                          "No villages in this sub-district",
                           style: TextStyle(
                             color:
                                 Colors.orange,
@@ -806,7 +806,7 @@ class _WellsScreenState extends State<WellsScreen> {
                       decoration:
                           const InputDecoration(
                         labelText:
-                            "اختر القرية",
+                            "Choose village",
 
                         border:
                             OutlineInputBorder(),
@@ -891,7 +891,7 @@ class _WellsScreenState extends State<WellsScreen> {
                 decoration:
                     const InputDecoration(
                   labelText:
-                      "اسم / رقم البئر",
+                      "Well name / number",
 
                   border:
                       OutlineInputBorder(),
@@ -979,8 +979,8 @@ class _WellsScreenState extends State<WellsScreen> {
 
                   label: Text(
                     loading
-                        ? "جاري الحفظ..."
-                        : "إضافة البئر",
+                        ? "Saving…"
+                        : "Add well",
 
                     style:
                         const TextStyle(
@@ -1004,7 +1004,7 @@ class _WellsScreenState extends State<WellsScreen> {
                     Alignment.centerRight,
 
                 child: Text(
-                  "الآبار المسجلة",
+                  "Registered wells",
 
                   style:
                       TextStyle(
@@ -1045,7 +1045,7 @@ class _WellsScreenState extends State<WellsScreen> {
                     if (snapshot.hasError) {
                       return const Center(
                         child: Text(
-                          "حدث خطأ في تحميل الآبار",
+                          "Could not load wells",
                           style:
                               TextStyle(
                             color:
@@ -1060,7 +1060,7 @@ class _WellsScreenState extends State<WellsScreen> {
                             .isEmpty) {
                       return const Center(
                         child: Text(
-                          "لا توجد آبار",
+                          "No wells yet",
                           style:
                               TextStyle(
                             color:
