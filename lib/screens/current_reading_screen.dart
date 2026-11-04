@@ -30,8 +30,8 @@ class _CurrentReadingScreenState
   final List<Map<String,dynamic>> readings = [
 
     {
-      "customer":"محمد أحمد",
-      "meter":"عداد نصف بوصة",
+      "customer":"Mohammed Ahmed",
+      "meter":"1/2 inch meter",
       "previous":250,
       "current":null,
       "consumption":0,
@@ -39,8 +39,8 @@ class _CurrentReadingScreenState
 
 
     {
-      "customer":"أحمد علي",
-      "meter":"عداد واحد بوصة",
+      "customer":"Ahmed Ali",
+      "meter":"1 inch meter",
       "previous":400,
       "current":null,
       "consumption":0,
@@ -123,7 +123,7 @@ class _CurrentReadingScreenState
 
           title:
           const Text(
-              "تقييم الدور"
+              "Cycle assessment"
           ),
 
           centerTitle:true,
@@ -245,7 +245,7 @@ class _CurrentReadingScreenState
                 const InputDecoration(
 
                   labelText:
-                  "القراءة الحالية",
+                  "Current reading",
 
                   border:
                   OutlineInputBorder(),
@@ -283,7 +283,7 @@ class _CurrentReadingScreenState
 
                   label:
                   const Text(
-                      "حفظ التقييم"
+                      "Save assessment"
                   ),
 
                 ),
