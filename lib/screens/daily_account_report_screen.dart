@@ -132,11 +132,11 @@ class _DailyAccountReportScreenState
       initialDate: selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
-      helpText: "اختر تاريخ التقرير",
-      cancelText: "إلغاء",
-      confirmText: "اختيار",
-      fieldLabelText: "التاريخ",
-      fieldHintText: "يوم/شهر/سنة",
+      helpText: "Pick the report date",
+      cancelText: "Cancel",
+      confirmText: "Select",
+      fieldLabelText: "Date",
+      fieldHintText: "day/month/year",
     );
 
     if (date != null && mounted) {
@@ -347,7 +347,7 @@ class _DailyAccountReportScreenState
       yield result;
     } catch (e) {
       throw Exception(
-        "خطأ أثناء تحميل القيود: $e",
+        "Could not load the entries: $e",
       );
     }
   }
@@ -359,7 +359,7 @@ class _DailyAccountReportScreenState
   double getDebit(
     Map<String, dynamic> data,
   ) {
-    // القيد الجديد
+    // الEntry الجديد
     if (data["debitAccountId"] ==
         widget.accountId) {
       return toDouble(data["amount"]);
@@ -387,7 +387,7 @@ class _DailyAccountReportScreenState
   double getCredit(
     Map<String, dynamic> data,
   ) {
-    // القيد الجديد
+    // الEntry الجديد
     if (data["creditAccountId"] ==
         widget.accountId) {
       return toDouble(data["amount"]);
@@ -419,14 +419,14 @@ class _DailyAccountReportScreenState
         data["type"]?.toString() ?? "";
 
     if (type == "payment") {
-      return "سند صرف";
+      return "Payment voucher";
     }
 
     if (type == "receipt") {
-      return "سند قبض";
+      return "Receipt voucher";
     }
 
-    return "قيد محاسبي";
+    return "Journal entry";
   }
 
   // ============================================================
@@ -469,15 +469,15 @@ class _DailyAccountReportScreenState
         data["type"]?.toString() ?? "";
 
     if (type == "payment") {
-      return "سند صرف";
+      return "Payment voucher";
     }
 
     if (type == "receipt") {
-      return "سند قبض";
+      return "Receipt voucher";
     }
 
     return data["description"]?.toString() ??
-        "قيد محاسبي";
+        "Journal entry";
   }
 
   // ============================================================
@@ -520,17 +520,17 @@ class _DailyAccountReportScreenState
         widget.accountId) {
       return data["creditAccountName"]
               ?.toString() ??
-          "غير محدد";
+          "Not set";
     }
 
     if (data["creditAccountId"] ==
         widget.accountId) {
       return data["debitAccountName"]
               ?.toString() ??
-          "غير محدد";
+          "Not set";
     }
 
-    return "غير محدد";
+    return "Not set";
   }
 
   // ============================================================
@@ -580,7 +580,7 @@ class _DailyAccountReportScreenState
                         CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "الحساب",
+                        "Account",
                         style:
                             TextStyle(
                           color:
@@ -610,7 +610,7 @@ class _DailyAccountReportScreenState
                       ),
 
                       Text(
-                        "رقم الحساب: ${widget.accountId}",
+                        "Account number: ${widget.accountId}",
                         style:
                             TextStyle(
                           color:
@@ -668,7 +668,7 @@ class _DailyAccountReportScreenState
                           CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "الرصيد الحالي",
+                          "Current balance",
                           style:
                               TextStyle(
                             fontSize:
@@ -693,7 +693,7 @@ class _DailyAccountReportScreenState
                                 ),
                               )
                             : Text(
-                                "${currentBalance.toStringAsFixed(2)} ريال",
+                                "${currentBalance.toStringAsFixed(2)} YER",
                                 style:
                                     TextStyle(
                                   fontSize:
@@ -739,7 +739,7 @@ class _DailyAccountReportScreenState
 
                   Expanded(
                     child: Text(
-                      "البئر: ${widget.wellName}",
+                      "Well: ${widget.wellName}",
                       style:
                           const TextStyle(
                         fontWeight:
@@ -809,7 +809,7 @@ class _DailyAccountReportScreenState
               ),
 
               Text(
-                "الحركة اليومية للحساب",
+                "Daily account movement",
                 style:
                     TextStyle(
                   color:
@@ -845,7 +845,7 @@ class _DailyAccountReportScreenState
                   .trim()
                   .isNotEmpty)
             Text(
-              "البئر: ${widget.wellName}",
+              "Well: ${widget.wellName}",
               style:
                   const TextStyle(
                 color:
@@ -889,7 +889,7 @@ class _DailyAccountReportScreenState
         ),
         label:
             Text(
-          "تاريخ التقرير: "
+          "Report date: "
           "$formattedSelectedDate",
           style:
               const TextStyle(
@@ -961,7 +961,7 @@ class _DailyAccountReportScreenState
             ),
 
             Text(
-              "${value.toStringAsFixed(2)} ريال",
+              "${value.toStringAsFixed(2)} YER",
               textAlign:
                   TextAlign.center,
               style:
@@ -1038,7 +1038,7 @@ class _DailyAccountReportScreenState
                     CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "صافي حركة اليوم",
+                    "Net movement today",
                     style:
                         TextStyle(
                       fontWeight:
@@ -1053,8 +1053,8 @@ class _DailyAccountReportScreenState
 
                   Text(
                     net >= 0
-                        ? "زيادة: ${net.toStringAsFixed(2)} ريال"
-                        : "نقص: ${net.abs().toStringAsFixed(2)} ريال",
+                        ? "Increase: ${net.toStringAsFixed(2)} YER"
+                        : "Decrease: ${net.abs().toStringAsFixed(2)} YER",
                     style:
                         TextStyle(
                       color:
@@ -1137,10 +1137,10 @@ class _DailyAccountReportScreenState
         appBar:
             MyAppBar(
           title:
-              "الحركة اليومية للحساب",
+              "Daily account movement",
           subtitle:
               hasWell
-                  ? "البئر: ${widget.wellName}"
+                  ? "Well: ${widget.wellName}"
                   : widget.accountName,
           icon:
               Icons.account_balance_wallet,
@@ -1279,7 +1279,7 @@ class _DailyAccountReportScreenState
                                         ),
 
                                         Text(
-                                          "لا توجد حركة في هذا اليوم",
+                                          "No movement on this day",
                                           style:
                                               TextStyle(
                                             fontSize:
@@ -1329,7 +1329,7 @@ class _DailyAccountReportScreenState
                                   Expanded(
                                     child:
                                         buildTotalCard(
-                                      "إجمالي المدين (عليه)",
+                                      "Total debit",
                                       totalDebit,
                                       Colors.red,
                                       Icons.arrow_downward,
@@ -1339,7 +1339,7 @@ class _DailyAccountReportScreenState
                                   Expanded(
                                     child:
                                         buildTotalCard(
-                                      "إجمالي الدائن (له)",
+                                      "Total credit",
                                       totalCredit,
                                       Colors.green,
                                       Icons.arrow_upward,
@@ -1395,7 +1395,7 @@ class _DailyAccountReportScreenState
                                           ),
 
                                           Text(
-                                            "عدد الحركات",
+                                            "Movements",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -1468,28 +1468,28 @@ class _DailyAccountReportScreenState
                                           DataColumn(
                                             label:
                                                 Text(
-                                              "التاريخ",
+                                              "Date",
                                             ),
                                           ),
 
                                           DataColumn(
                                             label:
                                                 Text(
-                                              "نوع الحركة",
+                                              "Entry type",
                                             ),
                                           ),
 
                                           DataColumn(
                                             label:
                                                 Text(
-                                              "البيان",
+                                              "Description",
                                             ),
                                           ),
 
                                           DataColumn(
                                             label:
                                                 Text(
-                                              "الحساب المقابل",
+                                              "Counter account",
                                             ),
                                           ),
 
@@ -1500,7 +1500,7 @@ class _DailyAccountReportScreenState
                                           DataColumn(
                                             label:
                                                 Text(
-                                              "مدين (عليه)",
+                                              "Debit",
                                               style:
                                                   TextStyle(
                                                 fontWeight:
@@ -1518,7 +1518,7 @@ class _DailyAccountReportScreenState
                                           DataColumn(
                                             label:
                                                 Text(
-                                              "دائن (له)",
+                                              "Credit",
                                               style:
                                                   TextStyle(
                                                 fontWeight:

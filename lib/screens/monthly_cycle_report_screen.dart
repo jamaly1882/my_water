@@ -121,7 +121,7 @@ class _MonthlyCycleReportScreenState
         // ========================================================
 
         appBar: MyAppBar(
-          title: "التقرير الشهري للدور",
+          title: "Monthly cycle report",
 
           subtitle:
               "${widget.wellName ?? ''} - $_currentMonth / $_currentYear",
@@ -212,7 +212,7 @@ class _MonthlyCycleReportScreenState
 
                       children: [
                         Text(
-                          "البئر: ${widget.wellName ?? ''}",
+                          "Well: ${widget.wellName ?? ''}",
 
                           style:
                               const TextStyle(
@@ -231,7 +231,7 @@ class _MonthlyCycleReportScreenState
                         ),
 
                         Text(
-                          "رقم البئر: ${widget.wellId ?? ''}",
+                          "Well number: ${widget.wellId ?? ''}",
 
                           style:
                               const TextStyle(
@@ -310,7 +310,7 @@ class _MonthlyCycleReportScreenState
                       snapshot.data!.docs.isEmpty) {
                     return const Center(
                       child: Text(
-                        "لا توجد أدوار لهذا الشهر لهذا البئر",
+                        "No cycles for this well in this month",
 
                         style:
                             TextStyle(
@@ -406,7 +406,7 @@ class _MonthlyCycleReportScreenState
                             Expanded(
                               child:
                                   _buildStatCard(
-                                "عدد الأدوار",
+                                "Cycles",
 
                                 "$totalCycles",
                               ),
@@ -415,7 +415,7 @@ class _MonthlyCycleReportScreenState
                             Expanded(
                               child:
                                   _buildStatCard(
-                                "إجمالي الاستهلاك",
+                                "Total consumption",
 
                                 totalConsumption
                                     .toStringAsFixed(
@@ -427,7 +427,7 @@ class _MonthlyCycleReportScreenState
                             Expanded(
                               child:
                                   _buildStatCard(
-                                "إجمالي المبالغ",
+                                "Total amounts",
 
                                 totalAmount
                                     .toStringAsFixed(
@@ -482,70 +482,70 @@ class _MonthlyCycleReportScreenState
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الدور",
+                                    "Cycle",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الزبون",
+                                    "Subscriber",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الاستخدام",
+                                    "Usage",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "نوع العداد",
+                                    "Meter type",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "السابقة",
+                                    "Previous",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الحالية",
+                                    "Current",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الاستهلاك",
+                                    "Consumption",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "سعر الوحدة",
+                                    "Unit price",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الإجمالي",
+                                    "Total",
                                   ),
                                 ),
 
                                 DataColumn(
                                   label:
                                       Text(
-                                    "الحالة",
+                                    "Status",
                                   ),
                                 ),
                               ],
