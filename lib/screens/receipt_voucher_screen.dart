@@ -49,7 +49,7 @@ class _ReceiptVoucherScreenState
   String customerName = "";
 
   String cashAccountName =
-      "جاري تحميل صندوق البئر...";
+      "Loading the well fund…";
 
   List<QueryDocumentSnapshot> customers = [];
   List<QueryDocumentSnapshot> cycles = [];
@@ -159,7 +159,7 @@ class _ReceiptVoucherScreenState
           selectedCashAccountId = null;
 
           cashAccountName =
-              "لم يتم تحديد البئر";
+              "No well selected";
         });
 
         return;
@@ -173,7 +173,7 @@ class _ReceiptVoucherScreenState
       );
 
       debugPrint(
-        "البحث عن صندوق البئر",
+        "Looking up the well fund",
       );
 
       debugPrint(
@@ -219,11 +219,11 @@ class _ReceiptVoucherScreenState
 
           cashAccountName =
               data["name"]?.toString() ??
-                  "صندوق البئر";
+                  "Well fund";
         });
 
         debugPrint(
-          "تم العثور على صندوق البئر",
+          "Well fund found",
         );
 
         debugPrint(
@@ -248,11 +248,11 @@ class _ReceiptVoucherScreenState
           selectedCashAccountId = null;
 
           cashAccountName =
-              "لم يتم العثور على صندوق لهذا البئر";
+              "No fund found for this well";
         });
 
         debugPrint(
-          "لم يتم العثور على صندوق للبئر",
+          "No fund found for this well",
         );
 
         debugPrint(
@@ -270,11 +270,11 @@ class _ReceiptVoucherScreenState
         selectedCashAccountId = null;
 
         cashAccountName =
-            "خطأ أثناء تحميل صندوق البئر";
+            "Could not load the well fund";
       });
 
       debugPrint(
-        "خطأ loadCashAccount: $e",
+        "loadCashAccount failed: $e",
       );
     }
   }
@@ -305,7 +305,7 @@ class _ReceiptVoucherScreenState
           )
           .where(
             "status",
-            isEqualTo: "مفتوح",
+            isEqualTo: "Open",
           )
           .get();
 
@@ -349,7 +349,7 @@ class _ReceiptVoucherScreenState
 
     if (selectedCustomerId == null) {
       showMessage(
-        "الرجاء اختيار الزبون",
+        "Please choose a subscriber",
         true,
       );
 
@@ -363,7 +363,7 @@ class _ReceiptVoucherScreenState
     if (selectedAccountId == null ||
         selectedAccountId!.isEmpty) {
       showMessage(
-        "الزبون لا يملك حساب",
+        "This subscriber has no account",
         true,
       );
 
@@ -377,7 +377,7 @@ class _ReceiptVoucherScreenState
     if (selectedCashAccountId == null ||
         selectedCashAccountId!.isEmpty) {
       showMessage(
-        "لم يتم العثور على صندوق لهذا البئر",
+        "No fund found for this well",
         true,
       );
 
@@ -505,7 +505,7 @@ class _ReceiptVoucherScreenState
               statementController.text
                       .trim()
                       .isEmpty
-                  ? "سند قبض"
+                  ? "Receipt voucher"
                   : statementController.text
                       .trim(),
 
@@ -620,7 +620,7 @@ class _ReceiptVoucherScreenState
       if (!mounted) return;
 
       showMessage(
-        "تم حفظ سند القبض بنجاح",
+        "Receipt voucher saved",
         false,
       );
 
@@ -785,7 +785,7 @@ class _ReceiptVoucherScreenState
                 ),
 
                 Text(
-                  "معلومات الموقع",
+                  "Location",
 
                   style:
                       TextStyle(
@@ -820,7 +820,7 @@ class _ReceiptVoucherScreenState
 
                 title:
                     const Text(
-                  "القرية",
+                  "Village",
                 ),
 
                 subtitle:
@@ -855,7 +855,7 @@ class _ReceiptVoucherScreenState
 
                 title:
                     const Text(
-                  "البئر",
+                  "Well",
                 ),
 
                 subtitle:
@@ -912,7 +912,7 @@ class _ReceiptVoucherScreenState
         ),
 
         title: const Text(
-          "حساب الصندوق",
+          "Fund account",
 
           style: TextStyle(
             fontWeight:
@@ -966,7 +966,7 @@ class _ReceiptVoucherScreenState
           ),
 
           title: Text(
-            "هذا الزبون لا يملك حساباً",
+            "This subscriber has no account",
 
             style: TextStyle(
               color: Colors.red,
@@ -1011,7 +1011,7 @@ class _ReceiptVoucherScreenState
         ),
 
         title: const Text(
-          "حساب الزبون",
+          "Subscriber account",
 
           style: TextStyle(
             fontWeight:
@@ -1071,8 +1071,8 @@ class _ReceiptVoucherScreenState
 
         label: Text(
           isLoading
-              ? "جاري الحفظ..."
-              : "حفظ سند القبض",
+              ? "Saving…"
+              : "Save receipt voucher",
 
           style:
               const TextStyle(
@@ -1204,7 +1204,7 @@ class _ReceiptVoucherScreenState
                         decoration:
                             InputDecoration(
                           labelText:
-                              "الزبون",
+                              "Subscriber",
 
                           border:
                               const OutlineInputBorder(),
@@ -1238,8 +1238,8 @@ class _ReceiptVoucherScreenState
 
                         hint: Text(
                           customers.isEmpty
-                              ? "لا يوجد زبائن"
-                              : "اختر الزبون",
+                              ? "No subscribers"
+                              : "Choose subscriber",
                         ),
 
                         items:
@@ -1260,7 +1260,7 @@ class _ReceiptVoucherScreenState
                                 data[
                                             "customerName"]
                                         ?.toString() ??
-                                    "بدون اسم";
+                                    "No name";
 
                             return DropdownMenuItem<
                                 String>(
@@ -1284,7 +1284,7 @@ class _ReceiptVoucherScreenState
                             (value) {
                           if (value ==
                               null) {
-                            return "اختر الزبون";
+                            return "Choose subscriber";
                           }
 
                           return null;
@@ -1333,7 +1333,7 @@ class _ReceiptVoucherScreenState
                           decoration:
                               InputDecoration(
                             labelText:
-                                "الدورة",
+                                "Cycle",
 
                             border:
                                 const OutlineInputBorder(),
@@ -1367,7 +1367,7 @@ class _ReceiptVoucherScreenState
 
                           hint:
                               const Text(
-                            "اختر الدورة (اختياري)",
+                            "Choose a cycle (optional)",
                           ),
 
                           items:
@@ -1397,8 +1397,8 @@ class _ReceiptVoucherScreenState
 
                                 child:
                                     Text(
-                                  "الدورة رقم $cycleNumber"
-                                  " - المتبقي $remaining",
+                                  "Cycle no. $cycleNumber"
+                                  " — remaining $remaining",
                                 ),
                               );
                             },
@@ -1435,7 +1435,7 @@ class _ReceiptVoucherScreenState
                         decoration:
                             InputDecoration(
                           labelText:
-                              "المبلغ",
+                              "Amount",
 
                           border:
                               const OutlineInputBorder(),
@@ -1475,7 +1475,7 @@ class _ReceiptVoucherScreenState
                               value
                                   .trim()
                                   .isEmpty) {
-                            return "أدخل المبلغ";
+                            return "Enter the amount";
                           }
 
                           final amount =
@@ -1485,12 +1485,12 @@ class _ReceiptVoucherScreenState
 
                           if (amount ==
                               null) {
-                            return "المبلغ غير صحيح";
+                            return "Invalid amount";
                           }
 
                           if (amount <=
                               0) {
-                            return "يجب أن يكون المبلغ أكبر من صفر";
+                            return "The amount must be greater than zero";
                           }
 
                           return null;
@@ -1515,7 +1515,7 @@ class _ReceiptVoucherScreenState
                         decoration:
                             InputDecoration(
                           labelText:
-                              "البيان",
+                              "Description",
 
                           border:
                               const OutlineInputBorder(),

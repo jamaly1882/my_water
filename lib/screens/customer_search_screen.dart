@@ -161,7 +161,7 @@ class _CustomerSearchScreenState
                           widget.wellName!
                               .trim()
                               .isEmpty
-                      ? "البئر"
+                      ? "Well"
                       : widget.wellName!,
 
                   style:
@@ -182,7 +182,7 @@ class _CustomerSearchScreenState
                         .trim()
                         .isNotEmpty)
                   Text(
-                    "رقم البئر: ${widget.wellId}",
+                    "Well number: ${widget.wellId}",
 
                     style:
                         const TextStyle(
@@ -197,7 +197,7 @@ class _CustomerSearchScreenState
                         .trim()
                         .isNotEmpty)
                   Text(
-                    "القرية: ${widget.villageName}",
+                    "Village: ${widget.villageName}",
 
                     style:
                         const TextStyle(
@@ -265,10 +265,10 @@ class _CustomerSearchScreenState
         decoration:
             InputDecoration(
           labelText:
-              "البحث باسم الزبون",
+              "Search by subscriber name",
 
           hintText:
-              "اكتب اسم الزبون للبحث",
+              "Type a subscriber name",
 
           prefixIcon:
               const Icon(
@@ -374,7 +374,7 @@ class _CustomerSearchScreenState
           ),
 
           Text(
-            "لا يوجد زبائن لهذا البئر",
+            "No subscribers on this well",
 
             style:
                 TextStyle(
@@ -410,7 +410,7 @@ class _CustomerSearchScreenState
           ),
 
           const Text(
-            "لا توجد نتائج",
+            "No results",
 
             style:
                 TextStyle(
@@ -428,7 +428,7 @@ class _CustomerSearchScreenState
               ),
 
               child: Text(
-                "بحث عن: $searchText",
+                "Search: $searchText",
 
                 style:
                     TextStyle(
@@ -655,7 +655,7 @@ class _CustomerSearchScreenState
                     Text(
                       customerName
                               .isEmpty
-                          ? "بدون اسم"
+                          ? "No name"
                           : customerName,
 
                       style:
@@ -675,7 +675,7 @@ class _CustomerSearchScreenState
                     if (customerNo
                         .isNotEmpty)
                       Text(
-                        "رقم الزبون: $customerNo",
+                        "Subscriber no: $customerNo",
 
                         style:
                             TextStyle(
@@ -691,7 +691,7 @@ class _CustomerSearchScreenState
                     if (phone
                         .isNotEmpty)
                       Text(
-                        "الهاتف: $phone",
+                        "Phone: $phone",
 
                         style:
                             TextStyle(
@@ -707,7 +707,7 @@ class _CustomerSearchScreenState
                     if (address
                         .isNotEmpty)
                       Text(
-                        "العنوان: $address",
+                        "Address: $address",
 
                         maxLines:
                             1,
@@ -730,7 +730,7 @@ class _CustomerSearchScreenState
                     if (usage
                         .isNotEmpty)
                       Text(
-                        "الاستخدام: $usage",
+                        "Usage: $usage",
 
                         style:
                             TextStyle(
@@ -812,7 +812,7 @@ class _CustomerSearchScreenState
         appBar:
             const MyAppBar(
           title:
-              "اختيار زبون البئر",
+              "Select well subscriber",
 
           icon:
               Icons.people,

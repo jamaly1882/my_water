@@ -127,7 +127,7 @@ class SearchScreen extends StatelessWidget {
 
                         children: [
                           Text(
-                            'الاستعلام',
+                            'Inquiry',
 
                             style:
                                 TextStyle(
@@ -147,7 +147,7 @@ class SearchScreen extends StatelessWidget {
                           ),
 
                           Text(
-                            'البحث والاستعلام عن بيانات الزبائن',
+                            'Search subscriber records',
 
                             style:
                                 TextStyle(
@@ -268,7 +268,7 @@ class SearchScreen extends StatelessWidget {
 
                           children: [
                             Text(
-                              'استعلام عن زبون',
+                              'Subscriber inquiry',
 
                               style:
                                   TextStyle(
@@ -288,7 +288,7 @@ class SearchScreen extends StatelessWidget {
                             ),
 
                             Text(
-                              'البحث عن بيانات الزبون والحساب',
+                              'Look up subscriber and account details',
 
                               style:
                                   TextStyle(

@@ -86,15 +86,15 @@ class _AccountReportMenuScreenState
         }
       }
 
-      return 'حساب عام';
+      return 'General account';
     } catch (e) {
       debugPrint(
-        'خطأ في جلب اسم الحساب: $e',
+        'Could not load account name: $e',
       );
 
       return account['name']?.toString() ??
           account['accountName']?.toString() ??
-          'حساب عام';
+          'General account';
     }
   }
 
@@ -102,8 +102,8 @@ class _AccountReportMenuScreenState
   // جلب الحسابات
   //
   // الترتيب:
-  // 1. حسابات الزبائن المرتبطة بالبئر
-  // 2. حسابات البئر المباشرة
+  // 1. Accounts: الزبائن المرتبطة بالبئر
+  // 2. Accounts: البئر المباشرة
   //
   // مع منع التكرار
   // ============================================================
@@ -158,7 +158,7 @@ class _AccountReportMenuScreenState
     }
 
     // ==========================================================
-    // جلب حسابات الزبائن من accounts
+    // جلب Accounts: الزبائن من accounts
     //
     // Firestore whereIn يسمح بحد أقصى 30 قيمة
     // لذلك نقسم IDs إلى مجموعات
@@ -206,7 +206,7 @@ class _AccountReportMenuScreenState
 
     // ==========================================================
     // ثانياً:
-    // جلب الحسابات المرتبطة مباشرة بالبئر
+    // جلب الAccounts: المرتبطة مباشرة بالبئر
     // accounts.wellId
     // ==========================================================
 
@@ -232,8 +232,8 @@ class _AccountReportMenuScreenState
     // ==========================================================
     // بناء القائمة النهائية
     //
-    // أولاً حسابات الزبائن
-    // ثم حسابات البئر
+    // أولاً Accounts: الزبائن
+    // ثم Accounts: البئر
     //
     // بدون تكرار
     // ==========================================================
@@ -242,13 +242,13 @@ class _AccountReportMenuScreenState
             QueryDocumentSnapshot<Map<String, dynamic>>>
         result = [];
 
-    // أولاً: حسابات الزبائن
+    // أولاً: Accounts: الزبائن
     for (final doc
         in customerAccounts.values) {
       result.add(doc);
     }
 
-    // ثانياً: حسابات البئر
+    // ثانياً: Accounts: البئر
     for (final doc
         in wellAccounts.values) {
       if (!customerAccounts.containsKey(doc.id)) {
@@ -342,7 +342,7 @@ class _AccountReportMenuScreenState
                   CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'البئر',
+                  'Well',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -364,7 +364,7 @@ class _AccountReportMenuScreenState
                 const SizedBox(height: 3),
 
                 Text(
-                  'رقم البئر: ${widget.wellId ?? ''}',
+                  'Well number: ${widget.wellId ?? ''}',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 11,
@@ -387,7 +387,7 @@ class _AccountReportMenuScreenState
       controller: searchController,
       textDirection: TextDirection.rtl,
       decoration: InputDecoration(
-        labelText: 'البحث باسم الحساب',
+        labelText: 'Search by account name',
 
         prefixIcon: const Icon(
           Icons.search,
@@ -479,16 +479,16 @@ class _AccountReportMenuScreenState
   ) {
     switch (type) {
       case 'worker':
-        return 'عامل البئر';
+        return 'Well operator';
 
       case 'sales':
-        return 'مبيعات البئر';
+        return 'Well sales';
 
       case 'customer':
-        return 'زبون';
+        return 'Subscriber';
 
       default:
-        return 'حساب';
+        return 'Account';
     }
   }
 
@@ -581,7 +581,7 @@ class _AccountReportMenuScreenState
 
         final accountName =
             nameSnapshot.data ??
-            'حساب عام';
+            'General account';
 
         // ======================================================
         // البحث
@@ -765,7 +765,7 @@ class _AccountReportMenuScreenState
 
                   // الرصيد
                   Text(
-                    'الرصيد: $balance',
+                    'Balance: $balance',
                     style:
                         const TextStyle(
                       color: Colors.black54,
@@ -777,7 +777,7 @@ class _AccountReportMenuScreenState
                   if (accountNumber
                       .isNotEmpty)
                     Text(
-                      'رقم الحساب: $accountNumber',
+                      'Account number: $accountNumber',
                       style:
                           const TextStyle(
                         color: Colors.black45,
@@ -790,7 +790,7 @@ class _AccountReportMenuScreenState
                       .trim()
                       .isNotEmpty)
                     Text(
-                      'البئر: $wellName',
+                      'Well: $wellName',
                       style:
                           const TextStyle(
                         color: Colors.black45,
@@ -879,12 +879,12 @@ class _AccountReportMenuScreenState
         // ======================================================
 
         appBar: MyAppBar(
-          title: 'تقارير الحساب',
+          title: 'Account reports',
 
           subtitle:
               hasWell
-                  ? 'حسابات البئر: ${widget.wellName ?? ''}'
-                  : 'اختيار الحساب لعرض التقرير',
+                  ? 'Well accounts: ${widget.wellName ?? ''}'
+                  : 'Select an account to view its report',
 
           icon:
               Icons.account_balance_wallet,
@@ -960,8 +960,8 @@ class _AccountReportMenuScreenState
                     Expanded(
                       child: Text(
                         hasWell
-                            ? 'حسابات ${widget.wellName ?? ''}'
-                            : 'جميع الحسابات',
+                            ? 'Accounts: ${widget.wellName ?? ''}'
+                            : 'All accounts',
 
                         style:
                             const TextStyle(
@@ -1067,8 +1067,8 @@ class _AccountReportMenuScreenState
 
                             Text(
                               hasWell
-                                  ? 'لا توجد حسابات لهذا البئر'
-                                  : 'لا توجد حسابات',
+                                  ? 'No accounts on this well'
+                                  : 'No accounts',
 
                               style:
                                   TextStyle(

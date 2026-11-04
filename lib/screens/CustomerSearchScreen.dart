@@ -65,7 +65,7 @@ class _CustomerSearchScreenState
 
           const Expanded(
             child: Text(
-              "الاستعلام عن الزبون",
+              "Subscriber inquiry",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -84,7 +84,7 @@ class _CustomerSearchScreenState
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
-              "الدور",
+              "Cycle",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 13,
@@ -106,8 +106,8 @@ class _CustomerSearchScreenState
       controller: searchController,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        labelText: "اكتب اسم الزبون",
-        hintText: "ابحث عن الزبون",
+        labelText: "Type subscriber name",
+        hintText: "Search for subscriber",
         prefixIcon: const Icon(
           Icons.search,
         ),
@@ -165,7 +165,7 @@ class _CustomerSearchScreenState
           const SizedBox(width: 8),
 
           Text(
-            "عدد الزبائن: $count",
+            "Subscribers: $count",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.blue.shade800,
@@ -176,7 +176,7 @@ class _CustomerSearchScreenState
 
           if (searchText.isNotEmpty)
             Text(
-              "نتيجة البحث",
+              "Search result",
               style: TextStyle(
                 color: Colors.grey.shade700,
               ),
@@ -198,7 +198,7 @@ class _CustomerSearchScreenState
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "البحث عن زبون",
+            "Find subscriber",
           ),
           centerTitle: true,
         ),
@@ -265,7 +265,7 @@ class _CustomerSearchScreenState
                           if (!snapshot.hasData) {
                             return const Center(
                               child: Text(
-                                "لا توجد بيانات",
+                                "No data",
                               ),
                             );
                           }
@@ -322,8 +322,8 @@ class _CustomerSearchScreenState
 
                                   Text(
                                     searchText.isEmpty
-                                        ? "لا يوجد زبائن مسجلون"
-                                        : "لا توجد نتائج للبحث",
+                                        ? "No subscribers registered"
+                                        : "No search results",
                                     style:
                                         TextStyle(
                                       fontSize: 18,
@@ -373,7 +373,7 @@ class _CustomerSearchScreenState
                                       columns: const [
                                         DataColumn(
                                           label: Text(
-                                            "الرقم",
+                                            "No.",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -385,7 +385,7 @@ class _CustomerSearchScreenState
 
                                         DataColumn(
                                           label: Text(
-                                            "الاسم",
+                                            "Name",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -397,7 +397,7 @@ class _CustomerSearchScreenState
 
                                         DataColumn(
                                           label: Text(
-                                            "الهاتف",
+                                            "Phone",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -409,7 +409,7 @@ class _CustomerSearchScreenState
 
                                         DataColumn(
                                           label: Text(
-                                            "العنوان",
+                                            "Address",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -421,7 +421,7 @@ class _CustomerSearchScreenState
 
                                         DataColumn(
                                           label: Text(
-                                            "الاستخدام",
+                                            "Usage",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -433,7 +433,7 @@ class _CustomerSearchScreenState
 
                                         DataColumn(
                                           label: Text(
-                                            "فتح الدور",
+                                            "Open cycle",
                                             style:
                                                 TextStyle(
                                               fontWeight:
@@ -521,7 +521,7 @@ class _CustomerSearchScreenState
                                                   DataCell(
                                                     IconButton(
                                                       tooltip:
-                                                          "فتح دور جديد",
+                                                          "Open new cycle",
 
                                                       icon:
                                                           const Icon(

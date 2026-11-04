@@ -37,7 +37,7 @@ class _PaymentVoucherScreenState
   String? selectedDebitAccountId;
   String? selectedDebitAccountType;
 
-  String debitAccountName = "اختر الحساب المدين";
+  String debitAccountName = "Choose the debit account";
 
   // ============================================================
   // الصندوق الدائن
@@ -46,7 +46,7 @@ class _PaymentVoucherScreenState
   String? selectedCashAccountId;
 
   String cashAccountName =
-      "جاري تحميل صندوق البئر...";
+      "Loading the well fund…";
 
   // ============================================================
   // الحسابات
@@ -110,7 +110,7 @@ class _PaymentVoucherScreenState
 
       setState(() {
         isLoadingAccounts = false;
-        cashAccountName = "لم يتم تحديد البئر";
+        cashAccountName = "No well selected";
       });
 
       return;
@@ -161,11 +161,11 @@ class _PaymentVoucherScreenState
 
         cashAccountName =
             cash == null
-                ? "لم يتم العثور على صندوق البئر"
+                ? "No fund found for this well"
                 : ((cash.data()
                             as Map<String, dynamic>)["name"]
                         ?.toString() ??
-                    "صندوق البئر");
+                    "Well fund");
 
         isLoadingAccounts = false;
       });
@@ -175,7 +175,7 @@ class _PaymentVoucherScreenState
       setState(() {
         isLoadingAccounts = false;
         cashAccountName =
-            "خطأ أثناء تحميل الحسابات";
+            "Could not load the accounts";
       });
 
       showMessage(
@@ -216,7 +216,7 @@ class _PaymentVoucherScreenState
 
       debitAccountName =
           data["name"]?.toString() ??
-              "الحساب المدين";
+              "Debit account";
     });
   }
 
@@ -238,7 +238,7 @@ class _PaymentVoucherScreenState
     if (widget.wellId == null ||
         widget.wellId!.trim().isEmpty) {
       showMessage(
-        "لم يتم تحديد البئر",
+        "No well selected",
         true,
       );
 
@@ -252,7 +252,7 @@ class _PaymentVoucherScreenState
     if (selectedDebitAccountId == null ||
         selectedDebitAccountId!.isEmpty) {
       showMessage(
-        "اختر الحساب المدين",
+        "Choose the debit account",
         true,
       );
 
@@ -266,7 +266,7 @@ class _PaymentVoucherScreenState
     if (selectedCashAccountId == null ||
         selectedCashAccountId!.isEmpty) {
       showMessage(
-        "لم يتم العثور على صندوق البئر",
+        "No fund found for this well",
         true,
       );
 
@@ -293,8 +293,8 @@ class _PaymentVoucherScreenState
           statement.isEmpty
               ? selectedDebitAccountType ==
                       "worker"
-                  ? "صرف مستحقات عامل البئر"
-                  : "مصروفات البئر"
+                  ? "Pay the well operator"
+                  : "Well expenses"
               : statement;
 
       // ========================================================
@@ -531,7 +531,7 @@ class _PaymentVoucherScreenState
       if (!mounted) return;
 
       showMessage(
-        "تم حفظ سند الصرف وترحيل القيد بنجاح",
+        "Payment voucher saved and the entry posted",
         false,
       );
 
@@ -564,7 +564,7 @@ class _PaymentVoucherScreenState
       selectedDebitAccountType = null;
 
       debitAccountName =
-          "اختر الحساب المدين";
+          "Choose the debit account";
     });
 
     amountController.clear();
@@ -636,7 +636,7 @@ class _PaymentVoucherScreenState
                 ),
                 SizedBox(width: 8),
                 Text(
-                  "معلومات الموقع",
+                  "Location",
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight:
@@ -658,7 +658,7 @@ class _PaymentVoucherScreenState
                   color: mainColor,
                 ),
                 title:
-                    const Text("القرية"),
+                    const Text("Village"),
                 subtitle: Text(
                   widget.villageName!,
                   style:
@@ -679,7 +679,7 @@ class _PaymentVoucherScreenState
                   color: mainColor,
                 ),
                 title:
-                    const Text("البئر"),
+                    const Text("Well"),
                 subtitle: Text(
                   widget.wellName!,
                   style:
@@ -722,7 +722,7 @@ class _PaymentVoucherScreenState
           ),
         ),
         title: const Text(
-          "الدائن - صندوق البئر",
+          "Credit — well fund",
           style: TextStyle(
             fontWeight:
                 FontWeight.bold,
@@ -766,10 +766,10 @@ class _PaymentVoucherScreenState
       decoration:
           InputDecoration(
         labelText:
-            "الحساب المدين",
+            "Debit account",
 
         hintText:
-            "اختر العامل أو المصروفات",
+            "Choose the operator or the expense",
 
         border:
             const OutlineInputBorder(),
@@ -807,7 +807,7 @@ class _PaymentVoucherScreenState
 
           final name =
               data["name"]?.toString() ??
-                  "بدون اسم";
+                  "No name";
 
           final bool isWorker =
               type == "worker";
@@ -847,7 +847,7 @@ class _PaymentVoucherScreenState
           (value) {
         if (value == null ||
             value.isEmpty) {
-          return "اختر الحساب المدين";
+          return "Choose the debit account";
         }
 
         return null;
@@ -872,10 +872,10 @@ class _PaymentVoucherScreenState
       decoration:
           InputDecoration(
         labelText:
-            "المبلغ",
+            "Amount",
 
         hintText:
-            "أدخل مبلغ الصرف",
+            "Enter the amount to pay",
 
         border:
             const OutlineInputBorder(),
@@ -887,7 +887,7 @@ class _PaymentVoucherScreenState
         ),
 
         suffixText:
-            "ريال",
+            "YER",
 
         filled: true,
 
@@ -908,7 +908,7 @@ class _PaymentVoucherScreenState
           (value) {
         if (value == null ||
             value.trim().isEmpty) {
-          return "أدخل المبلغ";
+          return "Enter the amount";
         }
 
         final amount =
@@ -917,11 +917,11 @@ class _PaymentVoucherScreenState
         );
 
         if (amount == null) {
-          return "المبلغ غير صحيح";
+          return "Invalid amount";
         }
 
         if (amount <= 0) {
-          return "يجب أن يكون المبلغ أكبر من صفر";
+          return "The amount must be greater than zero";
         }
 
         return null;
@@ -943,10 +943,10 @@ class _PaymentVoucherScreenState
       decoration:
           InputDecoration(
         labelText:
-            "البيان",
+            "Description",
 
         hintText:
-            "اكتب سبب الصرف",
+            "Write the reason for the payment",
 
         border:
             const OutlineInputBorder(),
@@ -984,7 +984,7 @@ class _PaymentVoucherScreenState
   Widget buildAccountingInfo() {
     final debitName =
         selectedDebitAccountId == null
-            ? "الحساب المدين"
+            ? "Debit account"
             : debitAccountName;
 
     return Container(
@@ -1023,7 +1023,7 @@ class _PaymentVoucherScreenState
               SizedBox(width: 8),
 
               Text(
-                "القيد المحاسبي",
+                "Accounting entry",
                 style: TextStyle(
                   fontWeight:
                       FontWeight.bold,
@@ -1050,7 +1050,7 @@ class _PaymentVoucherScreenState
 
               Expanded(
                 child: Text(
-                  "مدين: $debitName",
+                  "Debit: $debitName",
                   style:
                       const TextStyle(
                     fontWeight:
@@ -1078,7 +1078,7 @@ class _PaymentVoucherScreenState
 
               Expanded(
                 child: Text(
-                  "دائن: $cashAccountName",
+                  "Credit: $cashAccountName",
                   style:
                       const TextStyle(
                     fontWeight:
@@ -1097,7 +1097,7 @@ class _PaymentVoucherScreenState
             ),
 
             Text(
-              "المبلغ: ${amountController.text} ريال",
+              "Amount: ${amountController.text} YER",
               style:
                   const TextStyle(
                 fontWeight:
@@ -1148,8 +1148,8 @@ class _PaymentVoucherScreenState
 
         label: Text(
           isLoading
-              ? "جاري الترحيل..."
-              : "حفظ وترحيل سند الصرف",
+              ? "Posting…"
+              : "Save and post payment voucher",
 
           style:
               const TextStyle(
@@ -1210,7 +1210,7 @@ class _PaymentVoucherScreenState
         appBar:
             const MyAppBar(
           title:
-              "سند صرف",
+              "Payment voucher",
           icon:
               Icons.money_off,
         ),

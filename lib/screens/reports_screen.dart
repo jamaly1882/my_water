@@ -48,9 +48,9 @@ class ReportsScreen extends StatelessWidget {
 
               _reportCard(
                 context: context,
-                title: 'تقرير الدور',
+                title: 'Cycle report',
                 subtitle:
-                    'تقارير القراءات والدورات',
+                    'Reading and cycle reports',
                 icon: Icons.water_drop,
                 page: CycleReportMenuScreen(
                   wellId: wellId,
@@ -64,9 +64,9 @@ class ReportsScreen extends StatelessWidget {
 
               _reportCard(
                 context: context,
-                title: 'تقرير الحساب',
+                title: 'Account report',
                 subtitle:
-                    'تقارير الحسابات والحركات',
+                    'Account and transaction reports',
                 icon:
                     Icons.account_balance_wallet,
                 page: AccountReportMenuScreen(
@@ -81,9 +81,9 @@ class ReportsScreen extends StatelessWidget {
 
               _reportCard(
                 context: context,
-                title: 'تقرير استهلاك الطاقة',
+                title: 'Energy consumption report',
                 subtitle:
-                    'الشمسي والديزل وعدد الساعات',
+                    'Solar, diesel and running hours',
                 icon: Icons.bolt,
                 page:
                     EnergyConsumptionReportScreen(
