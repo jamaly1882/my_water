@@ -399,7 +399,7 @@ class _SupervisorInsightsPageState extends State<SupervisorInsightsPage> {
       child: Column(
         children: <Widget>[
           Icon(
-            Icons.filter_alt_off_outlined,
+            Icons.search_off,
             size: 40,
             color: _primary.withValues(alpha: 0.35),
           ),
