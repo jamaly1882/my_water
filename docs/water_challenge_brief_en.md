@@ -1,11 +1,11 @@
 # Water Challenge Brief — English Version
 
-**Venture:** my_water — Well Water Operations Platform
+**Venture:** Azal Soft Water Platform — Well Water Operations (technical name: my_water)
 **Programme:** AYC Youth Pitches · Onboarding Session · Week 1 (2–6 November 2026)
 **Submission:** Friday 6 November, 12:00 GST
 **Weight:** 30% of the Round 1 score
 
-> This brief applies the four-layer framework from the onboarding session to **my_water**.
+> This brief applies the four-layer framework from the onboarding session to **Azal Soft Water Platform**.
 > Its content is drawn from the actual codebase (screens, services, the OCR pipeline, the GM dashboard).
 > Every bracketed tag must stay in the submitted version:
 >
