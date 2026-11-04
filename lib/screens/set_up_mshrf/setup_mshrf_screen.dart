@@ -259,7 +259,7 @@ class _SetupMshrfScreenState extends State<SetupMshrfScreen> {
             trailing: data == null
                 ? null
                 : GmPill(
-                    label: '${data.provinceCount} محافظة',
+                    label: '${data.provinceCount} governorates',
                     icon: Icons.location_city,
                   ),
           ),

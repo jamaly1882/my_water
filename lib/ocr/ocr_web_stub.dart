@@ -13,7 +13,7 @@ class OcrWebPage extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          'قراءة العداد بالصور غير مدعومة على هذه المنصة.',
+          'Photo meter reading is not supported on this platform.',
           textAlign: TextAlign.center,
         ),
       ),

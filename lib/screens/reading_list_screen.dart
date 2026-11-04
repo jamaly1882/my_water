@@ -841,7 +841,7 @@ class _ReadingListScreenState
                     ),
 
                     child: Text(
-                      "دور ${cycle["cycleNumber"]}",
+                      "Cycle ${cycle["cycleNumber"]}",
 
                       style: TextStyle(
                         color: appColor,
@@ -1127,7 +1127,7 @@ class _ReadingListScreenState
               cells: [
                 DataCell(
                   Text(
-                    "دور ${cycle["cycleNumber"]}",
+                    "Cycle ${cycle["cycleNumber"]}",
 
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,

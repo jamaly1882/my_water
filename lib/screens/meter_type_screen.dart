@@ -412,7 +412,7 @@ class _EquipmentTypeScreenState
           Icons.payments,
           color: primaryColor,
         ),
-        suffixText: 'ريال',
+        suffixText: 'YER',
       ),
     );
   }

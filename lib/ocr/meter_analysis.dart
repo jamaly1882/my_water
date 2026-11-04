@@ -43,12 +43,12 @@ class MeterAnalysisResult {
 
   String get confidenceText {
     if (confidence >= 85) {
-      return 'عالية';
+      return 'High';
     }
     if (confidence >= 65) {
-      return 'متوسطة';
+      return 'Medium';
     }
-    return 'منخفضة';
+    return 'Low';
   }
 
   bool get isHighConfidence {
@@ -336,8 +336,8 @@ class MeterAnalyzer {
         isValid: false,
         partialReading: partial,
         message: partial.isNotEmpty
-            ? 'تم التعرف جزئياً على ($partial) فقط. يرجى ضبط القص على الخانات السبع أو إكمال الرقم.'
-            : 'لم يتم العثور على قراءة عداد واضحة من 7 خانات.',
+            ? 'Only part of the reading ($partial) was recognised. Re-crop to the seven digits or complete the number.'
+            : 'No clear seven-digit meter reading was found.',
       );
     }
 
@@ -467,12 +467,12 @@ class MeterAnalyzer {
 
     String message;
     if (confidence >= 85) {
-      message = 'تم التعرف على القراءة بدرجة ثقة عالية.';
+      message = 'The reading was recognised with high confidence.';
     } else if (confidence >= 65) {
-      message = 'تم التعرف على القراءة، يُرجى مراجعة الخانات والتأكيد.';
+      message = 'The reading was recognised — review the digits and confirm.';
     } else {
       message =
-          'القراءة مستخرجة بدرجة ثقة منخفضة، تحقّق من الخانات الملونة أو أعد التصوير.';
+          'Low-confidence reading — check the highlighted digits or retake the photo.';
     }
 
     return MeterAnalysisResult(
