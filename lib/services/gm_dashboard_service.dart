@@ -93,25 +93,25 @@ String gmFormatPercent(num value) {
   return '$sign${number.toStringAsFixed(1)}%';
 }
 
-const List<String> _arabicMonths = <String>[
-  'يناير',
-  'فبراير',
-  'مارس',
-  'أبريل',
-  'مايو',
-  'يونيو',
-  'يوليو',
-  'أغسطس',
-  'سبتمبر',
-  'أكتوبر',
-  'نوفمبر',
-  'ديسمبر',
+const List<String> _monthNames = <String>[
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 String gmMonthName(int month) {
   if (month < 1 || month > 12) return '';
 
-  return _arabicMonths[month - 1];
+  return _monthNames[month - 1];
 }
 
 String gmFormatDate(DateTime? date) {
@@ -266,7 +266,7 @@ class GmWellData {
   }
 
   String get coordinatesLabel {
-    if (!hasCoordinates) return 'غير محددة';
+    if (!hasCoordinates) return 'Not set';
 
     return '${latitude.toStringAsFixed(5)}, '
         '${longitude.toStringAsFixed(5)}';
@@ -633,14 +633,14 @@ class GmDashboardService {
     final List<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
         results = await Future.wait(
       <Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>>>[
-        _docs('provinces', warnings, 'المحافظات'),
-        _docs('districts', warnings, 'المديريات'),
-        _docs('hamlets', warnings, 'العُزل'),
-        _docs('villages', warnings, 'القرى'),
-        _docs('wells', warnings, 'الآبار'),
-        _docs('users', warnings, 'المشرفين'),
-        _docs('customers', warnings, 'المشتركين'),
-        _docs('well_customers', warnings, 'ربط المشتركين'),
+        _docs('provinces', warnings, 'Governorates'),
+        _docs('districts', warnings, 'Districts'),
+        _docs('hamlets', warnings, 'Sub-districts'),
+        _docs('villages', warnings, 'Villages'),
+        _docs('wells', warnings, 'Wells'),
+        _docs('users', warnings, 'Supervisors'),
+        _docs('customers', warnings, 'Subscribers'),
+        _docs('well_customers', warnings, 'Subscriber links'),
         _loadCycles(warnings),
       ],
     );
@@ -714,7 +714,7 @@ class GmDashboardService {
 
       final String displayName = name.isNotEmpty
           ? name
-          : (phone.isNotEmpty ? phone : 'مشرف');
+          : (phone.isNotEmpty ? phone : 'Supervisor');
 
       supervisors.add(
         GmSupervisorData(
@@ -828,7 +828,7 @@ class GmDashboardService {
 
       final GmWellData well = GmWellData(
         id: doc.id,
-        name: name.isEmpty ? 'بئر بدون اسم' : name,
+        name: name.isEmpty ? 'Unnamed well' : name,
         provinceId:
             _text(data, <String>['provinceId']),
         provinceName:
@@ -1032,7 +1032,7 @@ class GmDashboardService {
 
       villageMap[doc.id] = GmVillageData(
         id: doc.id,
-        name: name.isEmpty ? 'قرية بدون اسم' : name,
+        name: name.isEmpty ? 'Unnamed village' : name,
         provinceId:
             _text(data, <String>['provinceId']),
         provinceName:
@@ -1055,7 +1055,7 @@ class GmDashboardService {
         () => GmVillageData(
           id: well.villageId,
           name: well.villageName.isEmpty
-              ? 'قرية غير محددة'
+              ? 'Village not set'
               : well.villageName,
           provinceId: well.provinceId,
           provinceName: well.provinceName,
@@ -1172,45 +1172,45 @@ class GmDashboardService {
       if (currentMonthConsumption <= 0) {
         insights.add(
           GmInsight(
-            title: 'لا توجد دورات مغلقة هذا الشهر',
+            title: 'No closed cycles this month',
             message:
-                'لم تُغلق أي دورة خلال الشهر الحالي بعد. '
-                'استهلاك الشهر الماضي كان '
-                '${gmFormatNumber(previousMonthConsumption)} م³.',
+                'No cycle has been closed this month yet. '
+                'Last month the consumption was '
+                '${gmFormatNumber(previousMonthConsumption)} m³.',
             level: GmInsightLevel.info,
           ),
         );
       } else if (overallChange >= 10) {
         insights.add(
           GmInsight(
-            title: 'ارتفاع في إجمالي الاستهلاك',
+            title: 'Total consumption is up',
             message:
-                'ارتفع إجمالي الاستهلاك هذا الشهر بنسبة '
-                '${gmFormatPercent(overallChange)} مقارنة بالشهر الماضي '
-                '(${gmFormatNumber(currentMonthConsumption)} م³ مقابل '
-                '${gmFormatNumber(previousMonthConsumption)} م³).',
+                'Total consumption rose by '
+                '${gmFormatPercent(overallChange)} against last month '
+                '(${gmFormatNumber(currentMonthConsumption)} m³ vs '
+                '${gmFormatNumber(previousMonthConsumption)} m³).',
             level: GmInsightLevel.warning,
           ),
         );
       } else if (overallChange <= -10) {
         insights.add(
           GmInsight(
-            title: 'انخفاض في إجمالي الاستهلاك',
+            title: 'Total consumption is down',
             message:
-                'انخفض إجمالي الاستهلاك هذا الشهر بنسبة '
-                '${gmFormatPercent(overallChange)} مقارنة بالشهر الماضي '
-                '(${gmFormatNumber(currentMonthConsumption)} م³ مقابل '
-                '${gmFormatNumber(previousMonthConsumption)} م³).',
+                'Total consumption fell by '
+                '${gmFormatPercent(overallChange)} against last month '
+                '(${gmFormatNumber(currentMonthConsumption)} m³ vs '
+                '${gmFormatNumber(previousMonthConsumption)} m³).',
             level: GmInsightLevel.success,
           ),
         );
       } else {
         insights.add(
           GmInsight(
-            title: 'استهلاك مستقر',
+            title: 'Consumption is steady',
             message:
-                'إجمالي استهلاك هذا الشهر قريب من الشهر الماضي '
-                '(${gmFormatNumber(currentMonthConsumption)} م³).',
+                'This month is close to last month '
+                '(${gmFormatNumber(currentMonthConsumption)} m³).',
             level: GmInsightLevel.info,
           ),
         );
@@ -1233,11 +1233,11 @@ class GmDashboardService {
 
       insights.add(
         GmInsight(
-          title: 'ارتفاع غير طبيعي في قرية',
+          title: 'Abnormal rise in a village',
           message:
-              'سجلت قرية ${top.name} ارتفاعاً بنسبة '
-              '${gmFormatPercent(top.changePercent)} مقارنة بالشهر الماضي، '
-              'وهي تحتاج إلى مراجعة.',
+              '${top.name} is up '
+              '${gmFormatPercent(top.changePercent)} against last month '
+              'and needs a review.',
           level: GmInsightLevel.warning,
         ),
       );
@@ -1254,10 +1254,10 @@ class GmDashboardService {
     if (reviewWells.isNotEmpty) {
       insights.add(
         GmInsight(
-          title: 'آبار تحتاج إلى مراجعة',
+          title: 'Wells needing review',
           message:
-              '${_joinWellNames(reviewWells)} سجلت ارتفاعاً في الاستهلاك '
-              'يتجاوز 30% مقارنة بالشهر الماضي.',
+              '${_joinWellNames(reviewWells)} rose more than 30% '
+              'against last month.',
           level: GmInsightLevel.danger,
         ),
       );
@@ -1270,10 +1270,10 @@ class GmDashboardService {
     if (withoutSupervisor.isNotEmpty) {
       insights.add(
         GmInsight(
-          title: 'آبار بدون مشرف',
+          title: 'Wells without a supervisor',
           message:
               '${_joinWellNames(withoutSupervisor)} '
-              'لا يوجد لها مشرف مرتبط، أضف مشرفاً من تهيئة المشرفين.',
+              'has no linked supervisor — add one in Supervisor Setup.',
           level: GmInsightLevel.warning,
         ),
       );
@@ -1296,9 +1296,9 @@ class GmDashboardService {
       if (stale.isNotEmpty) {
         insights.add(
           GmInsight(
-            title: 'مناطق تحتاج إلى متابعة ميدانية',
+            title: 'Areas needing a field visit',
             message:
-                '${_joinWellNames(stale)} ليس لها دورة مغلقة خلال آخر 45 يوماً.',
+                '${_joinWellNames(stale)} has had no closed cycle in 45 days.',
             level: GmInsightLevel.info,
           ),
         );
@@ -1322,10 +1322,10 @@ class GmDashboardService {
     if (topWellThisMonth != null) {
       insights.add(
         GmInsight(
-          title: 'أعلى بئر هذا الشهر',
+          title: 'Top well this month',
           message:
-              '${topWellThisMonth.name} هو الأعلى استهلاكاً هذا الشهر '
-              'بمقدار ${gmFormatNumber(topWellThisMonth.currentMonthConsumption)} م³.',
+              '${topWellThisMonth.name} leads this month '
+              'with ${gmFormatNumber(topWellThisMonth.currentMonthConsumption)} m³.',
           level: GmInsightLevel.info,
         ),
       );
@@ -1334,9 +1334,9 @@ class GmDashboardService {
     if (closedCycleCount == 0) {
       insights.add(
         const GmInsight(
-          title: 'لا توجد دورات مغلقة بعد',
+          title: 'No closed cycles yet',
           message:
-              'ستظهر المؤشرات والتحليلات بعد إغلاق أول دورة قراءة.',
+              'Figures and analysis appear once the first reading cycle closes.',
           level: GmInsightLevel.info,
         ),
       );
@@ -1345,9 +1345,9 @@ class GmDashboardService {
     if (insights.isEmpty) {
       insights.add(
         const GmInsight(
-          title: 'كل شيء طبيعي',
+          title: 'Everything looks normal',
           message:
-              'لا توجد تنبيهات حالياً على استهلاك الآبار أو القرى.',
+              'No alerts on well or village consumption right now.',
           level: GmInsightLevel.success,
         ),
       );
@@ -1409,7 +1409,7 @@ class GmDashboardService {
 
         return snapshot.docs;
       } catch (error) {
-        warnings.add('تعذر تحميل الدورات');
+        warnings.add('Could not load the cycles');
 
         return <QueryDocumentSnapshot<Map<String, dynamic>>>[];
       }
@@ -1433,7 +1433,7 @@ class GmDashboardService {
 
       return snapshot.docs;
     } catch (error) {
-      warnings.add('تعذر تحميل $label');
+      warnings.add('Could not load $label');
 
       return <QueryDocumentSnapshot<Map<String, dynamic>>>[];
     }
@@ -1507,7 +1507,7 @@ class GmDashboardService {
 
     for (final GmVillageData village in villages) {
       final String key = village.provinceId.isEmpty
-          ? 'غير محدد'
+          ? 'Not set'
           : village.provinceId;
 
       (groups[key] ??= <GmVillageData>[]).add(village);
@@ -1742,473 +1742,9 @@ class GmDashboardService {
         .toList();
 
     if (wells.length > max) {
-      names.add('و${wells.length - max} آبار أخرى');
+      names.add('and ${wells.length - max} more wells');
     }
 
-    return names.join('، ');
-  }
-}
-
-// ============================================================
-// المساعد الذكي (إجابات من بيانات النظام)
-// ============================================================
-
-class GmAssistant {
-  static String answer(
-    String question,
-    GmDashboardData data,
-  ) {
-    final String query = _normalize(question);
-
-    if (query.isEmpty) {
-      return 'اكتب سؤالاً عن الآبار أو القرى أو الاستهلاك.';
-    }
-
-    if (_hasAny(query, <String>[
-      'اعلي',
-      'اكثر',
-    ]) &&
-        _hasAny(query, <String>['بئر', 'ابار'])) {
-      return _topWellAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'اعلي',
-      'اكثر',
-    ]) &&
-        _hasAny(query, <String>['قريه', 'قري'])) {
-      return _topVillageAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'ارتفع',
-      'ارتفاع',
-      'زاد',
-      'زياده',
-      'مقارنه',
-      'مقارنة',
-    ]) &&
-        _hasAny(query, <String>['قريه', 'قري'])) {
-      return _risingVillagesAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'مراجعه',
-      'مراجعة',
-      'تحتاج',
-      'خطير',
-      'تنبيه',
-      'تنبيهات',
-      'غير طبيعي',
-    ])) {
-      return _reviewAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'سته اشهر',
-      'ست اشهر',
-      'ست شهور',
-      '6 اشهر',
-      '6 شهور',
-      'اخر 6',
-      'اخر سته',
-      'اشهر',
-      'شهور',
-      'تغير',
-      'اتجاه',
-      'ترند',
-    ])) {
-      return _trendAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'مشترك',
-      'مشتركين',
-      'زبون',
-      'زباين',
-    ])) {
-      return _subscribersAnswer(data);
-    }
-
-    if (_hasAny(query, <String>['مشرف', 'مشرفين'])) {
-      return _supervisorsAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'قارن',
-      'مقارنه',
-      'مقارنة',
-      'افضل',
-      'ترتيب',
-    ])) {
-      return _comparisonAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'كم',
-      'عدد',
-      'احصائ',
-      'اجمالي',
-      'ملخص',
-      'وضع',
-    ])) {
-      return _summaryAnswer(data);
-    }
-
-    if (_hasAny(query, <String>[
-      'اين',
-      'موقع',
-      'خريطه',
-      'خريطة',
-    ])) {
-      return _locationAnswer(data);
-    }
-
-    return '${_summaryAnswer(data)}\n\n'
-        'يمكنك أيضاً السؤال عن: أعلى بئر، أعلى قرية، '
-        'الآبار التي تحتاج مراجعة، أو اتجاه الاستهلاك.';
-  }
-
-  // ==========================================================
-  // الإجابات
-  // ==========================================================
-
-  static String _topWellAnswer(GmDashboardData data) {
-    final GmWellData? well = data.topWellThisMonth;
-
-    if (well == null) {
-      return 'لا توجد قراءات مغلقة هذا الشهر بعد. '
-          '${data.topWell != null ? 'أعلى بئر إجمالاً هو ${data.topWell!.name} بمقدار ${gmFormatNumber(data.topWell!.consumption)} م³.' : ''}';
-    }
-
-    final StringBuffer buffer = StringBuffer();
-
-    buffer.writeln(
-      'أعلى بئر استهلاكاً هذا الشهر هو "${well.name}" '
-      'بمقدار ${gmFormatNumber(well.currentMonthConsumption)} م³.',
-    );
-
-    if (well.villageName.isNotEmpty) {
-      buffer.writeln('القرية: ${well.villageName}');
-    }
-
-    buffer.writeln(
-      'المشرف: ${well.hasSupervisor ? well.supervisorName : 'غير مرتبط'}',
-    );
-
-    if (well.previousMonthConsumption > 0) {
-      buffer.writeln(
-        'مقارنة بالشهر الماضي: ${gmFormatPercent(well.changePercent)}',
-      );
-    }
-
-    return buffer.toString().trim();
-  }
-
-  static String _topVillageAnswer(
-    GmDashboardData data,
-  ) {
-    final GmVillageData? village = data.villages.isEmpty
-        ? null
-        : (data.villages.toList()
-              ..sort(
-                (GmVillageData a, GmVillageData b) =>
-                    b.currentMonthConsumption.compareTo(
-                  a.currentMonthConsumption,
-                ),
-              ))
-            .first;
-
-    if (village == null) {
-      return 'لا توجد قرى مسجلة بعد.';
-    }
-
-    final StringBuffer buffer = StringBuffer();
-
-    buffer.writeln(
-      'أعلى قرية استهلاكاً هذا الشهر هي "${village.name}" '
-      'بمقدار ${gmFormatNumber(village.currentMonthConsumption)} م³.',
-    );
-
-    buffer.writeln(
-      'عدد الآبار: ${village.wellCount} — '
-      'المشتركون: ${gmFormatNumber(village.subscribers)}',
-    );
-
-    if (village.previousMonthConsumption > 0) {
-      buffer.writeln(
-        'مقارنة بالشهر الماضي: ${gmFormatPercent(village.changePercent)}',
-      );
-    }
-
-    return buffer.toString().trim();
-  }
-
-  static String _risingVillagesAnswer(
-    GmDashboardData data,
-  ) {
-    final List<GmVillageData> rising = data.villagesRising;
-
-    if (rising.isEmpty) {
-      return 'لا توجد قرى سجلت ارتفاعاً يتجاوز 20% '
-          'مقارنة بالشهر الماضي حتى الآن.';
-    }
-
-    final StringBuffer buffer = StringBuffer(
-      'القرى التي ارتفع استهلاكها مقارنة بالشهر الماضي:',
-    );
-
-    for (final GmVillageData village in rising.take(5)) {
-      buffer.writeln(
-        '\n• ${village.name}: '
-        '${gmFormatPercent(village.changePercent)} '
-        '(${gmFormatNumber(village.currentMonthConsumption)} م³)',
-      );
-    }
-
-    return buffer.toString().trim();
-  }
-
-  static String _reviewAnswer(GmDashboardData data) {
-    final List<GmWellData> review =
-        data.wellsNeedingReview;
-
-    final List<GmWellData> withoutSupervisor =
-        data.wellsWithoutSupervisor;
-
-    final List<String> parts = <String>[];
-
-    if (review.isEmpty) {
-      parts.add(
-        'لا توجد آبار تجاوزت نسبة الارتفاع 30% '
-        'مقارنة بالشهر الماضي.',
-      );
-    } else {
-      final StringBuffer buffer = StringBuffer(
-        'الآبار التي تحتاج إلى مراجعة:',
-      );
-
-      for (final GmWellData well in review.take(5)) {
-        buffer.writeln(
-          '\n• ${well.name}: '
-          '${gmFormatPercent(well.changePercent)} '
-          '(${gmFormatNumber(well.currentMonthConsumption)} م³)',
-        );
-      }
-
-      parts.add(buffer.toString().trim());
-    }
-
-    if (withoutSupervisor.isNotEmpty) {
-      parts.add(
-        'آبار بدون مشرف: '
-        '${withoutSupervisor.take(5).map((GmWellData well) => well.name).join('، ')}',
-      );
-    }
-
-    final List<GmWellData> stale = data.staleWells;
-
-    if (stale.isNotEmpty) {
-      parts.add(
-        'بحاجة إلى متابعة ميدانية: '
-        '${stale.take(5).map((GmWellData well) => well.name).join('، ')}',
-      );
-    }
-
-    return parts.join('\n\n');
-  }
-
-  static String _trendAnswer(GmDashboardData data) {
-    if (data.closedCycleCount == 0) {
-      return 'لا توجد دورات مغلقة بعد، لذلك لا يمكن '
-          'حساب اتجاه الاستهلاك.';
-    }
-
-    final StringBuffer buffer = StringBuffer(
-      'استهلاك المياه خلال الأشهر الستة الماضية:',
-    );
-
-    for (final GmMonthPoint point in data.monthly) {
-      buffer.writeln(
-        '\n• ${point.label} ${point.month.year}: '
-        '${gmFormatNumber(point.value)} م³',
-      );
-    }
-
-    final double change = data.overallChangePercent;
-
-    buffer.writeln(
-      '\n\nالاتجاه الحالي: ${change >= 0 ? 'ارتفاع' : 'انخفاض'} '
-      'بنسبة ${gmFormatPercent(change)} مقارنة بالشهر الماضي.',
-    );
-
-    return buffer.toString().trim();
-  }
-
-  static String _subscribersAnswer(
-    GmDashboardData data,
-  ) {
-    return 'إجمالي المشتركين في النظام: '
-        '${gmFormatNumber(data.subscriberCount)} مشترك.\n'
-        'المشتركون المرتبطون بآبار: '
-        '${gmFormatNumber(data.linkedSubscriberCount)}.\n'
-        'عدد الآبار: ${gmFormatNumber(data.wellCount)} — '
-        'عدد القرى: ${gmFormatNumber(data.villageCount)}.';
-  }
-
-  static String _supervisorsAnswer(
-    GmDashboardData data,
-  ) {
-    final List<GmWellData> withoutSupervisor =
-        data.wellsWithoutSupervisor;
-
-    final StringBuffer buffer = StringBuffer(
-      'عدد المشرفين المسجلين: '
-      '${gmFormatNumber(data.supervisorCount)}.',
-    );
-
-    if (withoutSupervisor.isEmpty) {
-      buffer.writeln(
-        '\nكل الآبار مرتبطة بمشرفين.',
-      );
-    } else {
-      buffer.writeln(
-        '\nآبار بدون مشرف (${withoutSupervisor.length}): '
-        '${withoutSupervisor.take(6).map((GmWellData well) => well.name).join('، ')}',
-      );
-    }
-
-    return buffer.toString().trim();
-  }
-
-  static String _comparisonAnswer(
-    GmDashboardData data,
-  ) {
-    final List<GmWellData> wells = data.topWells(5);
-
-    if (wells.isEmpty) {
-      return 'لا توجد آبار مسجلة للمقارنة.';
-    }
-
-    final StringBuffer buffer = StringBuffer(
-      'مقارنة استهلاك الآبار (الأعلى استهلاكاً):',
-    );
-
-    for (int i = 0; i < wells.length; i++) {
-      final GmWellData well = wells[i];
-
-      buffer.writeln(
-        '\n${i + 1}. ${well.name}: '
-        '${gmFormatNumber(well.consumption)} م³',
-      );
-    }
-
-    buffer.writeln(
-      '\n\nإجمالي استهلاك هذا الشهر: '
-      '${gmFormatNumber(data.currentMonthConsumption)} م³.',
-    );
-
-    return buffer.toString().trim();
-  }
-
-  static String _summaryAnswer(
-    GmDashboardData data,
-  ) {
-    final StringBuffer buffer = StringBuffer(
-      'ملخص النظام الحالي:',
-    );
-
-    buffer.writeln(
-      '\n• المحافظات: ${gmFormatNumber(data.provinceCount)} — '
-      'المديريات: ${gmFormatNumber(data.districtCount)} — '
-      'العُزل: ${gmFormatNumber(data.hamletCount)}',
-    );
-
-    buffer.writeln(
-      '• القرى: ${gmFormatNumber(data.villageCount)} — '
-      'الآبار: ${gmFormatNumber(data.wellCount)}',
-    );
-
-    buffer.writeln(
-      '• المشرفون: ${gmFormatNumber(data.supervisorCount)} — '
-      'المشتركون: ${gmFormatNumber(data.subscriberCount)}',
-    );
-
-    buffer.writeln(
-      '• إجمالي الاستهلاك: '
-      '${gmFormatNumber(data.totalConsumption)} م³',
-    );
-
-    buffer.writeln(
-      '• استهلاك هذا الشهر: '
-      '${gmFormatNumber(data.currentMonthConsumption)} م³ '
-      '(${gmFormatPercent(data.overallChangePercent)} مقارنة بالشهر الماضي)',
-    );
-
-    final GmWellData? topWell = data.topWellThisMonth;
-
-    if (topWell != null) {
-      buffer.writeln(
-        '• أعلى بئر هذا الشهر: ${topWell.name} '
-        '(${gmFormatNumber(topWell.currentMonthConsumption)} م³)',
-      );
-    }
-
-    return buffer.toString().trim();
-  }
-
-  static String _locationAnswer(
-    GmDashboardData data,
-  ) {
-    final int positioned =
-        data.wellsWithCoordinates.length;
-
-    final int total = data.wellCount;
-
-    final StringBuffer buffer = StringBuffer(
-      'يمكنك فتح تبويب "الخريطة" لمشاهدة مواقع الآبار والقرى '
-      'ومؤشرات الاستهلاك لكل موقع.',
-    );
-
-    buffer.writeln(
-      '\n\nالآبار ذات الإحداثيات: $positioned من $total.',
-    );
-
-    if (positioned < total) {
-      buffer.writeln(
-        'الآبار بدون إحداثيات تظهر بموقع تخطيطي، '
-        'ويمكنك تحديد موقعها من بطاقة البئر على الخريطة.',
-      );
-    }
-
-    return buffer.toString().trim();
-  }
-
-  // ==========================================================
-  // أدوات النص
-  // ==========================================================
-
-  static String _normalize(String value) {
-    return value
-        .replaceAll(RegExp(r'[\u064B-\u0652]'), '')
-        .replaceAll('أ', 'ا')
-        .replaceAll('إ', 'ا')
-        .replaceAll('آ', 'ا')
-        .replaceAll('ة', 'ه')
-        .replaceAll('ى', 'ي')
-        .replaceAll('ـ', '')
-        .trim()
-        .toLowerCase();
-  }
-
-  static bool _hasAny(
-    String query,
-    List<String> words,
-  ) {
-    for (final String word in words) {
-      if (query.contains(word)) return true;
-    }
-
-    return false;
+    return names.join(', ');
   }
 }
