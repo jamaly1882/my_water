@@ -44,3 +44,23 @@ match /water_challenge_briefs/{uid} {
 ```
 
 **الطبقات:** موقعنا على الخريطة (الاثنين) · ادعاؤنا التقني (الثلاثاء) · المؤسسات حولنا (الأربعاء) · سوقنا ومن يدفع (الخميس) — والتصدير النصي جاهز للصق في Miro أو للتحويل إلى PDF.
+
+---
+
+## الترجمة الصوتية — Live speech → Arabic
+
+شاشة تستمع إلى الكلام (ميكروفون أو صوت اجتماع)، تحوّله إلى نص، وتترجمه إلى العربية سطراً بسطر، مع نسخ المحضر وحفظه في Firestore.
+
+| الملف | الدور |
+|---|---|
+| `lib/features/live_translate/voice_translate_page.dart` | الواجهة والمحضر |
+| `lib/features/live_translate/speech_bridge*.dart` | جسر الاستماع (ويب / بقية المنصات) |
+| `lib/features/live_translate/translation_service.dart` | نداء `POST /api/translate/` |
+| `web/voice_translate.js` | Web Speech API + التقاط صوت التبويب |
+| `docs/voice_translation.md` | العقد الكامل مع الخادم + مثال FastAPI + حدود الميزة |
+
+- **الميكروفون:** يعمل بلا خادم للتفريغ (Chrome/Edge على الحاسوب، HTTPS أو localhost).
+- **الترجمة:** تحتاج خادماً يملك `POST /api/translate/` (عقد الطلب/الرد في المستند).
+- **صوت الاجتماع (Zoom/Meet):** يحتاج خدمة تفريغ عبر WebSocket — المتصفح لا يمرّر صوت التبويب إلى محرّك التعرّف المدمج.
+
+**التخزين:** مجموعة Firestore باسم `voice_sessions` (القاعدة في `docs/voice_translation.md`).
