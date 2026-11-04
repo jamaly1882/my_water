@@ -414,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // ======================================
 
                         const Text(
-                          'Water Management System',
+                          'Azal Soft Platform',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -607,7 +607,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 18),
 
                         Text(
-                          'Water Management System',
+                          'Azal Soft Platform',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade500,

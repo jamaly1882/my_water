@@ -271,7 +271,7 @@ class _SplashScreenState extends State<SplashScreen> {
               // ==================================================
 
               const Text(
-                "Water Management System",
+                "Azal Soft Platform",
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
