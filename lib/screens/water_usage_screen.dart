@@ -85,7 +85,7 @@ class _WaterUsageScreenState
 
     if (name.isEmpty) {
       showMessage(
-        'أدخل اسم نوع استخدام المياه',
+        'Enter the usage type name',
       );
       return;
     }
@@ -106,7 +106,7 @@ class _WaterUsageScreenState
       newRecord();
 
       showMessage(
-        'تمت إضافة نوع استخدام المياه بنجاح',
+        'Usage type added',
       );
     } catch (e) {
       showMessage(
@@ -130,7 +130,7 @@ class _WaterUsageScreenState
 
     if (selectedId == null) {
       showMessage(
-        'اختر نوع استخدام المياه أولاً',
+        'Choose a usage type first',
       );
       return;
     }
@@ -140,7 +140,7 @@ class _WaterUsageScreenState
 
     if (name.isEmpty) {
       showMessage(
-        'أدخل اسم نوع استخدام المياه',
+        'Enter the usage type name',
       );
       return;
     }
@@ -162,7 +162,7 @@ class _WaterUsageScreenState
       newRecord();
 
       showMessage(
-        'تم تعديل نوع استخدام المياه بنجاح',
+        'Usage type updated',
       );
     } catch (e) {
       showMessage(
@@ -186,7 +186,7 @@ class _WaterUsageScreenState
 
     if (selectedId == null) {
       showMessage(
-        'اختر نوع استخدام المياه أولاً',
+        'Choose a usage type first',
       );
       return;
     }
@@ -207,7 +207,7 @@ class _WaterUsageScreenState
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'تأكيد الحذف',
+                  'Confirm delete',
                   style: TextStyle(
                     fontWeight:
                         FontWeight.bold,
@@ -216,7 +216,7 @@ class _WaterUsageScreenState
               ],
             ),
             content: const Text(
-              'هل تريد حذف نوع استخدام المياه المحدد؟',
+              'Delete the selected usage type?',
             ),
             actions: [
               TextButton(
@@ -227,7 +227,7 @@ class _WaterUsageScreenState
                   );
                 },
                 child: const Text(
-                  'إلغاء',
+                  'Cancel',
                 ),
               ),
               ElevatedButton.icon(
@@ -248,7 +248,7 @@ class _WaterUsageScreenState
                   Icons.delete,
                 ),
                 label: const Text(
-                  'حذف',
+                  'Delete',
                 ),
               ),
             ],
@@ -274,7 +274,7 @@ class _WaterUsageScreenState
       newRecord();
 
       showMessage(
-        'تم حذف نوع استخدام المياه بنجاح',
+        'Usage type deleted',
       );
     } catch (e) {
       showMessage(
@@ -303,9 +303,9 @@ class _WaterUsageScreenState
       decoration:
           InputDecoration(
         labelText:
-            'اسم نوع استخدام المياه',
+            'Usage type name',
         hintText:
-            'مثال: منزلي، تجاري، حكومي',
+            'e.g. Domestic, Commercial, Government',
         prefixIcon:
             const Icon(
           Icons.water_drop,
@@ -407,7 +407,7 @@ class _WaterUsageScreenState
                             .start,
                     children: [
                       Text(
-                        'بيانات نوع الاستخدام',
+                        'Usage type details',
                         style:
                             TextStyle(
                           fontSize: 18,
@@ -419,7 +419,7 @@ class _WaterUsageScreenState
                         height: 4,
                       ),
                       Text(
-                        'إضافة أو تعديل نوع استخدام المياه',
+                        'Add or edit a usage type',
                         style:
                             TextStyle(
                           color:
@@ -482,7 +482,7 @@ class _WaterUsageScreenState
                               ),
                     label:
                         const Text(
-                      'إضافة',
+                      'Add',
                       style:
                           TextStyle(
                         fontWeight:
@@ -536,7 +536,7 @@ class _WaterUsageScreenState
                     ),
                     label:
                         const Text(
-                      'تعديل',
+                      'Edit',
                       style:
                           TextStyle(
                         fontWeight:
@@ -598,7 +598,7 @@ class _WaterUsageScreenState
                     ),
                     label:
                         const Text(
-                      'جديد',
+                      'New',
                       style:
                           TextStyle(
                         fontWeight:
@@ -653,7 +653,7 @@ class _WaterUsageScreenState
                     ),
                     label:
                         const Text(
-                      'حذف',
+                      'Delete',
                       style:
                           TextStyle(
                         fontWeight:
@@ -724,7 +724,7 @@ class _WaterUsageScreenState
             width: 8,
           ),
           Text(
-            'أنواع استخدام المياه المسجلة',
+            'Registered usage types',
             style:
                 TextStyle(
               color:
@@ -807,7 +807,7 @@ class _WaterUsageScreenState
                     height: 12,
                   ),
                   Text(
-                    'لا توجد أنواع استخدام مياه مسجلة',
+                    'No usage types registered',
                     style:
                         TextStyle(
                       fontSize: 16,
@@ -919,7 +919,7 @@ class _WaterUsageScreenState
 
                   subtitle:
                       const Text(
-                    'نوع استخدام المياه',
+                    'Water usage type',
                   ),
 
                   // ==================================================
@@ -986,7 +986,7 @@ class _WaterUsageScreenState
         appBar:
             const MyAppBar(
           title:
-              'تهيئة أنواع استخدام المياه',
+              'Usage types setup',
           icon:
               Icons.water_drop,
         ),

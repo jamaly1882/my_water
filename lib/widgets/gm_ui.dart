@@ -347,7 +347,7 @@ class GmChangeBadge extends StatelessWidget {
 
     if (value == null) {
       return _build(
-        'بدون مقارنة',
+        'No comparison',
         Colors.grey,
         Icons.remove,
       );
@@ -355,7 +355,7 @@ class GmChangeBadge extends StatelessWidget {
 
     if (!showZero && value.abs() < 0.05) {
       return _build(
-        'مستقر',
+        'Steady',
         Colors.blueGrey,
         Icons.remove,
       );
@@ -748,25 +748,25 @@ class GmRolesCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           const GmSectionTitle(
-            title: 'صلاحيات المشرفين',
+            title: 'Supervisor permissions',
             icon: Icons.admin_panel_settings,
-            subtitle: 'من يرى ماذا داخل النظام',
+            subtitle: 'Who sees what inside the system',
           ),
           const SizedBox(height: 14),
           _role(
             Icons.workspace_premium,
             gmPrimary,
-            'المشرف الرئيسي (المدير العام)',
-            'يشاهد جميع المحافظات والقرى والآبار والتقارير والإحصائيات، '
-                'وينشئ المحافظات والمديريات والعُزل والقرى والآبار والمشرفين.',
+            'Main supervisor (GM)',
+            'Sees every governorate, village, well, report and figure, '
+                'and creates governorates, districts, sub-districts, villages, wells and supervisors.',
           ),
           const SizedBox(height: 10),
           _role(
             Icons.person_outline,
             gmAccent,
-            'مشرف البئر',
-            'يدخل ويقرأ بيانات بئره فقط (القراءات والحسابات والتقارير)، '
-                'وتظهر بياناته ضمن الإحصائيات المركزية للمدير العام.',
+            'Well supervisor',
+            'Enters and reads only their own well (readings, accounts, reports), '
+                'and their numbers roll up into the GM figures.',
           ),
           const SizedBox(height: 12),
           Container(
@@ -786,8 +786,8 @@ class GmRolesCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'تُحدد الصلاحية من حقلي role و wellId في مجموعة users، '
-                    'ويجب أن تُطابقها قواعد Firestore لمنع أي وصول خارج نطاق البئر.',
+                    'Permissions come from the role and wellId fields in the users collection, '
+                    'and Firestore rules must mirror them to block access outside the well.',
                     style: TextStyle(
                       fontSize: 10.5,
                       height: 1.5,

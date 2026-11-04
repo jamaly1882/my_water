@@ -123,7 +123,7 @@ class _CreateSalesAccountScreenState
       });
     } catch (e) {
       debugPrint(
-        'خطأ في جلب اسم البئر: $e',
+        'Could not load the well name: $e',
       );
 
       if (mounted) {
@@ -157,10 +157,10 @@ class _CreateSalesAccountScreenState
   // ============================================================
   // إنشاء الحسابات
   //
-  // 1 - مبيعات البئر
-  // 2 - صندوق البئر
-  // 3 - مصروفات البئر
-  // 4 - عامل البئر
+  // 1 - Sales — البئر
+  // 2 - Fund — البئر
+  // 3 - Expenses — البئر
+  // 4 - Operator — البئر
   // ============================================================
 
   Future<void> createAccounts() async {
@@ -173,7 +173,7 @@ class _CreateSalesAccountScreenState
     if (widget.wellId == null ||
         widget.wellId!.trim().isEmpty) {
       showMessage(
-        'رقم البئر غير موجود',
+        'The well ID is missing',
       );
 
       return;
@@ -189,7 +189,7 @@ class _CreateSalesAccountScreenState
     if (currentWellName == null ||
         currentWellName.isEmpty) {
       showMessage(
-        'اسم البئر غير موجود',
+        'The well name is missing',
       );
 
       return;
@@ -206,19 +206,19 @@ class _CreateSalesAccountScreenState
 
       final List<Map<String, String>> accounts = [
         {
-          'name': 'مبيعات $currentWellName',
+          'name': 'Sales — $currentWellName',
           'type': 'sales',
         },
         {
-          'name': 'صندوق $currentWellName',
+          'name': 'Fund — $currentWellName',
           'type': 'cash',
         },
         {
-          'name': 'مصروفات $currentWellName',
+          'name': 'Expenses — $currentWellName',
           'type': 'expenses',
         },
         {
-          'name': 'عامل $currentWellName',
+          'name': 'Operator — $currentWellName',
           'type': 'worker',
         },
       ];
@@ -319,16 +319,16 @@ class _CreateSalesAccountScreenState
 
       if (createdCount == 4) {
         showMessage(
-          'تم إنشاء حسابات البئر الأربعة بنجاح',
+          'All four well accounts created',
         );
       } else if (createdCount > 0) {
         showMessage(
-          'تم إنشاء $createdCount حساب، '
-          'والحسابات الموجودة لم يتم تكرارها',
+          'Created $createdCount accounts; '
+          'existing accounts were left untouched',
         );
       } else {
         showMessage(
-          'حسابات البئر الأربعة موجودة مسبقاً',
+          'All four well accounts already exist',
         );
       }
     } catch (e) {
@@ -376,7 +376,7 @@ class _CreateSalesAccountScreenState
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'لم يتم تحديد البئر',
+                'No well selected',
                 style: TextStyle(
                   fontWeight:
                       FontWeight.bold,
@@ -452,7 +452,7 @@ class _CreateSalesAccountScreenState
                 child: _statusItem(
                   icon:
                       Icons.point_of_sale,
-                  title: 'المبيعات',
+                  title: 'Sales',
                   active: sales > 0,
                 ),
               ),
@@ -467,7 +467,7 @@ class _CreateSalesAccountScreenState
                 child: _statusItem(
                   icon:
                       Icons.account_balance_wallet,
-                  title: 'الصندوق',
+                  title: 'Fund',
                   active: cash > 0,
                 ),
               ),
@@ -482,7 +482,7 @@ class _CreateSalesAccountScreenState
                 child: _statusItem(
                   icon:
                       Icons.money_off,
-                  title: 'المصروفات',
+                  title: 'Expenses',
                   active: expenses > 0,
                 ),
               ),
@@ -497,7 +497,7 @@ class _CreateSalesAccountScreenState
                 child: _statusItem(
                   icon:
                       Icons.engineering,
-                  title: 'العامل',
+                  title: 'Operator',
                   active: worker > 0,
                 ),
               ),
@@ -542,8 +542,8 @@ class _CreateSalesAccountScreenState
 
         Text(
           active
-              ? 'موجود'
-              : 'غير موجود',
+              ? 'Exists'
+              : 'Missing',
           style: TextStyle(
             color: active
                 ? Colors.greenAccent
@@ -606,7 +606,7 @@ class _CreateSalesAccountScreenState
                     CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'البئر',
+                    'Well',
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 13,
@@ -629,7 +629,7 @@ class _CreateSalesAccountScreenState
                         ),
                         SizedBox(width: 8),
                         Text(
-                          'جاري تحميل اسم البئر...',
+                          'Loading the well name…',
                         ),
                       ],
                     )
@@ -639,7 +639,7 @@ class _CreateSalesAccountScreenState
                               wellName!
                                   .trim()
                                   .isEmpty
-                          ? 'غير محدد'
+                          ? 'Not set'
                           : wellName!,
                       style:
                           const TextStyle(
@@ -652,8 +652,8 @@ class _CreateSalesAccountScreenState
                   const SizedBox(height: 5),
 
                   Text(
-                    'رقم البئر: '
-                    '${widget.wellId ?? 'غير محدد'}',
+                    'Well number: '
+                    '${widget.wellId ?? 'Not set'}',
                     style:
                         const TextStyle(
                       fontSize: 12,
@@ -676,7 +676,7 @@ class _CreateSalesAccountScreenState
   Widget accountTypesCard() {
     final String name =
         wellName?.trim().isEmpty ?? true
-            ? 'البئر'
+            ? 'Well'
             : wellName!;
 
     return Card(
@@ -706,7 +706,7 @@ class _CreateSalesAccountScreenState
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'حسابات البئر',
+                  'Well accounts',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight:
@@ -719,16 +719,16 @@ class _CreateSalesAccountScreenState
             const SizedBox(height: 15),
 
             // --------------------------------------------------
-            // مبيعات البئر
+            // Sales — البئر
             // --------------------------------------------------
 
             _accountRow(
               icon:
                   Icons.point_of_sale,
               title:
-                  'مبيعات البئر',
+                  'Well sales',
               subtitle:
-                  'مبيعات $name',
+                  'Sales — $name',
               color:
                   Colors.green,
             ),
@@ -736,16 +736,16 @@ class _CreateSalesAccountScreenState
             const Divider(),
 
             // --------------------------------------------------
-            // صندوق البئر
+            // Fund — البئر
             // --------------------------------------------------
 
             _accountRow(
               icon:
                   Icons.account_balance_wallet,
               title:
-                  'صندوق البئر',
+                  'Well fund',
               subtitle:
-                  'صندوق $name',
+                  'Fund — $name',
               color:
                   appColor,
             ),
@@ -753,16 +753,16 @@ class _CreateSalesAccountScreenState
             const Divider(),
 
             // --------------------------------------------------
-            // مصروفات البئر
+            // Expenses — البئر
             // --------------------------------------------------
 
             _accountRow(
               icon:
                   Icons.money_off,
               title:
-                  'مصروفات البئر',
+                  'Well expenses',
               subtitle:
-                  'مصروفات $name',
+                  'Expenses — $name',
               color:
                   Colors.red,
             ),
@@ -770,16 +770,16 @@ class _CreateSalesAccountScreenState
             const Divider(),
 
             // --------------------------------------------------
-            // عامل البئر
+            // Operator — البئر
             // --------------------------------------------------
 
             _accountRow(
               icon:
                   Icons.engineering,
               title:
-                  'عامل البئر',
+                  'Well operator',
               subtitle:
-                  'عامل $name',
+                  'Operator — $name',
               color:
                   Colors.orange,
             ),
@@ -866,8 +866,8 @@ class _CreateSalesAccountScreenState
 
         label: Text(
           loading
-              ? 'جاري الإضافة...'
-              : 'إضافة حسابات البئر الأربعة',
+              ? 'Adding…'
+              : 'Create the four well accounts',
           style:
               const TextStyle(
             fontSize: 16,
@@ -942,11 +942,11 @@ class _CreateSalesAccountScreenState
 
           Expanded(
             child: Text(
-              'سيتم إضافة أربعة حسابات للبئر: '
-              'مبيعات البئر وصندوق البئر '
-              'ومصروفات البئر وعامل البئر. '
-              'إذا كان أي حساب موجوداً مسبقاً '
-              'فلن يتم تكراره.',
+              'Four accounts will be created for the well: '
+              'sales, fund, '
+              'expenses and operator. '
+              'Any account that already exists '
+              'will not be duplicated.',
               textAlign:
                   TextAlign.right,
               style: TextStyle(
@@ -985,7 +985,7 @@ class _CreateSalesAccountScreenState
         appBar:
             const MyAppBar(
           title:
-              'حسابات البئر',
+              'Well accounts',
           icon:
               Icons.account_balance,
         ),
