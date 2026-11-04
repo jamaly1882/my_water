@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: const Color(0xffF5F9FF),
         appBar: const MyAppBar(
-          title: 'نظام إدارة المياه',
+          title: 'Water Management System',
           showBackButton: false,
         ),
         body: Padding(

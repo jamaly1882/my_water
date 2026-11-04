@@ -139,7 +139,7 @@ class CycleScreen extends StatelessWidget {
 
                         children: [
                           Text(
-                            'الدور لإدخال القراءات',
+                            'Reading Cycle',
 
                             style: TextStyle(
                               color: Colors.white,
@@ -151,7 +151,7 @@ class CycleScreen extends StatelessWidget {
                           SizedBox(height: 4),
 
                           Text(
-                            'إدخال قراءة بداية الدور وقراءة نهاية الدور',
+                            'Enter the opening and closing meter readings',
 
                             style: TextStyle(
                               color: Colors.white70,
@@ -189,10 +189,10 @@ class CycleScreen extends StatelessWidget {
                     _menuCard(
                       context: context,
 
-                      title: 'قراءة بداية الدور',
+                      title: 'Opening reading',
 
                       subtitle:
-                          'إدخال قراءة بداية الدورة للزبون',
+                          'Enter the opening reading for the subscriber',
 
                       icon: Icons.add_circle,
 
@@ -228,10 +228,10 @@ class CycleScreen extends StatelessWidget {
                     _menuCard(
                       context: context,
 
-                      title: 'قراءة نهاية الدور',
+                      title: 'Closing reading',
 
                       subtitle:
-                          'إدخال قراءة نهاية الدورة للزبون',
+                          'Enter the closing reading for the subscriber',
 
                       icon: Icons.speed,
 
