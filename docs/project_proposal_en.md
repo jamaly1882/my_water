@@ -1,6 +1,7 @@
 # Integrated Project Proposal — Azal Soft Platform
 
-**Project:** Azal Soft Platform (technical name: my_water) — Digital Water-Well Operations and Financial Management Platform  
+**Project:** Azal Soft Platform (repository/package identifier: `my_water`) — Digital Water-Well Operations and Financial Management Platform
+
 **Proposal purpose:** Explain the idea, the problem it addresses, expected impact, project outputs, and the financial system to be used.  
 **Pilot scope:** 10 wells and 60 subscribers, as defined in the current project brief. The pilot scope and baseline figures should be confirmed with the participating well committees before launch.
 
