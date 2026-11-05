@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/my_app_bar.dart';
+import '../utils/location_text.dart';
 
 class CustomerScreen extends StatefulWidget {
   final String supervisorId;
@@ -1556,6 +1557,17 @@ class _CustomerScreenState extends State<CustomerScreen> {
                             ?.toString() ??
                         '';
 
+                final LocationNames location =
+                    resolveLocation(
+                  data,
+                  provinceName:
+                      widget.provinceName,
+                  districtName:
+                      widget.districtName,
+                  hamletName:
+                      widget.hamletName,
+                );
+
                 final selected =
                     selectedCustomerId ==
                         doc.id;
@@ -1634,11 +1646,17 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     ),
                     subtitle:
                         Text(
-                      'Phone: $phone'
-                      '${usage.isEmpty ? '' : '\nالاستخدام: $usage'}',
+                      <String>[
+                        'Phone: $phone',
+                        if (usage.isNotEmpty)
+                          'Usage: $usage',
+                        if (location.line.isNotEmpty)
+                          location.line,
+                      ].join('\n'),
                     ),
                     isThreeLine:
-                        usage.isNotEmpty,
+                        usage.isNotEmpty ||
+                            location.line.isNotEmpty,
                     trailing:
                         selected
                             ? const Icon(

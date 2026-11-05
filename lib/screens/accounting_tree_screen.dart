@@ -37,6 +37,7 @@ class _AccountingTreeScreenState extends State<AccountingTreeScreen> {
   final AccountingTreeService _service = AccountingTreeService();
 
   List<TreeWellRef> _wells = <TreeWellRef>[];
+  List<String> _wellNotes = <String>[];
 
   String? _selectedWellId;
   String _selectedWellName = 'All wells';
@@ -64,12 +65,31 @@ class _AccountingTreeScreenState extends State<AccountingTreeScreen> {
 
   Future<void> _bootstrap() async {
     try {
-      final List<TreeWellRef> wells = await _service.loadWells();
+      final TreeWellList list = await _service.loadWells(
+        currentWellId: widget.wellId,
+        currentWellName: widget.wellName,
+      );
 
       if (!mounted) return;
 
       setState(() {
-        _wells = wells;
+        _wells = list.wells;
+        _wellNotes = list.notes;
+
+        // إن كان البئر الممرَّر غير موجود في القائمة، أضفه حتى لا يفشل
+        // عنصر الاختيار (Dropdown) بسبب قيمة غير معروضة.
+        final String? selected = _selectedWellId;
+
+        if (selected != null &&
+            !_wells.any((TreeWellRef well) => well.id == selected)) {
+          _wells = <TreeWellRef>[
+            ..._wells,
+            TreeWellRef(
+              id: selected,
+              name: widget.wellName ?? 'Selected well',
+            ),
+          ];
+        }
       });
     } catch (_) {
       // قائمة الآبار كمالية: الشجرة تعمل حتى لو فشلت.
@@ -244,7 +264,11 @@ class _AccountingTreeScreenState extends State<AccountingTreeScreen> {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String?>(
-                value: _selectedWellId,
+                value: _wells.any(
+                  (TreeWellRef well) => well.id == _selectedWellId,
+                )
+                    ? _selectedWellId
+                    : null,
                 isExpanded: true,
                 isDense: true,
                 items: <DropdownMenuItem<String?>>[
@@ -274,6 +298,26 @@ class _AccountingTreeScreenState extends State<AccountingTreeScreen> {
               ),
             ),
           ),
+          if (_wellNotes.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Icon(Icons.info_outline, size: 15, color: _accent),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _wellNotes.first,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFF5B6B7C),
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,

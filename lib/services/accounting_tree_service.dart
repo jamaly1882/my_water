@@ -55,6 +55,16 @@ class TreeWellRef {
   const TreeWellRef({required this.id, required this.name});
 }
 
+/// نتيجة قراءة قائمة الآبار: الآبار المتاحة + ملاحظات عن المصادر.
+class TreeWellList {
+  final List<TreeWellRef> wells;
+  final List<String> notes;
+
+  const TreeWellList({required this.wells, required this.notes});
+
+  bool get isEmpty => wells.isEmpty;
+}
+
 /// عقدة في الشجرة.
 class TreeLine {
   final String code;
@@ -231,27 +241,131 @@ class AccountingTreeService {
   // قائمة الآبار
   // ----------------------------------------------------------
 
-  Future<List<TreeWellRef>> loadWells() async {
-    final QuerySnapshot<Map<String, dynamic>> snapshot =
-        await _db.collection('wells').limit(200).get();
+  // قائمة الآبار تُبنى من عدة مصادر بالترتيب:
+  //
+  //   1) مجموعة wells               — الأسماء الرسمية
+  //   2) وثائق users                — تحمل wellId و wellName للمشرفين
+  //   3) مجموعة accounts            — كل حساب يحمل wellId و wellName
+  //   4) البئر الحالي من الشاشة
+  //
+  // السبب: حساب مشرف بئر واحد قد لا يملك صلاحية قراءة مجموعة wells
+  // كاملة، فيظهر في القائمة بئر واحد فقط. بهذه الطريقة تُجمع الأسماء
+  // من المصادر التي يستطيع قراءتها، وتُدمج بلا تكرار.
+  //
+  // لا تُكتب أي بيانات — قراءة فقط.
+  Future<TreeWellList> loadWells({
+    String? currentWellId,
+    String? currentWellName,
+  }) async {
+    final Map<String, String> names = <String, String>{};
+    final List<String> notes = <String>[];
 
-    final List<TreeWellRef> wells = <TreeWellRef>[];
+    // 1 — مجموعة wells
+    try {
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await _db.collection('wells').limit(400).get();
 
-    for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
-        in snapshot.docs) {
-      final Map<String, dynamic> data = doc.data();
-
-      wells.add(
-        TreeWellRef(
-          id: doc.id,
-          name: _text(data, <String>['name', 'wellName']) ?? 'Well ${wells.length + 1}',
-        ),
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+          in snapshot.docs) {
+        _rememberWell(
+          names,
+          doc.id,
+          _text(doc.data(), <String>['name', 'wellName', 'title']),
+        );
+      }
+    } catch (_) {
+      notes.add(
+        'The "wells" collection is not readable with this account; '
+        'well names were taken from the accounts instead.',
       );
     }
 
-    wells.sort((TreeWellRef a, TreeWellRef b) => a.name.compareTo(b.name));
+    // 2 — وثائق المستخدمين
+    try {
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await _db.collection('users').limit(500).get();
 
-    return wells;
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+          in snapshot.docs) {
+        final Map<String, dynamic> data = doc.data();
+
+        _rememberWell(
+          names,
+          _text(data, <String>['wellId']),
+          _text(data, <String>['wellName']),
+        );
+      }
+    } catch (_) {
+      // مصدر كمالي — لا يمنع العمل.
+    }
+
+    // 3 — الحسابات
+    try {
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await _db.collection('accounts').limit(_accountLimit).get();
+
+      for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+          in snapshot.docs) {
+        final Map<String, dynamic> data = doc.data();
+
+        _rememberWell(
+          names,
+          _text(data, <String>['wellId']),
+          _text(data, <String>['wellName']),
+        );
+      }
+    } catch (_) {
+      // مصدر كمالي — لا يمنع العمل.
+    }
+
+    // 4 — البئر الحالي
+    _rememberWell(names, currentWellId, currentWellName);
+
+    final List<TreeWellRef> wells = names.entries
+        .map(
+          (MapEntry<String, String> entry) => TreeWellRef(
+            id: entry.key,
+            name: entry.value.isEmpty ? 'Well ${entry.key}' : entry.value,
+          ),
+        )
+        .toList();
+
+    wells.sort(
+      (TreeWellRef a, TreeWellRef b) =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+
+    if (wells.isEmpty) {
+      notes.add('No wells are readable with this account.');
+    }
+
+    return TreeWellList(wells: wells, notes: notes);
+  }
+
+  /// يضيف بئرًا إلى القائمة بلا تكرار، ويحتفظ بأفضل اسم متاح.
+  static void _rememberWell(
+    Map<String, String> names,
+    String? id,
+    String? name,
+  ) {
+    final String key = (id ?? '').trim();
+
+    if (key.isEmpty) return;
+
+    final String clean = (name ?? '').trim();
+    final String existing = names[key] ?? '';
+
+    if (clean.isEmpty) {
+      if (!names.containsKey(key)) {
+        names[key] = '';
+      }
+
+      return;
+    }
+
+    if (existing.isEmpty || existing == 'Well $key') {
+      names[key] = clean;
+    }
   }
 
   // ----------------------------------------------------------
@@ -297,7 +411,8 @@ class AccountingTreeService {
     }
 
     // 2 — القيود
-    Query query = _db.collection('account_transactions');
+    Query<Map<String, dynamic>> query =
+        _db.collection('account_transactions');
 
     if (wellId != null && wellId.isNotEmpty) {
       query = query.where('wellId', isEqualTo: wellId);
