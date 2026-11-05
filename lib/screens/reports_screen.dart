@@ -5,6 +5,7 @@ import '../widgets/my_app_bar.dart';
 import 'cycle_report_menu_screen.dart';
 import 'account_report_menu_screen.dart';
 import 'energy_consumption_report_screen.dart';
+import 'accounting_tree_screen.dart';
 
 class ReportsScreen extends StatelessWidget {
   final String? wellId;
@@ -70,6 +71,21 @@ class ReportsScreen extends StatelessWidget {
                 icon:
                     Icons.account_balance_wallet,
                 page: AccountReportMenuScreen(
+                  wellId: wellId,
+                  wellName: wellName,
+                ),
+              ),
+
+              // ==================================================
+              // الشجرة المحاسبية
+              // ==================================================
+
+              _reportCard(
+                context: context,
+                title: 'Accounting tree',
+                subtitle: 'Assets · Liabilities · Revenue · Expenses',
+                icon: Icons.account_tree,
+                page: AccountingTreeScreen(
                   wellId: wellId,
                   wellName: wellName,
                 ),
