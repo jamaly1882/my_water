@@ -1,4 +1,6 @@
-# my_water
+# Azal Soft Platform
+
+**Technical repository name:** `my_water`
 
 A new Flutter project.
 
@@ -19,7 +21,7 @@ samples, guidance on mobile development, and a full API reference.
 
 ## ملف تحدي المياه — Water Challenge Brief
 
-تطبيق إطار **AYC Youth Pitches** (الأسبوع الأول) على مشروع `my_water`.
+تطبيق إطار **AYC Youth Pitches** (الأسبوع الأول) على مشروع **Azal Soft Platform** (`my_water`).
 
 **نطاق المشروع:** 10 آبار · 60 مشتركًا · 720 قراءة في السنة — كل أرقام الملف محسوبة على هذا النطاق.
 
@@ -28,7 +30,8 @@ samples, guidance on mobile development, and a full API reference.
 | شاشة داخل التطبيق (الطبقات الأربع + الحفظ + التصدير) | `lib/features/challenge_brief/challenge_brief_page.dart` |
 | تعريف الطبقات والحقول | `lib/features/challenge_brief/challenge_brief_spec.dart` |
 | المستند المُعبّأ (عربي) | `docs/water_challenge_brief_ar.md` |
-| المستند المُعبّأ (إنجليزي) | `docs/water_challenge_brief_en.md` |
+| المستند الموحّد بالإنجليزية (ملف التحدي + المقترح المتكامل) | `docs/water_challenge_brief_en.md` |
+| المقترح التفصيلي بالإنجليزية والميزانية | `docs/project_proposal_en.md` |
 | نسخة Word ثنائية اللغة (للتسليم) | `docs/water_challenge_brief_ar_en.docx` |
 | نسخة HTML جاهزة للطباعة / PDF | `docs/water_challenge_brief.html` |
 

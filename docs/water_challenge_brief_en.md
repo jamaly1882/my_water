@@ -1,11 +1,11 @@
-# Water Challenge Brief — English Version
+# Azal Soft Platform — Integrated Venture Brief and Project Proposal (English)
 
-**Venture:** Azal Soft Water Platform — Well Water Operations (technical name: my_water)
+**Venture:** Azal Soft Platform — Well Water Operations (technical name: my_water)
 **Programme:** AYC Youth Pitches · Onboarding Session · Week 1 (2–6 November 2026)
 **Submission:** Friday 6 November, 12:00 GST
 **Weight:** 30% of the Round 1 score
 
-> This brief applies the four-layer framework from the onboarding session to **Azal Soft Water Platform**.
+> This brief applies the four-layer framework from the onboarding session to **Azal Soft Platform**.
 > Its content is drawn from the actual codebase (screens, services, the OCR pipeline, the GM dashboard).
 > Every bracketed tag must stay in the submitted version:
 >
@@ -87,7 +87,7 @@ The claim is not "optical digit recognition" — that is a commodity. The claim 
 
 ### 2.2 The number
 
-| Metric | Paper baseline | my_water target | Status |
+| Metric | Paper baseline | Azal Soft Platform target | Status |
 |---|---|---|---|
 | Time per meter reading (read + record) | ~3 minutes [assumption — needs your data] | under 20 seconds for an accepted reading | [target to validate] |
 | Share of readings accepted automatically | — | ≥ 85% | [target to validate] |
@@ -263,9 +263,113 @@ Never write "institutions" or "farmers" here. **One name, one place, one number,
 ### 4.6 The venture in 100 words
 
 > Across ten wells and sixty subscribers, meters are read on paper, figures are copied later, and the well's cash box is managed apart from the numbers. The result: loss nobody sees, a bill the subscriber cannot contest with a photo and a timestamp, and a committee that discovers the deficit at month-end.
-> my_water turns that chain into one digital record: the meter photo read automatically behind a confidence gate that refuses the doubtful digit before it reaches the invoice, then consumption, then the invoice, then collection, then the cash box.
+> Azal Soft Platform turns that chain into one digital record: the meter photo read automatically behind a confidence gate that refuses the doubtful digit before it reaches the invoice, then consumption, then the invoice, then collection, then the cash box.
 > We are running it now on the ten wells and sixty subscribers, measuring three numbers only: reading time, share of traceable readings, and the gap between paper and real loss.
 > What we ask for today: four cycles and forty minutes of operator training — to prove the number.
+
+---
+
+## Project Proposal · Expected Impact, Outputs and Financial System
+
+This section brings the project proposal together with the four-layer pitch brief. It distinguishes the platform’s current capabilities from targets to be tested in the field.
+
+### Proposal summary
+
+**Azal Soft Platform** is a mobile and web platform for managing community water-well operations. It links subscriber and meter records, reading cycles, consumption, billing, collections, expenses, energy records, and management reports. Its photo-based OCR workflow includes image-quality checks and confidence review; readings that are uncertain should be checked by a person before they are used for billing.
+
+The proposed pilot covers **10 wells and 60 subscribers**. It will verify opening data, run regular reading and billing cycles, record transactions with supporting vouchers, and measure operational and financial indicators. The purpose is to establish evidence for deciding whether and how to expand the system—not to claim unmeasured impact in advance.
+
+**The intended change:** replace disconnected paper records with a traceable chain from meter reading to bill, and from each financial transaction to the well’s fund and operating reports.
+
+### Expected impact and pilot indicators
+
+The pilot should document a baseline before its first digital cycle. The following are **proposed targets**, not results already achieved:
+
+| Impact area | Indicator | Proposed pilot target |
+|---|---|---|
+| Reading efficiency | Median time from starting a reading to saving it | Under 30 seconds for a routine reading after training |
+| Reading coverage | Registered subscribers with an approved reading per cycle | At least 95% |
+| OCR workflow | Readings accepted without manual correction | At least 85%, to be validated in the field |
+| Reading quality | Error after human review against verified reference readings | At most 1%, measured on the pilot sample |
+| Bill traceability | Bills linked to an approved subscriber, cycle, and reading | 100% of pilot bills, if the underlying records are complete |
+| Financial control | Receipts and payments supported by a voucher and assigned to the correct well | At least 95%; document all exceptions |
+| Cash reconciliation | Difference between system fund balance and cash counted | Investigate and document at every close; target no unexplained difference |
+| Operating insight | Cycle, financial, and energy reports available | For every completed cycle where source data is available |
+
+Run four monthly cycles where feasible: 60 subscribers × 4 cycles gives up to **240 reading opportunities**. Compare results with the baseline and report the actual sample size, missing data, and exceptions. The intended wider effects are more transparent bills, stronger cash accountability, improved visibility of operating and energy costs, and better-informed maintenance decisions. These outcomes also depend on governance, water availability, equipment, and adequate funding.
+
+### Project outputs
+
+1. A configured registry for pilot locations, wells, subscribers, meters, user roles, and verified opening readings.
+2. A repeatable reading-cycle and review process, including human approval of uncertain OCR results.
+3. Cycle-based consumption and billing records using a tariff approved by the responsible well committee.
+4. Numbered receipt and payment vouchers linked to well-level accounts and transactions.
+5. Well-level financial, cycle, and energy reports and management summaries based on available data.
+6. Trained well staff and a concise operating guide for readings, corrections, billing, cash handling, and cycle closure.
+7. A pilot evaluation comparing baseline and post-implementation results, user feedback, limitations, and a recommendation to continue, adjust, or expand.
+
+### Financial system to use
+
+Use **simple well-level double-entry bookkeeping** as the project’s proposed financial-control method, supported by the application’s well accounts, debit/credit transactions, receipt and payment vouchers, and accounting-tree reports. Keep each well’s records distinct for operational accountability; provide consolidated reports only to authorized managers.
+
+The application already supports account categories for **sales, cash/fund, expenses, and worker/operator**, receipt and payment vouchers, debit/credit transaction records, and an accounting-tree view. The following chart and posting policy are recommendations and must be checked against the app’s actual posting behavior before formal use.
+
+| Suggested code | Account | Classification |
+|---|---|---|
+| 1101 | Well cash fund | Asset |
+| 1201 | Subscriber receivables | Asset |
+| 2101 | Worker amounts payable | Liability |
+| 3100 | Opening fund balance / accumulated result | Equity or fund balance; accountant to confirm |
+| 4101 | Water sales revenue | Revenue |
+| 5101 | Well operating expenses | Expense |
+| 5110 | Energy and fuel expense | Expense |
+| 5120 | Maintenance expense | Expense |
+
+| Event | Debit | Credit | Required supporting record |
+|---|---|---|---|
+| Approved bill, if accrual basis is selected | Subscriber receivables | Water sales revenue | Approved bill and reading-cycle reference |
+| Subscriber payment | Well cash fund | Subscriber receivables | Numbered receipt voucher linked to subscriber and bill/cycle |
+| Expense paid from well cash | Relevant expense account | Well cash fund | Numbered payment voucher and receipt where available |
+| Worker cost approved but unpaid | Relevant worker/labour expense | Worker amounts payable | Approval or payroll record |
+| Worker amount paid | Worker amounts payable | Well cash fund | Payment voucher linked to approval |
+
+Choose **either accrual-basis or cash-basis reporting** with the well committee and accountant, then apply it consistently. Do not present the application’s accounting tree as formal financial statements until the chart of accounts, opening balances, revenue treatment, and reports have been validated by an accountant familiar with applicable local requirements.
+
+**Minimum controls:** use unique voucher numbers; retain a reason and reference for corrections; separate recording, payment approval, and reconciliation roles where practical; record date, well, amount, account, description, and supporting evidence; count and reconcile cash at every cycle close; verify subscriber balances against bills and receipts; and restrict access by role. Record the currency actually used and do not assume tariffs, exchange rates, taxes, or fees without local approval.
+
+### Financial sustainability and budget
+
+Do not set a software fee or claim project savings before collecting actual cost data. Track setup and data-cleaning, training and support, devices, connectivity, hosting and maintenance, meter-reading operations, financial review, and monitoring costs. Possible future funding models to test include a per-well service fee, an institution or utility subscription, or partner-funded deployment and training. Any fee must be transparent, affordable, approved by the responsible body, and kept separate from water tariffs unless explicitly authorized.
+
+Complete the following worksheet using local quotations and state the currency and price date:
+
+| Cost item | Unit | Quantity | Unit cost | Total |
+|---|---:|---:|---:|---:|
+| Initial setup and data verification | day / well | ___ | ___ | ___ |
+| Training and user support | session / person | ___ | ___ | ___ |
+| Devices (only if needed) | device | ___ | ___ | ___ |
+| Connectivity and hosting | month | ___ | ___ | ___ |
+| Meter-reading operations | cycle / well | ___ | ___ | ___ |
+| Accountant / financial review | day | ___ | ___ | ___ |
+| Monitoring and evaluation | day / cycle | ___ | ___ | ___ |
+| Contingency (approved basis) | ___ | ___ | ___ | ___ |
+| **Pilot budget** |  |  |  | **___** |
+
+Use pilot data to calculate **annual cost per well** (annual recurring costs ÷ active wells), **cost per subscriber** (annual recurring costs ÷ active subscribers), and **cost recovery ratio** (recurring income ÷ recurring costs). Calculate a break-even scale only when a credible fee and variable cost per well are known. Do not create a forecast from invented prices.
+
+### Pilot delivery and decision gates
+
+| Phase | Main activity | Output / decision gate |
+|---|---|---|
+| Readiness | Confirm participating wells, consent, roles, tariff policy, data privacy, and baseline | Approved pilot scope and baseline sheet |
+| Setup | Verify subscribers, meters, opening readings, balances, and access | Validated registry and signed opening balances |
+| Training | Practise reading review, correction, receipts, payments, and reconciliation | Trained users and practice cycle |
+| Operations | Run up to four monthly cycles; review readings, record vouchers, close and reconcile | Cycle datasets and monthly review notes |
+| Evaluation | Compare with baseline, review exceptions and user feedback | Evaluation report and scale-up recommendation |
+
+Key risks include incorrect opening data, OCR mistakes, incomplete financial records, weak connectivity, low adoption, unauthorized access, and unclear ownership of tariff or spending decisions. Mitigate them through on-site verification, human review, voucher and reconciliation training, a documented connectivity contingency, role-based access, and explicit committee approval of tariffs and expenditure.
+
+For the expanded proposal, budget worksheet, and fuller explanation, see [`project_proposal_en.md`](project_proposal_en.md).
 
 ---
 
