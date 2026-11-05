@@ -411,8 +411,8 @@ class LocalInsightService {
 
     return 'Supervisors: ${data.supervisors.length} '
         '($withWell assigned to a well). '
-        'Per-supervisor scores are on the Supervisor Insights screen: '
-        'activity, regularity, coverage and data quality out of 100.';
+        'Every supervisor is scored on activity, regularity, '
+        'coverage and data quality, out of 100.';
   }
 
   static String _location(GmDashboardData data) {
