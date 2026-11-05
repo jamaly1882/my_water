@@ -215,6 +215,26 @@ class _LoginScreenState extends State<LoginScreen> {
           data['wellName']?.toString() ?? '';
 
       // ========================================================
+      // أسماء الموقع
+      //
+      // وثيقة المشرف تخزّن الأسماء إلى جانب المعرّفات، وكانت
+      // الشاشة تمرّر المعرّفات فقط، فتصل صفحة الزبون بلا اسم
+      // محافظة ولا مديرية ولا عزلة.
+      // ========================================================
+
+      final String provinceName =
+          data['provinceName']?.toString() ?? '';
+
+      final String districtName =
+          data['districtName']?.toString() ?? '';
+
+      final String hamletName =
+          data['hamletName']?.toString() ?? '';
+
+      final String villageName =
+          data['villageName']?.toString() ?? '';
+
+      // ========================================================
       // التحقق من اكتمال بيانات الموقع
       // ========================================================
 
@@ -242,9 +262,13 @@ class _LoginScreenState extends State<LoginScreen> {
             isAdmin: false,
             supervisorId: supervisorId,
             provinceId: provinceId,
+            provinceName: provinceName,
             districtId: districtId,
+            districtName: districtName,
             hamletId: hamletId,
+            hamletName: hamletName,
             villageId: villageId,
+            villageName: villageName,
             wellId: wellId,
             wellName: wellName,
           ),

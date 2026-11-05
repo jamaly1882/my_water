@@ -157,6 +157,22 @@ class _SplashScreenState extends State<SplashScreen> {
           data["wellName"]?.toString() ?? "";
 
       // ========================================================
+      // أسماء الموقع — تُمرَّر مع المعرّفات
+      // ========================================================
+
+      final String provinceName =
+          data["provinceName"]?.toString() ?? "";
+
+      final String districtName =
+          data["districtName"]?.toString() ?? "";
+
+      final String hamletName =
+          data["hamletName"]?.toString() ?? "";
+
+      final String villageName =
+          data["villageName"]?.toString() ?? "";
+
+      // ========================================================
       // الدخول مباشرة إلى الرئيسية
       // ========================================================
 
@@ -169,9 +185,13 @@ class _SplashScreenState extends State<SplashScreen> {
             isAdmin: false,
             supervisorId: supervisorId,
             provinceId: provinceId,
+            provinceName: provinceName,
             districtId: districtId,
+            districtName: districtName,
             hamletId: hamletId,
+            hamletName: hamletName,
             villageId: villageId,
+            villageName: villageName,
             wellId: wellId,
             wellName: wellName,
           ),

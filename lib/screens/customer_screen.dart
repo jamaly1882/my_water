@@ -68,6 +68,91 @@ class _CustomerScreenState extends State<CustomerScreen> {
   String? usageTypeId;
   String? usageTypeName;
 
+  // ============================================================
+  // أسماء الموقع
+  //
+  // تصل من سلسلة الشاشات (login → home → setup → customer).
+  // وإن وصل المعرّف بلا اسم — كما في الحسابات القديمة التي لم
+  // تُحفظ أسماؤها — يُقرأ الاسم من مجموعة الموقع نفسه.
+  // ============================================================
+
+  String? provinceName;
+  String? districtName;
+  String? hamletName;
+  String? villageName;
+
+  bool _locationResolved = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    provinceName = widget.provinceName;
+    districtName = widget.districtName;
+    hamletName = widget.hamletName;
+    villageName = widget.villageName;
+
+    _resolveLocationNames();
+  }
+
+  /// يقرأ الأسماء الناقصة من مجموعات provinces / districts / hamlets / villages.
+  Future<void> _resolveLocationNames() async {
+    if (_locationResolved) return;
+
+    _locationResolved = true;
+
+    Future<String?> lookup(String collection, String? id) async {
+      final String key = (id ?? '').trim();
+
+      if (key.isEmpty) return null;
+
+      try {
+        final DocumentSnapshot<Map<String, dynamic>> doc =
+            await firestore.collection(collection).doc(key).get();
+
+        if (!doc.exists) return null;
+
+        final Map<String, dynamic>? data = doc.data();
+
+        final String name = (data?['name']?.toString() ?? '').trim();
+
+        return name.isEmpty ? null : name;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    String? province = provinceName;
+    String? district = districtName;
+    String? hamlet = hamletName;
+    String? village = villageName;
+
+    if ((province ?? '').trim().isEmpty) {
+      province = await lookup('provinces', widget.provinceId);
+    }
+
+    if ((district ?? '').trim().isEmpty) {
+      district = await lookup('districts', widget.districtId);
+    }
+
+    if ((hamlet ?? '').trim().isEmpty) {
+      hamlet = await lookup('hamlets', widget.hamletId);
+    }
+
+    if ((village ?? '').trim().isEmpty) {
+      village = await lookup('villages', widget.villageId);
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      provinceName = province;
+      districtName = district;
+      hamletName = hamlet;
+      villageName = village;
+    });
+  }
+
   static const Color primaryColor = Colors.blue;
 
   // ============================================================
@@ -463,8 +548,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
   // ============================================================
 
   Widget supervisorVillageCard() {
-    final villageName =
-        widget.villageName?.trim();
+    final String? shownVillageName =
+        (villageName ?? widget.villageName)?.trim();
 
     if (widget.villageId ==
             null ||
@@ -520,12 +605,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   height: 4,
                 ),
                 Text(
-                  villageName ==
+                  shownVillageName ==
                               null ||
-                          villageName
+                          shownVillageName
                               .isEmpty
                       ? 'Not set'
-                      : villageName,
+                      : shownVillageName,
                   style:
                       const TextStyle(
                     fontSize: 18,
@@ -598,19 +683,19 @@ class _CustomerScreenState extends State<CustomerScreen> {
           ),
           _locationRow(
             'Governorate',
-            widget.provinceName,
+            provinceName,
           ),
           _locationRow(
             'District',
-            widget.districtName,
+            districtName,
           ),
           _locationRow(
             'Sub-district',
-            widget.hamletName,
+            hamletName,
           ),
           _locationRow(
             'Village',
-            widget.villageName,
+            villageName,
           ),
         ],
       ),
@@ -906,8 +991,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       .provinceId,
 
               'provinceName':
-                  widget
-                      .provinceName,
+                  provinceName,
 
               // ------------------------------------------------
               // المديرية
@@ -918,8 +1002,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       .districtId,
 
               'districtName':
-                  widget
-                      .districtName,
+                  districtName,
 
               // ------------------------------------------------
               // العزلة
@@ -930,8 +1013,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       .hamletId,
 
               'hamletName':
-                  widget
-                      .hamletName,
+                  hamletName,
 
               // ------------------------------------------------
               // القرية
@@ -942,8 +1024,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       .villageId,
 
               'villageName':
-                  widget
-                      .villageName,
+                  villageName,
 
               // ------------------------------------------------
               // استخدام المياه
@@ -1561,11 +1642,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     resolveLocation(
                   data,
                   provinceName:
-                      widget.provinceName,
+                      provinceName,
                   districtName:
-                      widget.districtName,
+                      districtName,
                   hamletName:
-                      widget.hamletName,
+                      hamletName,
                 );
 
                 final selected =
