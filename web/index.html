@@ -226,13 +226,398 @@
         transform: rotate(360deg);
       }
     }
+
+    /* =========================================================
+       BOOT GUARD
+       يمنع ظهور صفحة بيضاء فارغة: إمّا شاشة تحميل،
+       وإمّا رسالة خطأ مفهومة داخل الصفحة نفسها.
+       ========================================================= */
+
+    #bootGuard {
+      position: fixed;
+      inset: 0;
+      z-index: 999998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #f5f7fa;
+      color: #1f2933;
+      font-family: Arial, Tahoma, sans-serif;
+      direction: rtl;
+      text-align: center;
+    }
+
+    #bootGuardCard {
+      width: min(620px, 100%);
+      padding: 26px 22px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    #bootGuardSpinner {
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 18px;
+      border: 5px solid #dbe4ee;
+      border-top-color: #1565c0;
+      border-radius: 50%;
+      animation: bootSpin 0.9s linear infinite;
+    }
+
+    @keyframes bootSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #bootGuardTitle {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    #bootGuardText {
+      font-size: 15px;
+      color: #52606d;
+      line-height: 1.8;
+    }
+
+    #bootGuardProblem {
+      display: none;
+      text-align: right;
+    }
+
+    #bootGuardProblem h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      color: #b3261e;
+      text-align: center;
+    }
+
+    #bootGuardDiagnostics {
+      margin: 14px 0 0;
+      padding: 12px;
+      max-height: 240px;
+      overflow: auto;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    #bootGuardButtons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    #bootGuardButtons button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    #bootGuardRetry {
+      background: #1565c0;
+    }
+
+    #bootGuardClear {
+      background: #b3261e;
+    }
+
+    #bootGuardHintList {
+      margin: 14px 0 0;
+      padding: 0 18px 0 0;
+      font-size: 13px;
+      line-height: 1.9;
+      color: #334155;
+    }
+
   </style>
 
   <!-- Tesseract.js -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
+    defer
+    onerror="window.__tesseractFailed = true;"></script>
 </head>
 
 <body>
+
+  <!-- =========================
+       BOOT GUARD
+       ========================= -->
+
+  <div id="bootGuard">
+
+    <div id="bootGuardCard">
+
+      <div id="bootGuardLoading">
+
+        <div id="bootGuardSpinner"></div>
+
+        <div id="bootGuardTitle">
+          Azal Soft Platform
+        </div>
+
+        <div id="bootGuardText">
+          جارٍ تحميل الواجهة…
+        </div>
+
+      </div>
+
+      <div id="bootGuardProblem">
+
+        <h2>
+          لم تكتمل عملية التحميل
+        </h2>
+
+        <div id="bootGuardText2">
+          الصفحة لم تُظهر الواجهة. السبب الأكثر شيوعًا: ملفات
+          التطبيق لم تُبنَ أو لم تُنشر، أو أن نسخة قديمة محفوظة
+          في المتصفح.
+        </div>
+
+        <ol id="bootGuardHintList">
+          <li>اضغط «مسح التخزين وإعادة التحميل» (يحل أغلب الحالات).</li>
+          <li>جرّب نافذة تصفّح خاصة — إن نجحت فالسبب ذاكرة المتصفح.</li>
+          <li>إن فشلت أيضًا: الموقع لا يحتوي على نسخة مبنية من التطبيق.</li>
+        </ol>
+
+        <div id="bootGuardDiagnostics"></div>
+
+        <div id="bootGuardButtons">
+          <button id="bootGuardClear" type="button">
+            مسح التخزين وإعادة التحميل
+          </button>
+          <button id="bootGuardRetry" type="button">
+            إعادة التحميل
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <noscript>
+    <div style="padding:24px;font-family:Arial,Tahoma,sans-serif;direction:rtl">
+      يحتاج هذا التطبيق إلى تشغيل JavaScript في المتصفح.
+    </div>
+  </noscript>
+
+  <script>
+  "use strict";
+
+  /* ============================================================
+     BOOT GUARD
+     يضمن ألا يبقى المستخدم أمام صفحة بيضاء بلا تفسير.
+     ============================================================ */
+
+  (function() {
+
+    var problems = [];
+
+    var guard = document.getElementById("bootGuard");
+    var loadingBox = document.getElementById("bootGuardLoading");
+    var problemBox = document.getElementById("bootGuardProblem");
+    var diagnostics = document.getElementById("bootGuardDiagnostics");
+
+    var finished = false;
+    var problemShown = false;
+
+    var startedAt = Date.now();
+
+    window.__azalBootProblems = problems;
+
+    function record(text) {
+      if (!text) return;
+      var value = String(text);
+      if (problems.indexOf(value) === -1) {
+        problems.push(value);
+      }
+    }
+
+    window.addEventListener("error", function(event) {
+
+      if (event && event.target && (event.target.src || event.target.href)) {
+        record(
+          "تعذّر تحميل الملف: " +
+          (event.target.src || event.target.href)
+        );
+        return;
+      }
+
+      record(
+        "JS: " +
+        (event && event.message ? event.message : "unknown error")
+      );
+
+    }, true);
+
+    window.addEventListener("unhandledrejection", function(event) {
+
+      var reason = event && event.reason;
+
+      record(
+        "Promise: " +
+        (reason && reason.message ? reason.message : String(reason))
+      );
+
+    });
+
+    function appPainted() {
+      return !!document.querySelector("canvas");
+    }
+
+    function hideGuard() {
+      if (finished) return;
+      finished = true;
+      if (guard && guard.parentNode) {
+        guard.parentNode.removeChild(guard);
+      }
+    }
+
+    function showProblem(reason) {
+
+      if (finished || problemShown) return;
+
+      problemShown = true;
+
+      record(reason);
+
+      if (loadingBox) loadingBox.style.display = "none";
+      if (problemBox) problemBox.style.display = "block";
+      if (guard) guard.style.display = "flex";
+
+      var base = document.baseURI || location.href;
+      var lines = [];
+
+      lines.push("URL: " + location.href);
+      lines.push("baseURI: " + base);
+      lines.push("waited: " + Math.round((Date.now() - startedAt) / 1000) + "s");
+      lines.push("online: " + (navigator.onLine ? "yes" : "no"));
+      lines.push("canvas: " + (appPainted() ? "yes" : "no"));
+      lines.push("");
+
+      if (problems.length) {
+        lines.push("PROBLEMS:");
+        for (var i = 0; i < problems.length; i++) {
+          lines.push("  - " + problems[i]);
+        }
+        lines.push("");
+      }
+
+      if (diagnostics) diagnostics.textContent = lines.join("\n");
+
+      /* ---------- probed assets ---------- */
+
+      var assets = ["flutter_bootstrap.js", "main.dart.js"];
+
+      assets.forEach(function(name) {
+
+        fetch(name, { method: "HEAD", cache: "no-store" })
+          .then(function(response) {
+            recordAsset(name, response.status, response.headers.get("content-type"));
+          })
+          .catch(function() {
+            recordAsset(name, "fetch failed", "");
+          });
+
+      });
+
+      function recordAsset(name, status, type) {
+        if (!diagnostics) return;
+        diagnostics.textContent +=
+          name + ": " + status + (type ? " (" + type + ")" : "") + "\n";
+      }
+    }
+
+    /* ---------- watch for the first painted frame ---------- */
+
+    window.addEventListener("flutter-first-frame", hideGuard);
+
+    var poll = setInterval(function() {
+
+      if (appPainted()) {
+        clearInterval(poll);
+        hideGuard();
+      }
+
+    }, 400);
+
+    setTimeout(function() {
+
+      clearInterval(poll);
+
+      if (!appPainted()) {
+        showProblem(
+          "لم ترسم الواجهة خلال 20 ثانية"
+        );
+      }
+
+    }, 20000);
+
+    /* ---------- buttons ---------- */
+
+    var retryButton = document.getElementById("bootGuardRetry");
+    var clearButton = document.getElementById("bootGuardClear");
+
+    if (retryButton) {
+      retryButton.addEventListener("click", function() {
+        location.reload();
+      });
+    }
+
+    if (clearButton) {
+      clearButton.addEventListener("click", async function() {
+
+        clearButton.disabled = true;
+        clearButton.textContent = "جارٍ المسح…";
+
+        try {
+          if (window.caches) {
+            var keys = await caches.keys();
+            await Promise.all(keys.map(function(key) {
+              return caches.delete(key);
+            }));
+          }
+        } catch (error) {
+          console.warn("cache clear failed", error);
+        }
+
+        try {
+          if (navigator.serviceWorker) {
+            var registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(function(registration) {
+              return registration.unregister();
+            }));
+          }
+        } catch (error) {
+          console.warn("service worker unregister failed", error);
+        }
+
+        location.reload();
+      });
+    }
+
+  })();
+  </script>
 
   <!-- =========================
        CROP OVERLAY
@@ -1447,9 +1832,30 @@ async function getOCRWorker() {
     return meterOCRWorkerPromise;
   }
 
+  /*
+   * Tesseract.js صار يُحمّل بـ defer حتى لا يعطّل
+   * إقلاع التطبيق عند بطء الشبكة أو حجب الـ CDN.
+   * لذا ننتظره هنا بدلًا من الفشل الفوري.
+   */
+  if (!window.Tesseract) {
+
+    const waitedFrom = Date.now();
+
+    while (
+      !window.Tesseract &&
+      Date.now() - waitedFrom < 15000
+    ) {
+      await new Promise(function(resolve) {
+        setTimeout(resolve, 250);
+      });
+    }
+  }
+
   if (!window.Tesseract) {
     throw new Error(
-      "Tesseract.js غير محمل"
+      window.__tesseractFailed
+        ? "تعذّر تحميل محرك قراءة العدادات (Tesseract) — تحقّق من الاتصال بالإنترنت"
+        : "Tesseract.js غير محمل"
     );
   }
 
