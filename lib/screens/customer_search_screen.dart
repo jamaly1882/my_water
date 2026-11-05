@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/my_app_bar.dart';
+import '../utils/location_text.dart';
 import 'open_cycle_screen.dart';
 
 class CustomerSearchScreen extends StatefulWidget {
@@ -484,6 +485,17 @@ class _CustomerSearchScreenState
                 ?.toString() ??
             doc.id;
 
+    final LocationNames location =
+        resolveLocation(
+      data,
+      provinceName:
+          widget.provinceName,
+      districtName:
+          widget.districtName,
+      hamletName:
+          widget.hamletName,
+    );
+
     return Card(
       elevation: 3,
 
@@ -567,24 +579,24 @@ class _CustomerSearchScreenState
                         .provinceId,
 
                 provinceName:
-                    widget
-                        .provinceName,
+                    location
+                        .province,
 
                 districtId:
                     widget
                         .districtId,
 
                 districtName:
-                    widget
-                        .districtName,
+                    location
+                        .district,
 
                 hamletId:
                     widget
                         .hamletId,
 
                 hamletName:
-                    widget
-                        .hamletName,
+                    location
+                        .hamlet,
 
                 villageId:
                     widget
@@ -740,6 +752,61 @@ class _CustomerSearchScreenState
 
                           fontSize:
                               13,
+                        ),
+                      ),
+
+                    if (location
+                        .line
+                        .isNotEmpty)
+                      Padding(
+                        padding:
+                            const EdgeInsets
+                                .only(
+                          top: 3,
+                        ),
+
+                        child:
+                            Row(
+                          children: [
+                            Icon(
+                              Icons
+                                  .location_on,
+
+                              size:
+                                  13,
+
+                              color:
+                                  mainColor,
+                            ),
+
+                            const SizedBox(
+                              width:
+                                  3,
+                            ),
+
+                            Expanded(
+                              child:
+                                  Text(
+                                location
+                                    .line,
+
+                                maxLines:
+                                    2,
+
+                                overflow:
+                                    TextOverflow
+                                        .ellipsis,
+
+                                style:
+                                    TextStyle(
+                                  color:
+                                      mainColor,
+                                  fontSize:
+                                      12.5,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],
