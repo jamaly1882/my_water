@@ -10,6 +10,11 @@
 
   <title>Azal Soft Platform</title>
 
+  <!-- فتح الاتصالات مبكرًا يوفّر مئات الأجزاء من الثانية على صفحة الدخول -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
   <style>
     * {
       box-sizing: border-box;
@@ -350,10 +355,12 @@
   </style>
 
   <!-- Tesseract.js -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
-    defer
-    onerror="window.__tesseractFailed = true;"></script>
+  <!--
+    Tesseract.js لم يعد يُحمّل مع الصفحة.
+
+    كان ~1 ميغابايت ينزل مع كل فتح لصفحة الدخول بلا أن يُستخدم؛
+    صار يُطلب عند أول عملية قراءة عداد فقط — انظر ensureTesseract().
+  -->
 </head>
 
 <body>
@@ -1837,18 +1844,10 @@ async function getOCRWorker() {
    * إقلاع التطبيق عند بطء الشبكة أو حجب الـ CDN.
    * لذا ننتظره هنا بدلًا من الفشل الفوري.
    */
-  if (!window.Tesseract) {
-
-    const waitedFrom = Date.now();
-
-    while (
-      !window.Tesseract &&
-      Date.now() - waitedFrom < 15000
-    ) {
-      await new Promise(function(resolve) {
-        setTimeout(resolve, 250);
-      });
-    }
+  try {
+    await ensureTesseract();
+  } catch (_) {
+    // الرسالة أدناه تشرح السبب.
   }
 
   if (!window.Tesseract) {
@@ -3895,6 +3894,54 @@ window.getLastMeterOCRReading =
 
 window.getLastMeterOCRRawResults =
   getLastMeterOCRRawResults;
+
+/* ============================================================
+   TESSERACT ON DEMAND
+   ============================================================ */
+
+let tesseractPromise = null;
+
+function ensureTesseract() {
+
+  if (window.Tesseract) {
+    return Promise.resolve(window.Tesseract);
+  }
+
+  if (tesseractPromise) {
+    return tesseractPromise;
+  }
+
+  tesseractPromise =
+    new Promise(function(resolve, reject) {
+
+      const script =
+        document.createElement("script");
+
+      script.src =
+        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+
+      script.async = true;
+
+      script.onload = function() {
+        resolve(window.Tesseract);
+      };
+
+      script.onerror = function() {
+        window.__tesseractFailed = true;
+        tesseractPromise = null;
+
+        reject(
+          new Error("Tesseract.js CDN failed")
+        );
+      };
+
+      document.head.appendChild(script);
+    });
+
+  return tesseractPromise;
+}
+
+window.ensureTesseract = ensureTesseract;
 
 window.getOCRWorker =
   getOCRWorker;
