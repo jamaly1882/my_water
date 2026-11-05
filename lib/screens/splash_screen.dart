@@ -34,14 +34,29 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> checkLogin() async {
     // ==========================================================
-    // ننتظر قليلاً حتى يستعيد Firebase جلسة المستخدم
+    // ننتظر أول إشارة من Firebase عن حالة الدخول
+    //
+    // authStateChanges() تُصدر الحالة الحالية فورًا (مستخدم أو null)،
+    // فلا حاجة إلى التأخير الثابت الذي كان هنا سابقًا — كان يسبب
+    // وميضًا ثم يتجاوز شاشة الدخول عند وجود جلسة محفوظة.
+    //
+    // على الويب صارت الجلسة غير محفوظة (انظر main.dart)،
+    // فتصل الحالة null وتُعرض شاشة الدخول مباشرة.
     // ==========================================================
 
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    );
+    User? user;
 
-    final User? user = auth.currentUser;
+    try {
+      user = await auth
+          .authStateChanges()
+          .first
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => auth.currentUser,
+          );
+    } catch (_) {
+      user = auth.currentUser;
+    }
 
     if (!mounted) return;
 
@@ -281,7 +296,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 10),
 
               Text(
-                "Verifying your sign-in…",
+                "Loading sign-in…",
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,

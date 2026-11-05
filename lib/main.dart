@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
@@ -25,6 +27,35 @@ Future<void> main() async {
   await startApp();
 }
 
+// ============================================================
+// الويب: لا جلسة محفوظة
+// ============================================================
+//
+// المطلوب أن تُفتح الصفحة دائمًا على شاشة تسجيل الدخول.
+// Persistence.NONE يجعل الجلسة في الذاكرة فقط، فتزول مع تحديث
+// الصفحة أو إغلاق التبويب — بخلاف السلوك الافتراضي الذي يحفظ
+// الجلسة في المتصفح فيتجاوز الدخول.
+//
+// هذا يخص الويب وحده: على الجوال تُترك الجلسة كما هي.
+// ============================================================
+
+Future<void> _clearWebSession() async {
+  if (!kIsWeb) return;
+
+  try {
+    await FirebaseAuth.instance.setPersistence(Persistence.NONE);
+  } catch (error) {
+    debugPrint('WEB PERSISTENCE: $error');
+
+    // بديل مضمون إن لم تُدعم الواجهة: خروج صريح.
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (signOutError) {
+      debugPrint('WEB SIGN OUT: $signOutError');
+    }
+  }
+}
+
 /// يهيّئ Firebase ثم يشغّل التطبيق، ويعرض شاشة خطأ عند الفشل.
 Future<void> startApp() async {
   try {
@@ -35,6 +66,8 @@ Future<void> startApp() async {
     ).timeout(
       const Duration(seconds: 25),
     );
+
+    await _clearWebSession();
 
     runApp(
       const MyWaterApp(),
@@ -159,6 +192,8 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
       ).timeout(
         const Duration(seconds: 25),
       );
+
+      await _clearWebSession();
 
       if (!mounted) return;
 
