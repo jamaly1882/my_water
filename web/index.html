@@ -348,6 +348,19 @@
       background: #455a64;
     }
 
+    #bootGuardCause {
+      display: none;
+      margin: 12px 0 0;
+      padding: 11px 13px;
+      border-radius: 10px;
+      background: #fff4e5;
+      border: 1px solid #ffb74d;
+      color: #6b3d00;
+      font-size: 13.5px;
+      line-height: 1.85;
+      text-align: right;
+    }
+
     #bootGuardHintList {
       margin: 14px 0 0;
       padding: 0 18px 0 0;
@@ -396,6 +409,8 @@
         <h2>
           التحميل لم يكتمل بعد
         </h2>
+
+        <div id="bootGuardCause"></div>
 
         <div id="bootGuardText2">
           غالبًا الاتصال بطيء: الملفات ما زالت تُنزَّل ولم تصل بعد
@@ -580,24 +595,67 @@
 
       if (diagnostics) diagnostics.textContent = lines.join("\n");
 
-      ["flutter_bootstrap.js", "main.dart.js"].forEach(function(name) {
+      probeAssets();
+    }
 
-        fetch(name, { method: "HEAD", cache: "no-store" })
+    function setCause(text) {
+      var box = document.getElementById("bootGuardCause");
+
+      if (!box) return;
+
+      box.textContent = text;
+      box.style.display = "block";
+    }
+
+    function probeAssets() {
+
+      var names = ["flutter_bootstrap.js", "main.dart.js"];
+
+      Promise.all(names.map(function(name) {
+
+        return fetch(name, { method: "HEAD", cache: "no-store" })
           .then(function(response) {
-            if (!diagnostics) return;
-
-            diagnostics.textContent +=
-              name + ": " + response.status +
-              (response.headers.get("content-type")
-                ? " (" + response.headers.get("content-type") + ")"
-                : "") + "\n";
+            return {
+              name: name,
+              status: response.status,
+              type: response.headers.get("content-type") || ""
+            };
           })
           .catch(function() {
-            if (!diagnostics) return;
-
-            diagnostics.textContent += name + ": طلب فشل\n";
+            return { name: name, status: 0, type: "" };
           });
 
+      })).then(function(results) {
+
+        var main = null;
+
+        results.forEach(function(item) {
+
+          if (item.name === "main.dart.js") main = item;
+
+          if (diagnostics) {
+            diagnostics.textContent +=
+              item.name + ": " +
+              (item.status === 0 ? "طلب فشل" : item.status) +
+              (item.type ? " (" + item.type + ")" : "") + "\n";
+          }
+        });
+
+        if (main && main.status === 404) {
+          setCause(
+            "الملفات المبنية غير موجودة على هذا الخادم (404): " +
+            "أنت تفتح مجلد web/ لا build/web، أو أن الترجمة لم تكتمل. " +
+            "للتطوير نفّذ flutter run -d chrome، وللنشر انشر build/web."
+          );
+          return;
+        }
+
+        if (main && main.status === 200) {
+          setCause(
+            "الملفات موجودة وتُحمَّل (200) لكن الواجهة لم ترسم. " +
+            "افتح Console في أدوات المطوّر — الاستثناء الحقيقي مكتوب هناك."
+          );
+        }
       });
     }
 
