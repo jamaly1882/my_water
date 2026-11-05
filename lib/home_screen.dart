@@ -11,7 +11,6 @@ import 'screens/set_up_mshrf/setup_mshrf_screen.dart';
 
 import 'features/ai_agent/ai_agent_page.dart';
 import 'features/challenge_brief/challenge_brief_page.dart';
-import 'features/supervisor_insights/supervisor_insights_page.dart';
 import 'widgets/my_app_bar.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -191,17 +190,6 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.psychology,
                 color: Colors.indigo,
                 page: const AiAgentPage(),
-              ),
-
-              // ==============================================
-              // التحليل الذكي للمشرفين
-              // ==============================================
-              _menuCard(
-                context,
-                title: 'Supervisor Insights',
-                icon: Icons.insights,
-                color: Colors.blueGrey,
-                page: const SupervisorInsightsPage(),
               ),
 
               // ==============================================
