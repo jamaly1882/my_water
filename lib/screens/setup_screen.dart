@@ -98,9 +98,13 @@ class SetupScreen extends StatelessWidget {
               WellCustomerScreen(
                 supervisorId: supervisorId,
                 provinceId: provinceId,
+                provinceName: provinceName,
                 districtId: districtId,
+                districtName: districtName,
                 hamletId: hamletId,
+                hamletName: hamletName,
                 villageId: villageId,
+                villageName: villageName,
                 wellId: wellId,
                 wellName: wellName,
               ),
