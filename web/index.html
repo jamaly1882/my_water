@@ -344,6 +344,23 @@
       background: #b3261e;
     }
 
+    #bootGuardWait {
+      background: #455a64;
+    }
+
+    #bootGuardCause {
+      display: none;
+      margin: 12px 0 0;
+      padding: 11px 13px;
+      border-radius: 10px;
+      background: #fff4e5;
+      border: 1px solid #ffb74d;
+      color: #6b3d00;
+      font-size: 13.5px;
+      line-height: 1.85;
+      text-align: right;
+    }
+
     #bootGuardHintList {
       margin: 14px 0 0;
       padding: 0 18px 0 0;
@@ -390,29 +407,33 @@
       <div id="bootGuardProblem">
 
         <h2>
-          لم تكتمل عملية التحميل
+          التحميل لم يكتمل بعد
         </h2>
 
+        <div id="bootGuardCause"></div>
+
         <div id="bootGuardText2">
-          الصفحة لم تُظهر الواجهة. السبب الأكثر شيوعًا: ملفات
-          التطبيق لم تُبنَ أو لم تُنشر، أو أن نسخة قديمة محفوظة
-          في المتصفح.
+          غالبًا الاتصال بطيء: الملفات ما زالت تُنزَّل ولم تصل بعد
+          إلى رسم الواجهة. انتظر قليلًا، أو جرّب أحد الخيارات أدناه.
         </div>
 
         <ol id="bootGuardHintList">
-          <li>اضغط «مسح التخزين وإعادة التحميل» (يحل أغلب الحالات).</li>
-          <li>جرّب نافذة تصفّح خاصة — إن نجحت فالسبب ذاكرة المتصفح.</li>
-          <li>إن فشلت أيضًا: الموقع لا يحتوي على نسخة مبنية من التطبيق.</li>
+          <li><b>متابعة الانتظار</b> — إن كانت الشبكة بطيئة فقط.</li>
+          <li><b>إعادة التحميل</b> — إن توقّف التنزيل.</li>
+          <li><b>مسح التخزين</b> — كحل أخير فقط، ويعني تنزيل التطبيق من جديد.</li>
         </ol>
 
         <div id="bootGuardDiagnostics"></div>
 
         <div id="bootGuardButtons">
-          <button id="bootGuardClear" type="button">
-            مسح التخزين وإعادة التحميل
+          <button id="bootGuardWait" type="button">
+            متابعة الانتظار
           </button>
           <button id="bootGuardRetry" type="button">
             إعادة التحميل
+          </button>
+          <button id="bootGuardClear" type="button">
+            مسح التخزين
           </button>
         </div>
 
@@ -433,10 +454,24 @@
 
   /* ============================================================
      BOOT GUARD
-     يضمن ألا يبقى المستخدم أمام صفحة بيضاء بلا تفسير.
+     ============================================================
+
+     الهدف: ألا يبقى المستخدم أمام صفحة بيضاء، وأن تكون الرسالة
+     صادقة — فالشبكة البطيئة ليست عطلًا.
+
+     القواعد:
+       - رسم الواجهة (canvas)  → تُزال الشاشة فورًا.
+       - بدء تشغيل المحرك      → نص يوضح أن التحميل تقدّم.
+       - خطأ JS فعلي           → اللوحة بعد 8 ثوانٍ.
+       - 90 ثانية بلا رسم      → اللوحة، مع زر «متابعة الانتظار».
+       - ظهور الواجهة لاحقًا   → تُزال اللوحة مهما كانت الحالة.
      ============================================================ */
 
   (function() {
+
+    var SOFT_LIMIT_MS = 90000;
+    var ERROR_GRACE_MS = 8000;
+    var GIVE_UP_MS = 300000;
 
     var problems = [];
 
@@ -444,9 +479,11 @@
     var loadingBox = document.getElementById("bootGuardLoading");
     var problemBox = document.getElementById("bootGuardProblem");
     var diagnostics = document.getElementById("bootGuardDiagnostics");
+    var statusText = document.getElementById("bootGuardText");
 
     var finished = false;
     var problemShown = false;
+    var postponed = false;
 
     var startedAt = Date.now();
 
@@ -454,7 +491,9 @@
 
     function record(text) {
       if (!text) return;
+
       var value = String(text);
+
       if (problems.indexOf(value) === -1) {
         problems.push(value);
       }
@@ -463,10 +502,16 @@
     window.addEventListener("error", function(event) {
 
       if (event && event.target && (event.target.src || event.target.href)) {
-        record(
-          "تعذّر تحميل الملف: " +
-          (event.target.src || event.target.href)
-        );
+
+        // لا نعتبر كل ملف فاشل عطلًا: الأيقونات والإضافات
+        // وحاجب الإعلانات تُنتج أخطاء لا تمنع التطبيق من العمل.
+        var url = String(event.target.src || event.target.href);
+
+        if (!/main\.dart\.js|flutter_bootstrap\.js|canvaskit/.test(url)) {
+          return;
+        }
+
+        record("تعذّر تحميل الملف: " + url);
         return;
       }
 
@@ -481,6 +526,8 @@
 
       var reason = event && event.reason;
 
+      if (reason && reason.name === "AbortError") return;
+
       record(
         "Promise: " +
         (reason && reason.message ? reason.message : String(reason))
@@ -488,13 +535,29 @@
 
     });
 
-    function appPainted() {
-      return !!document.querySelector("canvas");
+    function canvasReady() {
+      var list = document.getElementsByTagName("canvas");
+
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+
+        if (c.width > 0 && c.height > 0) return true;
+      }
+
+      return false;
+    }
+
+    function engineStarted() {
+      return !!document.querySelector(
+        "flutter-view, flt-glass-pane, flt-scene-host"
+      );
     }
 
     function hideGuard() {
       if (finished) return;
+
       finished = true;
+
       if (guard && guard.parentNode) {
         guard.parentNode.removeChild(guard);
       }
@@ -502,7 +565,7 @@
 
     function showProblem(reason) {
 
-      if (finished || problemShown) return;
+      if (finished || problemShown || postponed) return;
 
       problemShown = true;
 
@@ -512,14 +575,14 @@
       if (problemBox) problemBox.style.display = "block";
       if (guard) guard.style.display = "flex";
 
-      var base = document.baseURI || location.href;
       var lines = [];
 
       lines.push("URL: " + location.href);
-      lines.push("baseURI: " + base);
+      lines.push("baseURI: " + (document.baseURI || ""));
       lines.push("waited: " + Math.round((Date.now() - startedAt) / 1000) + "s");
       lines.push("online: " + (navigator.onLine ? "yes" : "no"));
-      lines.push("canvas: " + (appPainted() ? "yes" : "no"));
+      lines.push("engine: " + (engineStarted() ? "started" : "no"));
+      lines.push("canvas: " + (canvasReady() ? "yes" : "no"));
       lines.push("");
 
       if (problems.length) {
@@ -532,58 +595,131 @@
 
       if (diagnostics) diagnostics.textContent = lines.join("\n");
 
-      /* ---------- probed assets ---------- */
+      probeAssets();
+    }
 
-      var assets = ["flutter_bootstrap.js", "main.dart.js"];
+    function setCause(text) {
+      var box = document.getElementById("bootGuardCause");
 
-      assets.forEach(function(name) {
+      if (!box) return;
 
-        fetch(name, { method: "HEAD", cache: "no-store" })
+      box.textContent = text;
+      box.style.display = "block";
+    }
+
+    function probeAssets() {
+
+      var names = ["flutter_bootstrap.js", "main.dart.js"];
+
+      Promise.all(names.map(function(name) {
+
+        return fetch(name, { method: "HEAD", cache: "no-store" })
           .then(function(response) {
-            recordAsset(name, response.status, response.headers.get("content-type"));
+            return {
+              name: name,
+              status: response.status,
+              type: response.headers.get("content-type") || ""
+            };
           })
           .catch(function() {
-            recordAsset(name, "fetch failed", "");
+            return { name: name, status: 0, type: "" };
           });
 
-      });
+      })).then(function(results) {
 
-      function recordAsset(name, status, type) {
-        if (!diagnostics) return;
-        diagnostics.textContent +=
-          name + ": " + status + (type ? " (" + type + ")" : "") + "\n";
+        var main = null;
+
+        results.forEach(function(item) {
+
+          if (item.name === "main.dart.js") main = item;
+
+          if (diagnostics) {
+            diagnostics.textContent +=
+              item.name + ": " +
+              (item.status === 0 ? "طلب فشل" : item.status) +
+              (item.type ? " (" + item.type + ")" : "") + "\n";
+          }
+        });
+
+        if (main && main.status === 404) {
+          setCause(
+            "الملفات المبنية غير موجودة على هذا الخادم (404): " +
+            "أنت تفتح مجلد web/ لا build/web، أو أن الترجمة لم تكتمل. " +
+            "للتطوير نفّذ flutter run -d chrome، وللنشر انشر build/web."
+          );
+          return;
+        }
+
+        if (main && main.status === 200) {
+          setCause(
+            "الملفات موجودة وتُحمَّل (200) لكن الواجهة لم ترسم. " +
+            "افتح Console في أدوات المطوّر — الاستثناء الحقيقي مكتوب هناك."
+          );
+        }
+      });
+    }
+
+    function seconds() {
+      return Math.round((Date.now() - startedAt) / 1000);
+    }
+
+    function tick() {
+
+      if (finished) return;
+
+      if (canvasReady()) {
+        hideGuard();
+        return;
+      }
+
+      var s = seconds();
+
+      // نص حقيقي عن الحالة بدل «جارٍ التحميل» الثابت
+      if (statusText && !problemShown) {
+        statusText.textContent = engineStarted()
+          ? "جارٍ تشغيل التطبيق…  " + s + " ثانية"
+          : "جارٍ تحميل الملفات…  " + s + " ثانية";
+      }
+
+      // خطأ فعلي مُلتقط
+      if (problems.length && Date.now() - startedAt > ERROR_GRACE_MS) {
+        showProblem("ظهر خطأ في الصفحة أثناء التحميل");
+        return;
+      }
+
+      if (!problemShown && !postponed && Date.now() - startedAt > SOFT_LIMIT_MS) {
+        showProblem("مرّت 90 ثانية بلا رسم للواجهة");
+        return;
+      }
+
+      if (Date.now() - startedAt > GIVE_UP_MS) {
+        finished = true;
+        clearInterval(timer);
       }
     }
 
-    /* ---------- watch for the first painted frame ---------- */
+    var timer = setInterval(tick, 1000);
 
     window.addEventListener("flutter-first-frame", hideGuard);
 
-    var poll = setInterval(function() {
+    /* ---------- الأزرار ---------- */
 
-      if (appPainted()) {
-        clearInterval(poll);
-        hideGuard();
-      }
-
-    }, 400);
-
-    setTimeout(function() {
-
-      clearInterval(poll);
-
-      if (!appPainted()) {
-        showProblem(
-          "لم ترسم الواجهة خلال 20 ثانية"
-        );
-      }
-
-    }, 20000);
-
-    /* ---------- buttons ---------- */
-
+    var waitButton = document.getElementById("bootGuardWait");
     var retryButton = document.getElementById("bootGuardRetry");
     var clearButton = document.getElementById("bootGuardClear");
+
+    if (waitButton) {
+      waitButton.addEventListener("click", function() {
+
+        postponed = true;
+        problemShown = false;
+
+        if (problemBox) problemBox.style.display = "none";
+        if (loadingBox) loadingBox.style.display = "block";
+        if (guard) guard.style.display = "flex";
+        if (statusText) statusText.textContent = "جارٍ تحميل الملفات…";
+      });
+    }
 
     if (retryButton) {
       retryButton.addEventListener("click", function() {
