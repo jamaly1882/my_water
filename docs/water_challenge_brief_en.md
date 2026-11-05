@@ -1,6 +1,6 @@
 # Azal Soft Platform — Integrated Venture Brief and Project Proposal (English)
 
-**Venture:** Azal Soft Platform — Well Water Operations (technical name: my_water)
+**Venture:** Azal Soft Platform — Well Water Operations (repository/package identifier: `my_water`)
 **Programme:** AYC Youth Pitches · Onboarding Session · Week 1 (2–6 November 2026)
 **Submission:** Friday 6 November, 12:00 GST
 **Weight:** 30% of the Round 1 score

@@ -1,6 +1,8 @@
 # Azal Soft Platform
 
-**Technical repository name:** `my_water`
+**Official technical/platform name:** Azal Soft Platform
+
+**Internal Flutter package and repository identifier:** `my_water`
 
 A new Flutter project.
 
