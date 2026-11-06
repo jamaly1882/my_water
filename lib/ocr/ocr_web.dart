@@ -626,12 +626,14 @@ class _OcrWebPageState extends State<OcrWebPage> {
               ],
             ),
           ),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 320),
-            child: Image.memory(
-              bytes,
-              fit: BoxFit.contain,
-              gaplessPlayback: true,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: ZoomableMeterPhoto(
+              bytes: bytes,
+              height: 300,
+              label: _croppedImageData != null
+                  ? 'Selected digit area'
+                  : 'Original photo',
             ),
           ),
         ],

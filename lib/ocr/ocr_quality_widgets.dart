@@ -14,6 +14,156 @@ import 'image_quality_analyzer.dart';
 import 'meter_analysis.dart';
 
 // ============================================================
+// صورة العداد القابلة للتكبير لتسهيل القراءة اليدوية
+// عرض قابل للتكبير والتحريك + زر فتح ملء الشاشة.
+// لا يمسّ منطق القراءة إطلاقًا؛ مجرد أداة عرض لمساعدة المستخدم
+// على رؤية الخانات الباهتة وكتابتها يدويًا بدقة.
+// ============================================================
+
+class ZoomableMeterPhoto extends StatelessWidget {
+  final Uint8List bytes;
+  final double height;
+  final String label;
+
+  const ZoomableMeterPhoto({
+    super.key,
+    required this.bytes,
+    this.height = 200,
+    this.label = 'Meter photo',
+  });
+
+  void _openFullScreen(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (dialogContext) {
+        final Size screen = MediaQuery.of(dialogContext).size;
+        return Dialog(
+          backgroundColor: Colors.black,
+          insetPadding: const EdgeInsets.all(8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: SizedBox(
+            width: screen.width,
+            height: screen.height * 0.9,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: InteractiveViewer(
+                    minScale: 0.8,
+                    maxScale: 10.0,
+                    child: Image.memory(
+                      bytes,
+                      fit: BoxFit.contain,
+                      gaplessPlayback: true,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: IconButton.filled(
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white24,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'Pinch or scroll to zoom • drag to move',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          label: label,
+          image: true,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: height,
+              color: Colors.black87,
+              child: InteractiveViewer(
+                minScale: 1.0,
+                maxScale: 8.0,
+                child: Image.memory(
+                  bytes,
+                  fit: BoxFit.contain,
+                  gaplessPlayback: true,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Icon(Icons.zoom_in, size: 16, color: Colors.blueGrey.shade600),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                'Pinch or scroll to zoom into the digits',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.blueGrey.shade600,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => _openFullScreen(context),
+              icon: const Icon(Icons.fullscreen, size: 18),
+              label: const Text('Enlarge', style: TextStyle(fontSize: 12)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: const Size(0, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
 // بطاقة عرض جودة الصورة
 // ============================================================
 
@@ -308,11 +458,13 @@ class MeterReadingEditor extends StatefulWidget {
 
 class _MeterReadingEditorState extends State<MeterReadingEditor> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.reading);
+    _focusNode = FocusNode();
   }
 
   @override
@@ -329,6 +481,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -340,7 +493,8 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
 
   void _updateDigit(int index, int delta) {
     final String clean = MeterAnalyzer.normalize(_controller.text);
-    if (clean.length != widget.digitCount) return;
+    // نعدّل فقط الخانات المُدخلة فعلًا؛ لا نضيف أرقامًا غير موجودة.
+    if (index < 0 || index >= clean.length) return;
     final List<int> digits = clean.split('').map(int.parse).toList();
     digits[index] = (digits[index] + delta + 10) % 10;
     _setReading(digits.join());
@@ -352,12 +506,13 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
     final bool hasFullLength = clean.length == widget.digitCount;
     final int? currentInt = hasFullLength ? int.tryParse(clean) : null;
 
-    final bool hasPrevious = previousReading != null && previousReading! >= 0;
+    final bool hasPrevious =
+        widget.previousReading != null && widget.previousReading! >= 0;
     final bool isLessThanPrevious = hasPrevious &&
         currentInt != null &&
-        currentInt < previousReading!;
+        currentInt < widget.previousReading!;
     final int? consumption = hasPrevious && currentInt != null && !isLessThanPrevious
-        ? currentInt - previousReading!
+        ? currentInt - widget.previousReading!
         : null;
 
     return Directionality(
@@ -388,6 +543,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
           const SizedBox(height: 10),
           TextField(
             controller: _controller,
+            focusNode: _focusNode,
             keyboardType: TextInputType.number,
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.center,
@@ -410,32 +566,37 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
             onChanged: widget.onChanged,
           ),
           const SizedBox(height: 10),
-          if (hasFullLength)
-            Directionality(
-              textDirection: TextDirection.ltr,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List<Widget>.generate(widget.digitCount, (index) {
-                    final double conf = index < widget.digitConfidences.length
-                        ? widget.digitConfidences[index]
-                        : 90.0;
-                    final bool isUncertain = conf < 72.0;
+          // صف الخانات ظاهر دائمًا: الخانات المُدخلة كأزرار تمرير،
+          // والفارغة كخانات إرشادية فارغة (لا تُخترع أرقامًا).
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List<Widget>.generate(widget.digitCount, (index) {
+                  final bool filled = index < clean.length;
+                  final double conf = index < widget.digitConfidences.length
+                      ? widget.digitConfidences[index]
+                      : 90.0;
+                  final bool isUncertain = filled && conf < 72.0;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: _buildDigitRoller(
-                        index: index,
-                        digit: int.parse(clean[index]),
-                        isUncertain: isUncertain,
-                      ),
-                    );
-                  }),
-                ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: filled
+                        ? _buildDigitRoller(
+                            index: index,
+                            digit: int.parse(clean[index]),
+                            isUncertain: isUncertain,
+                          )
+                        : _buildDigitPlaceholder(),
+                  );
+                }),
               ),
-            )
-          else
+            ),
+          ),
+          if (!hasFullLength) ...[
+            const SizedBox(height: 8),
             Text(
               'Enter all ${widget.digitCount} digits shown in the meter window. '
               'Do not add zeros that are not on the meter.',
@@ -446,6 +607,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
                 fontWeight: FontWeight.w600,
               ),
             ),
+          ],
           if (hasFullLength && widget.digitConfidences.any((c) => c < 72.0)) ...[
             const SizedBox(height: 8),
             Row(
@@ -540,8 +702,8 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
                   Expanded(
                     child: Text(
                       isLessThanPrevious
-                          ? 'Warning: the current reading ($clean) is lower than the previous one ($previousReading)!'
-                          : 'Previous reading: $previousReading  |  Consumption: $consumption units',
+                          ? 'Warning: the current reading ($clean) is lower than the previous one (${widget.previousReading})!'
+                          : 'Previous reading: ${widget.previousReading}  |  Consumption: $consumption units',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -571,7 +733,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
         isUncertain ? Colors.orange.shade50 : Colors.blue.shade50;
 
     return Container(
-      width: 44,
+      width: 54,
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
@@ -594,24 +756,25 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             onTap: () => _updateDigit(index, 1),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Icon(
                 Icons.keyboard_arrow_up,
-                size: 22,
+                size: 26,
                 color: borderColor,
               ),
             ),
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             color: Colors.white,
             child: Text(
               digit.toString(),
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 30,
                 fontWeight: FontWeight.bold,
+                fontFeatures: const [FontFeature.tabularFigures()],
                 color: isUncertain
                     ? Colors.orange.shade900
                     : Colors.blue.shade900,
@@ -623,15 +786,44 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
                 const BorderRadius.vertical(bottom: Radius.circular(8)),
             onTap: () => _updateDigit(index, -1),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Icon(
                 Icons.keyboard_arrow_down,
-                size: 22,
+                size: 26,
                 color: borderColor,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // خانة فارغة إرشادية: تفتح لوحة المفاتيح عند النقر، ولا تُدرج أي رقم.
+  Widget _buildDigitPlaceholder() {
+    return GestureDetector(
+      onTap: () => _focusNode.requestFocus(),
+      child: Container(
+        width: 54,
+        height: 110,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Colors.grey.shade400,
+            width: 1.4,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            '?',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade400,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -788,22 +980,11 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
 
                 const SizedBox(height: 12),
 
-                // صورة نافذة الأرقام المقصوصة
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(
-                      maxHeight: 150,
-                      minHeight: 80,
-                    ),
-                    color: Colors.black87,
-                    child: Image.memory(
-                      displayBytes,
-                      fit: BoxFit.contain,
-                      gaplessPlayback: true,
-                    ),
-                  ),
+                // صورة نافذة الأرقام المقصوصة (قابلة للتكبير لتسهيل القراءة اليدوية)
+                ZoomableMeterPhoto(
+                  bytes: displayBytes,
+                  height: 200,
+                  label: 'Meter digit window',
                 ),
 
                 if (widget.enhancedImageBytes != null)
