@@ -139,7 +139,7 @@ class ImageQualityAnalyzer {
         isAcceptable: false,
         issues: const ['The cropped image is too small'],
         tips: const [
-          'Move closer and select the whole seven-digit window',
+          'Move closer and select the whole 6 or 7 digit window',
         ],
       );
     }
@@ -304,7 +304,7 @@ class ImageQualityAnalyzer {
     if (aspect < 1.35) {
       overallScore -= 8;
       issues.add('The crop area is too square');
-      tips.add('Crop just the horizontal strip of seven digits');
+      tips.add('Crop just the horizontal strip of 6 or 7 integer digits');
     }
 
     if (sharpnessScore < 45) {

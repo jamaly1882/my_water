@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@google-cloud/vision": "^5.3.7"
+  },
+  "scripts": {
+    "test:ocr": "node --test test/meter_ocr_web_test.js"
   }
 }

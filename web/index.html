@@ -1104,7 +1104,7 @@ async function cropMeterImage(imageData) {
   /*
    * Default crop.
    * Wide rectangle because the meter display
-   * usually contains seven digits horizontally.
+   * usually contains 6 or 7 digits horizontally.
    */
   const defaultWidth =
     displayWidth * 0.82;
@@ -1669,23 +1669,33 @@ async function createFinalCrop() {
    * IMPORTANT:
    * OCR output must be sufficiently large.
    */
-  const targetWidth =
-    clamp(
-      Math.round(
-        sourceWidth * 3.0
-      ),
-      900,
-      3200
+  /*
+   * Preserve the crop aspect ratio. Stretching digits independently
+   * was a major source of misreads (especially 0/6/8 and 1/7).
+   */
+  let scale =
+    Math.max(
+      1,
+      Math.min(3, 1400 / sourceWidth)
     );
 
-  const targetHeight =
-    clamp(
-      Math.round(
-        sourceHeight * 3.0
-      ),
-      180,
-      1200
-    );
+  let targetWidth =
+    Math.max(1, Math.round(sourceWidth * scale));
+
+  let targetHeight =
+    Math.max(1, Math.round(sourceHeight * scale));
+
+  if (targetWidth > 3200) {
+    const ratio = 3200 / targetWidth;
+    targetWidth = 3200;
+    targetHeight = Math.max(1, Math.round(targetHeight * ratio));
+  }
+
+  if (targetHeight > 1400) {
+    const ratio = 1400 / targetHeight;
+    targetHeight = 1400;
+    targetWidth = Math.max(1, Math.round(targetWidth * ratio));
+  }
 
   const canvas =
     document.createElement("canvas");
@@ -2206,22 +2216,32 @@ function preprocessCanvas(
     const w = canvas.width;
     const h = canvas.height;
     const lum = new Int32Array(w * h);
-    const integral = new Float64Array(w * h);
 
     for (let y = 0; y < h; y++) {
-      let rowSum = 0;
       for (let x = 0; x < w; x++) {
         const idx = (y * w + x) * 4;
-        const v = data[idx];
-        lum[y * w + x] = v;
-        rowSum += v;
-        integral[y * w + x] =
-          (y > 0 ? integral[(y - 1) * w + x] : 0) + rowSum;
+        lum[y * w + x] = data[idx];
       }
     }
 
     const rx = Math.max(8, Math.round(w / 14));
     const ry = Math.max(8, Math.round(h / 4));
+
+    /*
+     * Proper 2-D prefix sum. The previous version stored column sums
+     * and then used a rectangle formula, producing wrong thresholds.
+     */
+    const stride = w + 1;
+    const prefix = new Float64Array(stride * (h + 1));
+
+    for (let y = 1; y <= h; y++) {
+      let rowSum = 0;
+      for (let x = 1; x <= w; x++) {
+        rowSum += lum[(y - 1) * w + (x - 1)];
+        prefix[y * stride + x] =
+          prefix[(y - 1) * stride + x] + rowSum;
+      }
+    }
 
     for (let y = 0; y < h; y++) {
       const y1 = Math.max(0, y - ry);
@@ -2230,10 +2250,11 @@ function preprocessCanvas(
         const x1 = Math.max(0, x - rx);
         const x2 = Math.min(w - 1, x + rx);
         const count = (x2 - x1 + 1) * (y2 - y1 + 1);
-        let sum = integral[y2 * w + x2];
-        if (y1 > 0) sum -= integral[(y1 - 1) * w + x2];
-        if (x1 > 0) sum -= integral[y2 * w + (x1 - 1)];
-        if (y1 > 0 && x1 > 0) sum += integral[(y1 - 1) * w + (x1 - 1)];
+        const sum =
+          prefix[(y2 + 1) * stride + (x2 + 1)] -
+          prefix[y1 * stride + (x2 + 1)] -
+          prefix[(y2 + 1) * stride + x1] +
+          prefix[y1 * stride + x1];
 
         const bin = lum[y * w + x] < (sum / count) * 0.89 ? 0 : 255;
         const idx = (y * w + x) * 4;
@@ -2793,42 +2814,43 @@ function addTextSequenceCandidates(
 
 
 /* ============================================================
-   SOLVE SEVEN DIGITS
+   SOLVE METER DIGITS (6 OR 7)
    ============================================================ */
 
-function solveSevenDigits(
+function solveMeterDigits(
   candidates,
-  sourceWidth
+  sourceWidth,
+  digitCount
 ) {
 
-  const expected =
-    [];
-
-  for (
-    let i = 0;
-    i < 7;
-    i++
+  if (
+    digitCount !== 6 &&
+    digitCount !== 7
   ) {
-
-    expected.push(
-      (i + 0.5) / 7
-    );
+    return {
+      reading: "",
+      partial: "",
+      success: false,
+      score: 0,
+      confidence: 0,
+      digitCount: digitCount,
+      positions: []
+    };
   }
 
-  const positions =
-    [];
+  const positions = [];
+  const tolerance = 0.45 / digitCount;
 
   for (
     let i = 0;
-    i < 7;
+    i < digitCount;
     i++
   ) {
 
     const target =
-      expected[i];
+      (i + 0.5) / digitCount;
 
-    const byDigit =
-      {};
+    const byDigit = {};
 
     for (
       const candidate of candidates
@@ -2842,9 +2864,7 @@ function solveSevenDigits(
       }
 
       const digit =
-        String(
-          candidate.digit
-        );
+        String(candidate.digit);
 
       if (
         !/^[0-9]$/.test(digit)
@@ -2853,126 +2873,84 @@ function solveSevenDigits(
       }
 
       const x =
-        Number(
-          candidate.normalizedX
-        );
+        Number(candidate.normalizedX);
 
       if (!Number.isFinite(x)) {
         continue;
       }
 
       const distance =
-        Math.abs(
-          x - target
-        );
+        Math.abs(x - target);
 
-      /*
-       * Do not allow a digit to be assigned
-       * to a completely different position.
-       */
-      if (
-        distance > 0.23
-      ) {
+      if (distance > tolerance) {
         continue;
       }
 
       const confidence =
         clamp(
-          Number(
-            candidate.confidence || 0
-          ),
+          Number(candidate.confidence || 0),
           0,
           100
         );
 
+      if (confidence < 20) {
+        continue;
+      }
+
       const proximity =
         Math.max(
           0,
-          1 -
-          distance / 0.23
+          1 - distance / tolerance
         );
 
       const score =
-        confidence * 0.70 +
-        proximity * 30;
+        confidence * 0.75 +
+        proximity * 25;
 
-      if (
-        !byDigit[digit]
-      ) {
+      if (!byDigit[digit]) {
         byDigit[digit] = {
           score: 0,
           count: 0,
-          best: candidate
+          bestConfidence: 0
         };
       }
 
-      byDigit[digit].score +=
-        score;
-
-      byDigit[digit].count +=
-        1;
-
-      if (
-        score >
-        (
-          byDigit[digit]
-            .best
-            ._score || 0
-        )
-      ) {
-
-        candidate._score =
-          score;
-
-        byDigit[digit].best =
-          candidate;
-      }
+      byDigit[digit].score += score;
+      byDigit[digit].count += 1;
+      byDigit[digit].bestConfidence =
+        Math.max(
+          byDigit[digit].bestConfidence,
+          confidence
+        );
     }
 
     let bestDigit = null;
     let bestValue = -Infinity;
+    let bestConfidence = 0;
 
-    Object.keys(
-      byDigit
-    ).forEach(function(digit) {
+    Object.keys(byDigit).forEach(function(digit) {
 
-      const item =
-        byDigit[digit];
+      const item = byDigit[digit];
 
-      /*
-       * Reward repeated observations.
-       */
       const totalScore =
         item.score +
-        Math.min(
-          item.count,
-          4
-        ) * 8;
+        Math.min(item.count, 3) * 5;
 
-      if (
-        totalScore >
-        bestValue
-      ) {
-
-        bestValue =
-          totalScore;
-
-        bestDigit =
-          digit;
+      if (totalScore > bestValue) {
+        bestValue = totalScore;
+        bestDigit = digit;
+        bestConfidence = item.bestConfidence;
       }
     });
 
     positions.push({
-
-      digit:
-        bestDigit,
-
-      score:
-        bestValue
+      digit: bestDigit,
+      score: bestValue,
+      confidence: bestConfidence
     });
   }
 
-  const reading =
+  const partial =
     positions
       .map(function(item) {
         return item.digit || "";
@@ -2980,43 +2958,117 @@ function solveSevenDigits(
       .join("");
 
   const complete =
-    positions.every(
-      function(item) {
-        return !!item.digit;
-      }
-    );
+    positions.every(function(item) {
+      return !!item.digit;
+    });
 
-  const partial =
-    reading;
+  const confidence =
+    complete
+      ? positions.reduce(function(sum, item) {
+          return sum + item.confidence;
+        }, 0) / digitCount
+      : 0;
+
+  const score =
+    positions.reduce(function(sum, item) {
+      return sum + Math.max(0, item.score || 0);
+    }, 0) / digitCount +
+    (complete ? 20 : 0);
 
   return {
-
-    reading:
-      complete
-        ? reading
-        : "",
-
-    partial:
-      partial,
-
-    success:
-      complete,
-
-    score:
-      positions.reduce(
-        function(sum, item) {
-          return sum +
-            Math.max(
-              0,
-              item.score || 0
-            );
-        },
-        0
-      ),
-
-    positions:
-      positions
+    reading: complete ? partial : "",
+    partial: partial,
+    success: complete,
+    score: score,
+    confidence: confidence,
+    digitCount: digitCount,
+    positions: positions
   };
+}
+
+
+function chooseBestSolution(solutions) {
+
+  const valid =
+    solutions.filter(function(item) {
+      return item && item.success;
+    });
+
+  if (!valid.length) {
+    return {
+      reading: "",
+      success: false,
+      score: 0,
+      confidence: 0
+    };
+  }
+
+  valid.sort(function(a, b) {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return b.confidence - a.confidence;
+  });
+
+  return valid[0];
+}
+
+
+function selectBestDirectCandidate(candidates) {
+
+  const byValue = {};
+
+  for (const item of candidates) {
+
+    if (!item || !item.digitSequence) {
+      continue;
+    }
+
+    const value =
+      digitsOnly(item.digitSequence);
+
+    if (
+      value.length !== 6 &&
+      value.length !== 7
+    ) {
+      continue;
+    }
+
+    const confidence =
+      clamp(Number(item.confidence || 0), 0, 100);
+
+    if (!byValue[value]) {
+      byValue[value] = {
+        value: value,
+        confidence: 0,
+        score: 0,
+        count: 0
+      };
+    }
+
+    byValue[value].confidence =
+      Math.max(byValue[value].confidence, confidence);
+    byValue[value].score += confidence + 10;
+    byValue[value].count += 1;
+  }
+
+  const list =
+    Object.keys(byValue).map(function(key) {
+      return byValue[key];
+    });
+
+  if (!list.length) {
+    return null;
+  }
+
+  list.sort(function(a, b) {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return b.confidence - a.confidence;
+  });
+
+  return list[0];
 }
 
 
@@ -3038,15 +3090,12 @@ async function runWholeDisplayOCR(
     "normal",
     "contrast",
     "adaptive",
-    "inverted_contrast",
-    "threshold",
-    "threshold_dark"
+    "inverted_contrast"
   ];
 
   const psms = [
     7,
-    8,
-    13
+    8
   ];
 
   for (
@@ -3109,9 +3158,10 @@ async function runWholeDisplayOCR(
       });
 
       /*
-       * Direct seven-digit result.
+       * Direct 6 or 7 digit result.
        */
       if (
+        sequence.length === 6 ||
         sequence.length === 7
       ) {
 
@@ -3193,14 +3243,10 @@ async function runOverlappingWindowOCR(
 ) {
 
   const sourceWidth =
-    Number(
-      sourceCanvas.width || 0
-    );
+    Number(sourceCanvas.width || 0);
 
   const sourceHeight =
-    Number(
-      sourceCanvas.height || 0
-    );
+    Number(sourceCanvas.height || 0);
 
   if (
     sourceWidth < 300 ||
@@ -3209,342 +3255,199 @@ async function runOverlappingWindowOCR(
     return;
   }
 
-  const digitCount = 7;
-
-  const cellWidth =
-    sourceWidth /
-    digitCount;
-
   /*
-   * Window width measured in digits.
+   * Fractional windows work for both 6 and 7 digit meters.
+   * Keep the fallback small; the whole-display pass already voted.
    */
-  const windowCells = [
-    2.5,
-    3.0,
-    3.5
+  const windows = [
+    { left: 0.00, width: 0.45 },
+    { left: 0.20, width: 0.45 },
+    { left: 0.40, width: 0.45 },
+    { left: 0.55, width: 0.45 },
+    { left: 0.00, width: 0.65 },
+    { left: 0.35, width: 0.65 }
   ];
 
-  const starts = [
-    0,
-    1.0,
-    2.0,
-    3.0,
-    4.0
+  const modes = [
+    "normal",
+    "contrast"
   ];
 
-  for (
-    const cells of windowCells
-  ) {
+  const psms = [
+    7,
+    8
+  ];
 
-    let desiredWidth =
-      Math.round(
-        cellWidth *
-        cells
-      );
+  for (const window of windows) {
 
-    desiredWidth =
+    let cropWidth =
       Math.max(
-        desiredWidth,
-        300
+        80,
+        Math.round(sourceWidth * window.width)
       );
 
-    desiredWidth =
-      Math.min(
-        desiredWidth,
-        sourceWidth
-      );
+    cropWidth =
+      Math.min(cropWidth, sourceWidth);
 
-    for (
-      const startCell of starts
-    ) {
+    let left =
+      Math.round(sourceWidth * window.left);
 
-      let left =
-        Math.round(
-          startCell *
-          cellWidth
-        );
-
-      left =
-        clamp(
-          left,
-          0,
-          Math.max(
-            0,
-            sourceWidth -
-              desiredWidth
-          )
-        );
-
-      let right =
-        Math.min(
-          sourceWidth,
-          left +
-            desiredWidth
-        );
-
-      /*
-       * CRITICAL:
-       * Never allow 1px/2px/3px windows.
-       */
-      let cropWidth =
-        Math.round(
-          right - left
-        );
-
-      if (
-        cropWidth < 80
-      ) {
-        continue;
-      }
-
-      const cropCanvas =
-        document.createElement(
-          "canvas"
-        );
-
-      cropCanvas.width =
-        cropWidth;
-
-      cropCanvas.height =
-        sourceHeight;
-
-      const ctx =
-        cropCanvas.getContext(
-          "2d",
-          {
-            willReadFrequently: true
-          }
-        );
-
-      if (!ctx) {
-        continue;
-      }
-
-      ctx.imageSmoothingEnabled =
-        true;
-
-      ctx.imageSmoothingQuality =
-        "high";
-
-      ctx.drawImage(
-        sourceCanvas,
-
+    left =
+      clamp(
         left,
         0,
-        cropWidth,
-        sourceHeight,
-
-        0,
-        0,
-        cropWidth,
-        sourceHeight
+        Math.max(0, sourceWidth - cropWidth)
       );
 
-      /*
-       * Upscale the window.
-       */
-      const upscale =
-        Math.max(
-          1,
-          Math.min(
-            3,
-            900 /
-              cropWidth
-          )
-        );
+    const cropCanvas =
+      document.createElement("canvas");
 
-      let workingCanvas =
-        cropCanvas;
+    cropCanvas.width = cropWidth;
+    cropCanvas.height = sourceHeight;
 
-      if (
-        upscale > 1.05
-      ) {
+    const ctx =
+      cropCanvas.getContext("2d", {
+        willReadFrequently: true
+      });
 
-        const enlarged =
-          document.createElement(
-            "canvas"
-          );
+    if (!ctx) {
+      continue;
+    }
 
-        enlarged.width =
-          Math.max(
-            80,
-            Math.round(
-              cropWidth *
-              upscale
-            )
-          );
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
 
-        enlarged.height =
-          Math.max(
-            40,
-            Math.round(
-              sourceHeight *
-              upscale
-            )
-          );
+    ctx.drawImage(
+      sourceCanvas,
+      left,
+      0,
+      cropWidth,
+      sourceHeight,
+      0,
+      0,
+      cropWidth,
+      sourceHeight
+    );
 
-        const ectx =
-          enlarged.getContext(
-            "2d",
-            {
-              willReadFrequently:
-                true
-            }
-          );
+    const upscale =
+      Math.max(
+        1,
+        Math.min(3, 900 / cropWidth)
+      );
 
-        ectx.imageSmoothingEnabled =
-          true;
+    let workingCanvas = cropCanvas;
 
-        ectx.imageSmoothingQuality =
-          "high";
+    if (upscale > 1.05) {
 
-        ectx.drawImage(
-          cropCanvas,
-          0,
-          0,
-          enlarged.width,
-          enlarged.height
-        );
+      const enlarged =
+        document.createElement("canvas");
 
-        workingCanvas =
-          enlarged;
+      enlarged.width =
+        Math.max(80, Math.round(cropWidth * upscale));
+
+      enlarged.height =
+        Math.max(40, Math.round(sourceHeight * upscale));
+
+      const ectx =
+        enlarged.getContext("2d", {
+          willReadFrequently: true
+        });
+
+      ectx.imageSmoothingEnabled = true;
+      ectx.imageSmoothingQuality = "high";
+
+      ectx.drawImage(
+        cropCanvas,
+        0,
+        0,
+        enlarged.width,
+        enlarged.height
+      );
+
+      workingCanvas = enlarged;
+    }
+
+    for (const mode of modes) {
+
+      const processed =
+        preprocessCanvas(workingCanvas, mode);
+
+      if (!processed) {
+        continue;
       }
 
-      const modes = [
-        "normal",
-        "contrast",
-        "threshold"
-      ];
+      for (const psm of psms) {
 
-      const psms = [
-        7,
-        8,
-        10,
-        13
-      ];
+        const result =
+          await recognizeCanvas(processed, psm);
 
-      for (
-        const mode of modes
-      ) {
-
-        const processed =
-          preprocessCanvas(
-            workingCanvas,
-            mode
-          );
-
-        if (!processed) {
+        if (!result) {
           continue;
         }
 
-        for (
-          const psm of psms
+        const text =
+          normalizeDigits(result.data?.text || "");
+
+        const sequence =
+          digitsOnly(text);
+
+        const confidence =
+          Number(result.data?.confidence || 0);
+
+        rawResults.push({
+          type: "window",
+          mode: mode,
+          psm: psm,
+          left: left,
+          width: cropWidth,
+          text: text,
+          confidence: confidence
+        });
+
+        if (
+          sequence.length === 6 ||
+          sequence.length === 7
         ) {
-
-          const result =
-            await recognizeCanvas(
-              processed,
-              psm
-            );
-
-          if (!result) {
-            continue;
-          }
-
-          const text =
-            normalizeDigits(
-              result.data?.text ||
-              ""
-            );
-
-          const sequence =
-            digitsOnly(text);
-
-          const confidence =
-            Number(
-              result.data?.confidence ||
-              0
-            );
-
-          rawResults.push({
-
-            type:
-              "window",
-
-            mode:
-              mode,
-
-            psm:
-              psm,
-
-            left:
-              left,
-
-            width:
-              cropWidth,
-
-            text:
-              text,
-
-            confidence:
-              confidence
+          candidates.push({
+            digitSequence: sequence,
+            confidence: confidence,
+            source: "window-direct"
           });
+        }
 
-          collectPositionCandidates(
-            result,
+        collectPositionCandidates(
+          result,
+          processed.width,
+          left,
+          cropWidth,
+          processed.width / cropWidth,
+          candidates,
+          "window-symbol"
+        );
 
-            processed.width,
+        collectWordCandidates(
+          result,
+          processed.width,
+          left,
+          cropWidth,
+          processed.width / cropWidth,
+          candidates,
+          "window-word"
+        );
 
+        if (
+          sequence.length >= 2 &&
+          sequence.length <= 7
+        ) {
+          addTextSequenceCandidates(
+            sequence,
             left,
-
             cropWidth,
-
-            processed.width /
-              cropWidth,
-
+            sourceWidth,
+            confidence,
             candidates,
-
-            "window-symbol"
+            "window-text"
           );
-
-          collectWordCandidates(
-            result,
-
-            processed.width,
-
-            left,
-
-            cropWidth,
-
-            processed.width /
-              cropWidth,
-
-            candidates,
-
-            "window-word"
-          );
-
-          if (
-            sequence.length >= 2 &&
-            sequence.length <= 7
-          ) {
-
-            addTextSequenceCandidates(
-              sequence,
-
-              left,
-
-              cropWidth,
-
-              sourceWidth,
-
-              confidence,
-
-              candidates,
-
-              "window-text"
-            );
-          }
         }
       }
     }
@@ -3640,22 +3543,10 @@ async function recognizeMeterDigits(
       );
 
     sourceCanvas.width =
-      Math.max(
-        300,
-        Math.round(
-          naturalWidth *
-          scale
-        )
-      );
+      Math.max(1, Math.round(naturalWidth * scale));
 
     sourceCanvas.height =
-      Math.max(
-        100,
-        Math.round(
-          naturalHeight *
-          scale
-        )
-      );
+      Math.max(1, Math.round(naturalHeight * scale));
 
     const ctx =
       sourceCanvas.getContext(
@@ -3710,93 +3601,51 @@ async function recognizeMeterDigits(
         .join(" | ");
 
     /*
-     * First try direct 7-digit OCR.
+     * First try direct 6 or 7 digit OCR.
      */
     const direct =
-      candidates.filter(
-        function(item) {
-          return (
-            item &&
-            item.digitSequence &&
-            digitsOnly(
-              item.digitSequence
-            ).length === 7
-          );
-        }
-      );
+      selectBestDirectCandidate(candidates);
 
-    if (direct.length) {
+    if (
+      direct &&
+      (direct.confidence >= 55 || direct.count >= 2)
+    ) {
 
-      direct.sort(
-        function(a, b) {
-          return (
-            Number(
-              b.confidence || 0
-            ) -
-            Number(
-              a.confidence || 0
-            )
-          );
-        }
-      );
+      lastMeterOCRReading = direct.value;
 
-      const best =
-        digitsOnly(
-          direct[0]
-            .digitSequence
-        );
-
-      if (
-        best.length === 7
-      ) {
-
-        lastMeterOCRReading =
-          best;
-
-        return {
-          reading:
-            best,
-
-          text:
-            lastMeterOCRText,
-
-          success:
-            true,
-
-          rawResults:
-            rawResults
-        };
-      }
+      return {
+        reading: direct.value,
+        text: lastMeterOCRText,
+        success: true,
+        digitCount: direct.value.length,
+        confidence: direct.confidence,
+        rawResults: rawResults
+      };
     }
 
     /*
-     * Try position solving before windows.
+     * Try position solving for both supported digit counts.
      */
     let solution =
-      solveSevenDigits(
-        candidates,
-        sourceCanvas.width
-      );
+      chooseBestSolution([
+        solveMeterDigits(candidates, sourceCanvas.width, 7),
+        solveMeterDigits(candidates, sourceCanvas.width, 6)
+      ]);
 
     if (
-      solution.success
+      solution.success &&
+      solution.confidence >= 50
     ) {
 
-      lastMeterOCRReading =
-        solution.reading;
+      lastMeterOCRReading = solution.reading;
 
       return {
-        reading:
-          solution.reading,
-
-        text:
-          lastMeterOCRText,
-
-        success:
-          true,
-
-        rawResults:
-          rawResults
+        reading: solution.reading,
+        text: lastMeterOCRText,
+        success: true,
+        digitCount: solution.reading.length,
+        confidence: solution.confidence,
+        rawResults: rawResults
       };
     }
 
@@ -3817,10 +3666,10 @@ async function recognizeMeterDigits(
      * Try again.
      */
     solution =
-      solveSevenDigits(
-        candidates,
-        sourceCanvas.width
-      );
+      chooseBestSolution([
+        solveMeterDigits(candidates, sourceCanvas.width, 7),
+        solveMeterDigits(candidates, sourceCanvas.width, 6)
+      ]);
 
     if (
       solution.success
@@ -3857,7 +3706,7 @@ async function recognizeMeterDigits(
 
     /*
      * Last fallback:
-     * search for any seven-digit sequence
+     * search for any 6 or 7 digit sequence
      * returned by Tesseract.
      */
     const sequences =
@@ -3883,6 +3732,7 @@ async function recognizeMeterDigits(
         })
         .filter(function(item) {
           return (
+            item.value.length === 6 ||
             item.value.length === 7
           );
         })

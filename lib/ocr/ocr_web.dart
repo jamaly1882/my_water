@@ -1,6 +1,6 @@
 // ============================================================
 // ocr_web.dart
-// صفحة قراءة عداد المياه للويب مع فحص جودة الصورة ومراجعة الخانات السبع
+// صفحة قراءة عداد المياه للويب مع فحص جودة الصورة ومراجعة خانات العداد (6 أو 7)
 // ============================================================
 
 import 'dart:async';
@@ -31,6 +31,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
   String? _croppedImageData;
 
   String _reading = '';
+  int _digitCount = MeterAnalyzer.maxDigits;
   String _rawText = '';
 
   ImageQualityReport? _qualityReport;
@@ -118,7 +119,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
         setState(() {
           _imageData = dataUrl;
-          _status = 'Select the seven-digit area';
+          _status = 'Select the 6 or 7 digit area';
         });
 
         // فتح القص تلقائياً بعد اختيار الصورة
@@ -151,7 +152,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
     try {
       setState(() {
         _isCropping = true;
-        _status = 'Select the meter window (7 digits)';
+        _status = 'Select the meter window (6 or 7 digits)';
       });
 
       final result = await _callJsPromise(
@@ -215,7 +216,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _isRecognizing = true;
         _reading = '';
         _rawText = '';
-        _status = 'Reading the meter digits and checking all seven…';
+        _status = 'Reading the meter digits and checking all 6 or 7…';
       });
 
       await _callJsPromise(
@@ -256,23 +257,24 @@ class _OcrWebPageState extends State<OcrWebPage> {
         finalReading = analysis.reading;
       } else if (MeterAnalyzer.isValid(MeterAnalyzer.normalize(jsReading))) {
         finalReading = MeterAnalyzer.normalize(jsReading);
-      } else if (analysis.partialReading.isNotEmpty) {
-        finalReading = analysis.partialReading.padLeft(7, '0');
-      } else {
-        finalReading = '0000000';
       }
 
       setState(() {
         _isRecognizing = false;
         _reading = finalReading;
+        _digitCount = finalReading.isNotEmpty
+            ? finalReading.length
+            : MeterAnalyzer.maxDigits;
         _rawText = rawText;
         _analysisResult = analysis;
 
-        if (analysis.isValid) {
-          _status = analysis.message;
+        if (finalReading.isNotEmpty) {
+          _status = analysis.isValid
+              ? analysis.message
+              : 'A candidate reading was found — review it against the photo.';
         } else {
           _status =
-              'The seven digits could not be read clearly — adjust them below or crop again.';
+              'The 6 or 7 digits could not be read clearly — enter them below or crop again.';
         }
       });
     } catch (e) {
@@ -293,8 +295,8 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   void _confirmAndReturn() {
     final String clean = MeterAnalyzer.normalize(_reading);
-    if (!MeterAnalyzer.isValid(clean)) {
-      _showMessage('The reading must be exactly 7 digits');
+    if (!MeterAnalyzer.isValid(clean, expectedDigits: _digitCount)) {
+      _showMessage('The reading must be exactly $_digitCount digits');
       return;
     }
     Navigator.of(context).pop(clean);
@@ -394,6 +396,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       _isCropping = false;
       _isRecognizing = false;
       _status = 'Choose or photograph the water meter to start';
+      _digitCount = MeterAnalyzer.maxDigits;
     });
   }
 
@@ -434,7 +437,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
                       const SizedBox(height: 18),
                       ImageQualityCard(report: _qualityReport!),
                     ],
-                    if (_reading.isNotEmpty) ...[
+                    if (_analysisResult != null || _reading.isNotEmpty) ...[
                       const SizedBox(height: 18),
                       _buildResult(),
                     ],
@@ -467,7 +470,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Electronic reading of the water meter (7 digits)',
+              'Electronic reading of the water meter (6 or 7 digits)',
               style: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.bold,
@@ -476,7 +479,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Photograph or pick the meter, then select the seven-digit window so the photo is checked and the reading extracted automatically.',
+              'Photograph or pick the meter, then select the 6 or 7 integer digit window so the photo is checked and the reading extracted automatically.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -695,8 +698,9 @@ class _OcrWebPageState extends State<OcrWebPage> {
               ],
             ),
             const SizedBox(height: 14),
-            SevenDigitRollerEditor(
+            MeterReadingEditor(
               reading: _reading,
+              digitCount: _digitCount,
               digitConfidences:
                   _analysisResult?.digitConfidences ?? const <double>[],
               alternatives:
@@ -707,16 +711,28 @@ class _OcrWebPageState extends State<OcrWebPage> {
                   _reading = val;
                 });
               },
+              onDigitCountChanged: (count) {
+                setState(() {
+                  _digitCount = count;
+                });
+              },
             ),
             const SizedBox(height: 18),
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton.icon(
-                onPressed: _confirmAndReturn,
+                onPressed: MeterAnalyzer.isValid(
+                  _reading,
+                  expectedDigits: _digitCount,
+                )
+                    ? _confirmAndReturn
+                    : null,
                 icon: const Icon(Icons.check_circle),
                 label: Text(
-                  'Approve the reading ($_reading)',
+                  MeterAnalyzer.isValid(_reading, expectedDigits: _digitCount)
+                      ? 'Approve the reading ($_reading)'
+                      : 'Enter the full $_digitCount-digit reading',
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,

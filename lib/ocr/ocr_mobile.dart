@@ -47,7 +47,7 @@ class _ImageVariantSpec {
 }
 
 /// ============================================================
-/// قراءة عداد المياه - استخراج 7 أرقام مع فحص الجودة والمراجعة
+/// قراءة عداد المياه - استخراج 6 أو 7 أرقام مع فحص الجودة والمراجعة
 /// مثال: 0650040
 /// ============================================================
 
@@ -135,7 +135,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                     Icon(Icons.document_scanner, color: Colors.blue),
                     SizedBox(width: 8),
                     Text(
-                      'Photograph the water meter (7 digits)',
+                      'Photograph the water meter (6 or 7 digits)',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -174,7 +174,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                         style: TextStyle(fontSize: 12),
                       ),
                       Text(
-                        '• When cropping, select only the seven digits, without the meter casing.',
+                        '• When cropping, select only the 6 or 7 integer digits, without the meter casing or red fractional drums.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -276,7 +276,7 @@ Future<String?> _cropAndReadLoop(
       compressQuality: 100,
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'Select the seven digits only',
+          toolbarTitle: 'Select the 6 or 7 digits only',
           toolbarColor: const Color(0xFF1565C0),
           toolbarWidgetColor: Colors.white,
           lockAspectRatio: false,
@@ -284,7 +284,7 @@ Future<String?> _cropAndReadLoop(
           backgroundColor: Colors.black,
         ),
         IOSUiSettings(
-          title: 'Select the seven digits only',
+          title: 'Select the 6 or 7 digits only',
           aspectRatioLockEnabled: false,
         ),
       ],
@@ -302,7 +302,7 @@ Future<String?> _cropAndReadLoop(
       previousReading: previousReading,
     );
 
-    // إذا كان context متوفراً، نعرض نافذة مراجعة جودة الصورة والخانات السبع
+    // إذا كان context متوفراً، نعرض نافذة مراجعة جودة الصورة وخانات العداد
     if (context != null && context.mounted) {
       final OcrReviewOutcome? outcome =
           await showDialog<OcrReviewOutcome>(
@@ -322,7 +322,11 @@ Future<String?> _cropAndReadLoop(
       }
 
       if (outcome.action == OcrReviewAction.confirm) {
-        return outcome.reading;
+        final String reading = outcome.reading ?? '';
+        if (!MeterAnalyzer.isValid(reading)) {
+          throw Exception('The confirmed reading must contain 6 or 7 digits.');
+        }
+        return reading;
       }
 
       if (outcome.action == OcrReviewAction.recrop) {
@@ -427,7 +431,7 @@ Future<_MobileOcrRunOutput> _runOCRWithQuality(
         }
 
         // 2. إعادة بناء الخانات مكانياً من العناصر المرتبة من اليسار لليمين
-        // يعالج حالة تقسيم ML Kit للأرقام السبعة إلى كتلتين متجاورتين أفقياً
+        // يعالج حالة تقسيم ML Kit لأرقام العداد إلى كتلتين متجاورتين أفقياً
         final String? spatialLine =
             _reconstructHorizontalDigits(recognized);
         if (spatialLine != null && spatialLine.isNotEmpty) {
@@ -577,7 +581,7 @@ Future<_VariantsCreationResult> _createImageVariants(
 
     final img.Image oriented = img.bakeOrientation(decoded);
 
-    // تكبير الصورة إذا كانت صغيرة لضمان دقة التعرف على الخانات السبع
+    // تكبير الصورة إذا كانت صغيرة لضمان دقة التعرف على خانات العداد
     img.Image baseWorking = oriented.clone();
     if (baseWorking.width < 1400) {
       baseWorking = img.copyResize(
