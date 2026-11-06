@@ -228,35 +228,59 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
       final String jsReading = _getJsString('getLastMeterOCRReading');
       final String rawText = _getJsString('getLastMeterOCRText');
+      final String jsMethod = _getJsString('getLastMeterOCRMethod');
+      final List<double> jsDigitConfidences = _getJsDigitConfidences();
 
-      final List<String> rawParts = rawText
-          .split('|')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
+      final String cleanJsReading = MeterAnalyzer.normalize(jsReading);
 
-      final List<WeightedOcrCandidate> weighted = <WeightedOcrCandidate>[];
-      if (jsReading.trim().isNotEmpty) {
-        weighted.add(
-          WeightedOcrCandidate(
-            text: jsReading.trim(),
-            weight: 2.5,
-            source: 'js-solver',
-          ),
+      final MeterAnalysisResult analysis;
+      if (jsMethod == 'cells' && MeterAnalyzer.isValid(cleanJsReading)) {
+        // قراءة خانة-ب-خانة: نثق بالنتيجة المنظمة مباشرة مع ثقة كل خانة،
+        // ولا نعيد اشتقاقها من نص خام قد يعيد تقديم أرقام مخترعة.
+        final double conf = jsDigitConfidences.isNotEmpty
+            ? jsDigitConfidences.reduce((a, b) => a + b) /
+                jsDigitConfidences.length
+            : 80.0;
+        analysis = MeterAnalysisResult(
+          reading: cleanJsReading,
+          confidence: conf.clamp(0.0, 99.0),
+          occurrences: 1,
+          totalAttempts: 1,
+          isValid: true,
+          message:
+              'The ${cleanJsReading.length}-digit reading was recognised drum by drum.',
+          digitConfidences: jsDigitConfidences,
+        );
+      } else {
+        final List<String> rawParts = rawText
+            .split('|')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+
+        final List<WeightedOcrCandidate> weighted = <WeightedOcrCandidate>[];
+        if (jsReading.trim().isNotEmpty) {
+          weighted.add(
+            WeightedOcrCandidate(
+              text: jsReading.trim(),
+              weight: 2.5,
+              source: 'js-line',
+            ),
+          );
+        }
+
+        analysis = MeterAnalyzer.analyze(
+          rawParts,
+          previousReading: widget.previousReading,
+          weightedCandidates: weighted,
         );
       }
-
-      final MeterAnalysisResult analysis = MeterAnalyzer.analyze(
-        rawParts,
-        previousReading: widget.previousReading,
-        weightedCandidates: weighted,
-      );
 
       String finalReading = '';
       if (analysis.isValid) {
         finalReading = analysis.reading;
-      } else if (MeterAnalyzer.isValid(MeterAnalyzer.normalize(jsReading))) {
-        finalReading = MeterAnalyzer.normalize(jsReading);
+      } else if (MeterAnalyzer.isValid(cleanJsReading)) {
+        finalReading = cleanJsReading;
       }
 
       setState(() {
@@ -338,6 +362,38 @@ class _OcrWebPageState extends State<OcrWebPage> {
       return result.toString();
     } catch (_) {
       return '';
+    }
+  }
+
+  // ------------------------------------------------------------
+  // قراءة ثقة كل خانة من JavaScript (مصفوفة أرقام)
+  // ------------------------------------------------------------
+
+  List<double> _getJsDigitConfidences() {
+    try {
+      final result = js_util.callMethod<dynamic>(
+        html.window,
+        'getLastMeterOCRDigitConfidences',
+        <dynamic>[],
+      );
+
+      if (result == null) {
+        return const <double>[];
+      }
+
+      final dynamic dartified = js_util.dartify(result);
+      if (dartified is List) {
+        return dartified.map((dynamic e) {
+          if (e is num) {
+            return e.toDouble();
+          }
+          return double.tryParse(e.toString()) ?? 0.0;
+        }).toList();
+      }
+
+      return const <double>[];
+    } catch (_) {
+      return const <double>[];
     }
   }
 

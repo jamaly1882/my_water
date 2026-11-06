@@ -556,6 +556,85 @@ class _VariantsCreationResult {
   });
 }
 
+/// ============================================================
+/// تقدير زاوية ميل الصورة من اتجاه الحواف المهيمنة (Gradient Skew).
+/// نعيد زاوية التدوير باتجاه عقارب الساعة التي تجعل صف الأرقام أفقياً،
+/// وهي نفس الإشارة التي يستخدمها تدوير Canvas في نسخة الويب.
+/// ============================================================
+
+double _estimateSkewAngle(img.Image image) {
+  final img.Image gray = img.grayscale(image.clone());
+  final int w = gray.width;
+  final int h = gray.height;
+  if (w < 24 || h < 24) {
+    return 0;
+  }
+
+  final List<double> bins = List<double>.filled(180, 0);
+  for (int y = 2; y < h - 2; y += 2) {
+    for (int x = 2; x < w - 2; x += 2) {
+      final num gx =
+          gray.getPixel(x + 1, y).r - gray.getPixel(x - 1, y).r;
+      final num gy =
+          gray.getPixel(x, y + 1).r - gray.getPixel(x, y - 1).r;
+      final double m = math.sqrt((gx * gx + gy * gy).toDouble());
+      if (m < 40) {
+        continue;
+      }
+      double a = math.atan2(gy.toDouble(), gx.toDouble()) * 180 / math.pi;
+      a = ((a % 180) + 180) % 180;
+      bins[a.floor() % 180] += m;
+    }
+  }
+
+  // تنعيم دائري للنافذة 5
+  final List<double> sm = List<double>.filled(180, 0);
+  for (int i = 0; i < 180; i++) {
+    sm[i] = bins[(i + 178) % 180] +
+        bins[(i + 179) % 180] +
+        bins[i] +
+        bins[(i + 1) % 180] +
+        bins[(i + 2) % 180];
+  }
+
+  int peak = 0;
+  for (int i = 1; i < 180; i++) {
+    if (sm[i] > sm[peak]) {
+      peak = i;
+    }
+  }
+
+  // متوسط دائري مرجّح حول الذروة (زوايا مضاعفة لمعالجة modulo 180)
+  double sx = 0;
+  double sy = 0;
+  double sw = 0;
+  for (int d = -4; d <= 4; d++) {
+    final int i = (peak + d + 180) % 180;
+    final double wt = sm[i];
+    final double ang = (peak + d) * 2 * math.pi / 180;
+    sx += wt * math.cos(ang);
+    sy += wt * math.sin(ang);
+    sw += wt;
+  }
+  if (sw <= 0) {
+    return 0;
+  }
+
+  double theta = math.atan2(sy, sx) * 180 / (2 * math.pi);
+  theta = ((theta % 180) + 180) % 180;
+  double rot = -theta;
+  if (rot <= -90) {
+    rot += 180;
+  }
+  if (rot > 90) {
+    rot -= 180;
+  }
+  if (rot.abs() > 35) {
+    return 0;
+  }
+  return rot;
+}
+
 Future<_VariantsCreationResult> _createImageVariants(
   File original,
   Uint8List originalBytes,
@@ -589,6 +668,24 @@ Future<_VariantsCreationResult> _createImageVariants(
         width: 1400,
         interpolation: img.Interpolation.cubic,
       );
+    }
+
+    // تعديل ميل الصورة: نقيس زاوية الحواف المهيمنة وندير الصورة حتى يصبح
+    // صف الأرقام أفقياً (نفس خوارزمية الويب). النسخة الأصلية تبقى ضمن
+    // النسخ احتياطياً، ولا نطبق التدوير إلا عند وجود ميل واضح.
+    try {
+      final double skewAngle = _estimateSkewAngle(baseWorking);
+      if (skewAngle.abs() > 1.0) {
+        baseWorking.backgroundColor = img.ColorUint8.rgba(255, 255, 255, 255);
+        baseWorking = img.copyRotate(
+          baseWorking,
+          angle: skewAngle,
+          interpolation: img.Interpolation.cubic,
+        );
+        debugPrint('Deskew angle: ${skewAngle.toStringAsFixed(1)}°');
+      }
+    } catch (e) {
+      debugPrint('Deskew skipped: $e');
     }
 
     // إضافة هامش هادئ حول الصورة لمنع ضياع الصفر الأول على الطرف الأيسر

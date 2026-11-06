@@ -443,14 +443,17 @@ class MeterAnalyzer {
       }
     }
 
-    // تركيب القراءة التوافقية من التصويت الموضعي
+    // بناء القراءة التوافقية من التصويت الموضعي لعرض ثقة كل خانة فقط.
+    // الخانة التي لا تملك أي صوت تبقى فارغة (ثقة 0) ولا نملؤها بـ '0'
+    // أبدًا، لأن ذلك يخترع رقمًا لم يقرأه الـ OCR.
     final StringBuffer consensusBuffer = StringBuffer();
     final List<double> digitConfidences = <double>[];
+    bool consensusComplete = true;
 
     for (int i = 0; i < digitCount; i++) {
       final Map<String, double> slotVotes = positionalVotes[i];
       if (slotVotes.isEmpty) {
-        consensusBuffer.write('0');
+        consensusComplete = false;
         digitConfidences.add(0);
         continue;
       }
@@ -470,10 +473,14 @@ class MeterAnalyzer {
     }
 
     final String positionalConsensus = consensusBuffer.toString();
-    if (positionalConsensus.length == digitCount) {
+    // نعزّز فقط قراءة توافقية قرأها الـ OCR فعلًا (موجودة كمرشح).
+    // لا نقدّم أبدًا تركيبة أرقام جديدة مجمّعة من أصوات متفرقة،
+    // لأن ذلك هو مصدر القراءات الواثقة الخاطئة على صور العدادات الحقيقية.
+    if (consensusComplete &&
+        positionalConsensus.length == digitCount &&
+        candidateScores.containsKey(positionalConsensus)) {
       candidateScores[positionalConsensus] =
-          (candidateScores[positionalConsensus] ?? 0.0) +
-              (totalWeight * 0.22);
+          candidateScores[positionalConsensus]! + (totalWeight * 0.22);
       candidateCounts[positionalConsensus] =
           math.max(candidateCounts[positionalConsensus] ?? 1, 1);
     }

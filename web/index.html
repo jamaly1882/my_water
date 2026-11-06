@@ -881,6 +881,8 @@ let meterOCRWorkerPromise = null;
 let lastMeterOCRText = "";
 let lastMeterOCRReading = "";
 let lastMeterOCRRawResults = [];
+let lastMeterOCRDigitConfidences = [];
+let lastMeterOCRMethod = "";
 
 
 /* ============================================================
@@ -3456,6 +3458,492 @@ async function runOverlappingWindowOCR(
 
 
 /* ============================================================
+   CELL-BASED ROLLER OCR  (6 / 7 digits)
+   deskew -> digit-band detection -> per-drum cell split ->
+   single-char OCR with variant voting -> strict acceptance.
+   Only returns a reading when EVERY cell is confident; never
+   pads, guesses or fabricates digits.
+   ============================================================ */
+
+function _grayFromCanvas(canvas) {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const w = canvas.width, h = canvas.height;
+  const d = ctx.getImageData(0, 0, w, h).data;
+  const g = new Float32Array(w * h);
+  for (let i = 0, p = 0; p < g.length; i += 4, p++) {
+    g[p] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+  }
+  return { g, w, h };
+}
+
+function _otsu(g, lo, hi) {
+  if (lo === undefined) { lo = 0; hi = g.length; }
+  const hist = new Float64Array(256);
+  for (let i = lo; i < hi; i++) {
+    let v = Math.round(g[i]);
+    if (v < 0) v = 0; else if (v > 255) v = 255;
+    hist[v]++;
+  }
+  const total = hi - lo;
+  if (total <= 0) return 127;
+  let sum = 0;
+  for (let i = 0; i < 256; i++) sum += i * hist[i];
+  let sumB = 0, wB = 0, best = -1, thr = 127;
+  for (let i = 0; i < 256; i++) {
+    wB += hist[i];
+    if (wB === 0) continue;
+    const wF = total - wB;
+    if (wF === 0) break;
+    sumB += i * hist[i];
+    const mB = sumB / wB, mF = (sum - sumB) / wF;
+    const v = wB * wF * (mB - mF) * (mB - mF);
+    if (v > best) { best = v; thr = i; }
+  }
+  return thr;
+}
+
+function _percentile(g, p) {
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < g.length; i++) {
+    let v = Math.round(g[i]);
+    if (v < 0) v = 0; else if (v > 255) v = 255;
+    hist[v]++;
+  }
+  const target = g.length * p;
+  let acc = 0;
+  for (let i = 0; i < 256; i++) {
+    acc += hist[i];
+    if (acc >= target) return i;
+  }
+  return 255;
+}
+
+function _binaryDark(gray, thr) {
+  const b = new Uint8Array(gray.g.length);
+  for (let i = 0; i < b.length; i++) b[i] = gray.g[i] <= thr ? 1 : 0;
+  return b;
+}
+
+/* Dominant edge orientation -> rotation that makes long edges horizontal. */
+
+function _gradientSkew(gray) {
+  const { g, w, h } = gray;
+  const bins = new Float64Array(180);
+  for (let y = 2; y < h - 2; y += 2) {
+    for (let x = 2; x < w - 2; x += 2) {
+      const gx = g[y * w + x + 1] - g[y * w + x - 1];
+      const gy = g[(y + 1) * w + x] - g[(y - 1) * w + x];
+      const m = Math.sqrt(gx * gx + gy * gy);
+      if (m < 40) continue;
+      let a = Math.atan2(gy, gx) * 180 / Math.PI;
+      a = ((a % 180) + 180) % 180;
+      bins[Math.floor(a) % 180] += m;
+    }
+  }
+  const sm = new Float64Array(180);
+  for (let i = 0; i < 180; i++) {
+    sm[i] = bins[(i + 178) % 180] + bins[(i + 179) % 180] + bins[i] +
+            bins[(i + 1) % 180] + bins[(i + 2) % 180];
+  }
+  let peak = 0;
+  for (let i = 1; i < 180; i++) if (sm[i] > sm[peak]) peak = i;
+  let sx = 0, sy = 0, sw = 0;
+  for (let d = -4; d <= 4; d++) {
+    const i = (peak + d + 180) % 180;
+    const wt = sm[i];
+    const ang = (peak + d) * 2 * Math.PI / 180;
+    sx += wt * Math.cos(ang);
+    sy += wt * Math.sin(ang);
+    sw += wt;
+  }
+  if (sw <= 0) return 0;
+  let theta = Math.atan2(sy, sx) * 180 / (2 * Math.PI);
+  theta = ((theta % 180) + 180) % 180;
+  let rot = -theta;
+  if (rot <= -90) rot += 180;
+  if (rot > 90) rot -= 180;
+  if (Math.abs(rot) > 35) return 0;
+  return rot;
+}
+
+function _rotateCanvasWhite(src, deg) {
+  const a = deg * Math.PI / 180;
+  const c = Math.cos(a), s = Math.sin(a);
+  const w = src.width, h = src.height;
+  const nw = Math.ceil(Math.abs(w * c) + Math.abs(h * s));
+  const nh = Math.ceil(Math.abs(w * s) + Math.abs(h * c));
+  const out = document.createElement("canvas");
+  out.width = nw;
+  out.height = nh;
+  const ctx = out.getContext("2d", { willReadFrequently: true });
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, nw, nh);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.translate(nw / 2, nh / 2);
+  ctx.rotate(a);
+  ctx.drawImage(src, -w / 2, -h / 2);
+  return out;
+}
+
+/* Contiguous dark-row bands at a given threshold. */
+
+function _prepareBand(gray, band) {
+  const { g, w } = gray;
+  const t = band.top, b = band.bottom;
+  const sub = g.subarray(t * w, (b + 1) * w);
+  const thr = _otsu(sub);
+  const bh0 = b - t + 1;
+  const rows = new Float64Array(bh0);
+  const cols = new Float64Array(w);
+  let dark = 0;
+  for (let y = 0; y < bh0; y++) {
+    const off = y * w;
+    for (let x = 0; x < w; x++) {
+      if (sub[off + x] <= thr) { rows[y]++; cols[x]++; dark++; }
+    }
+  }
+  let top = 0;
+  while (top < bh0 - 1 && rows[top] < w * 0.04) top++;
+  let bottom = bh0 - 1;
+  while (bottom > top && rows[bottom] < w * 0.04) bottom--;
+  const bh = bottom - top + 1;
+  // Column density -> runs. A roller strip is either one dense run (digits
+  // share a background) or 6-7 similar-width runs (individual drums separated
+  // by white gaps). Build candidate spans for both, ignoring stray rim/"m".
+  const den = new Float64Array(w);
+  for (let x = 0; x < w; x++) den[x] = cols[x] / bh0;
+  const ct = 0.07;
+  const maxGap = Math.max(4, Math.round(w * 0.008));
+  const runs = [];
+  let curL = -1, lastHit = -1;
+  for (let x = 0; x < w; x++) {
+    if (den[x] >= ct) {
+      if (curL < 0) curL = x;
+      lastHit = x;
+    } else if (curL >= 0 && x - lastHit > maxGap) {
+      runs.push([curL, lastHit]);
+      curL = -1;
+    }
+  }
+  if (curL >= 0) runs.push([curL, lastHit]);
+  if (!runs.length) return null;
+
+  const spans = [];
+  for (const r of runs) spans.push({ l: r[0], r: r[1], count: 1 });
+  for (const n of [6, 7]) {
+    for (let i = 0; i + n <= runs.length; i++) {
+      const grp = runs.slice(i, i + n);
+      const widths = grp.map((r) => r[1] - r[0] + 1);
+      const mn = Math.min(...widths), mx = Math.max(...widths);
+      if (mx > mn * 2.2) continue;
+      spans.push({ l: grp[0][0], r: grp[n - 1][1], count: n });
+    }
+  }
+  let bestSpan = null, bestScore = -1;
+  for (const sp of spans) {
+    const bw = sp.r - sp.l + 1;
+    if (bw < 60) continue;
+    const aspect = bw / bh;
+    if (aspect < 2.8 || aspect > 7.2) continue;
+    const aspectScore = Math.max(0, 1 - Math.abs(aspect - 4.7) / 2.6);
+    const sc = sp.count * 10 + aspectScore;
+    if (sc > bestScore) { bestScore = sc; bestSpan = sp; }
+  }
+  if (!bestSpan) return null;
+  const left = bestSpan.l, right = bestSpan.r;
+  const bw = right - left + 1;
+  const aspect = bw / bh;
+  let darkIn = 0;
+  for (let y = top; y <= bottom; y++) {
+    const off = y * w;
+    for (let x = left; x <= right; x++) if (sub[off + x] <= thr) darkIn++;
+  }
+  const fill = darkIn / (bw * bh);
+  const aspectScore = Math.max(0, 1 - Math.abs(aspect - 4.7) / 2.6);
+  const score = aspectScore * (0.4 + Math.min(0.6, fill));
+  return { top: t + top, bottom: t + bottom, left, right, thr, score, aspect };
+}
+
+function _rowDarkCounts(gray, thr) {
+  const { g, w, h } = gray;
+  const cnt = new Float64Array(h);
+  for (let y = 0; y < h; y++) {
+    let c = 0;
+    const off = y * w;
+    for (let x = 0; x < w; x++) if (g[off + x] <= thr) c++;
+    cnt[y] = c / w;
+  }
+  const sm = new Float64Array(h);
+  for (let y = 0; y < h; y++) {
+    let s = 0, n = 0;
+    for (let d = -1; d <= 1; d++) {
+      const yy = y + d;
+      if (yy >= 0 && yy < h) { s += cnt[yy]; n++; }
+    }
+    sm[y] = s / n;
+  }
+  return sm;
+}
+
+/* Split a merged block at internal valleys (white gaps between text rows). */
+
+function _splitAtValleys(cnt, top, bottom, minH) {
+  const parts = [];
+  let segStart = top;
+  let valleyStart = -1;
+  const maxGap = Math.max(6, Math.round((bottom - top) * 0.12));
+  for (let y = top; y <= bottom; y++) {
+    if (cnt[y] < 0.045) {
+      if (valleyStart < 0) valleyStart = y;
+      if (y - valleyStart + 1 >= 3 && y - valleyStart + 1 <= maxGap) {
+        const cut = Math.round((valleyStart + y) / 2);
+        if (cut - segStart + 1 >= minH) parts.push({ top: segStart, bottom: cut });
+        segStart = cut + 1;
+      }
+    } else {
+      valleyStart = -1;
+    }
+  }
+  if (bottom - segStart + 1 >= minH) parts.push({ top: segStart, bottom });
+  return parts.length ? parts : [{ top, bottom }];
+}
+
+function _findBands(gray) {
+  const { w, h } = gray;
+  const p08 = _percentile(gray.g, 0.08);
+  const p18 = _percentile(gray.g, 0.18);
+  const otsu = _otsu(gray.g);
+  const thrs = [...new Set([p08, p18, Math.min(otsu, p18 + 30)])];
+  const cands = [];
+  const seen = [];
+  for (const thr of thrs) {
+    const cnt = _rowDarkCounts(gray, thr);
+    const t = 0.10;
+    const gap = Math.max(3, Math.round(h * 0.015));
+    const blocks = [];
+    let start = -1, lastActive = -1;
+    for (let y = 0; y < h; y++) {
+      if (cnt[y] >= t) {
+        if (start < 0) start = y;
+        lastActive = y;
+      } else if (start >= 0 && y - lastActive > gap) {
+        blocks.push({ top: start, bottom: lastActive });
+        start = -1;
+      }
+    }
+    if (start >= 0) blocks.push({ top: start, bottom: lastActive });
+    const minH = Math.max(18, h * 0.07);
+    for (const b of blocks) {
+      if (b.bottom - b.top + 1 < minH) continue;
+      if (b.bottom - b.top + 1 > h * 0.85) continue;
+      const parts = _splitAtValleys(cnt, b.top, b.bottom, minH);
+      for (const p of parts) {
+        const prep = _prepareBand(gray, p);
+        if (!prep) continue;
+        const key = Math.round(prep.top / 10) + ":" + Math.round(prep.bottom / 10);
+        if (seen.includes(key)) continue;
+        seen.push(key);
+        cands.push(prep);
+      }
+    }
+  }
+  cands.sort((a, b) => b.score - a.score);
+  const out = [];
+  for (const c of cands) {
+    const overlap = out.some((o) => {
+      const inter = Math.min(o.bottom, c.bottom) - Math.max(o.top, c.top);
+      const minH2 = Math.min(o.bottom - o.top, c.bottom - c.top);
+      return inter > minH2 * 0.6;
+    });
+    if (!overlap) out.push(c);
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+
+/* Contrast-stretch a grayscale array to full range using percentiles. */
+
+async function _recognizeCellRegion(work, x0, x1, y0, y1, worker) {
+  const cw = x1 - x0, ch = y1 - y0;
+  const sx = Math.max(0, Math.round(x0 + cw * 0.13));
+  const ex = Math.min(work.width, Math.round(x1 - cw * 0.13));
+  const sy = Math.max(0, Math.round(y0 + ch * 0.10));
+  const ey = Math.min(work.height, Math.round(y1 - ch * 0.10));
+  const sw = ex - sx, sh = ey - sy;
+  if (sw < 10 || sh < 16) return null;
+
+  // Grayscale of the cell CONTENT (no white padding yet, so Otsu sees only
+  // drum background vs digit ink, not the padding).
+  const rc = document.createElement("canvas");
+  rc.width = sw; rc.height = sh;
+  const rctx = rc.getContext("2d", { willReadFrequently: true });
+  rctx.drawImage(work, sx, sy, sw, sh, 0, 0, sw, sh);
+  const rid = rctx.getImageData(0, 0, sw, sh).data;
+  const g = new Float32Array(sw * sh);
+  for (let i = 0, p = 0; p < g.length; i += 4, p++) {
+    g[p] = 0.299 * rid[i] + 0.587 * rid[i + 1] + 0.114 * rid[i + 2];
+  }
+  const t = _otsu(g);
+
+  const scale = 140 / sh;
+  const tw = Math.max(24, Math.round(sw * scale));
+  const pad = 26;
+  const W = tw + pad * 2, H = 140 + pad * 2;
+
+  // Render a variant: map content pixels, scale, pad with white.
+  const render = (mapFn) => {
+    const content = document.createElement("canvas");
+    content.width = sw; content.height = sh;
+    const cc = content.getContext("2d");
+    const im = cc.createImageData(sw, sh);
+    for (let p = 0; p < g.length; p++) {
+      const v = mapFn(g[p]);
+      const di = p * 4;
+      im.data[di] = v; im.data[di + 1] = v; im.data[di + 2] = v; im.data[di + 3] = 255;
+    }
+    cc.putImageData(im, 0, 0);
+    const out = document.createElement("canvas");
+    out.width = W; out.height = H;
+    const oc = out.getContext("2d", { willReadFrequently: true });
+    oc.fillStyle = "#fff";
+    oc.fillRect(0, 0, W, H);
+    oc.imageSmoothingEnabled = true;
+    oc.imageSmoothingQuality = "high";
+    oc.drawImage(content, 0, 0, sw, sh, pad, pad, tw, 140);
+    return out;
+  };
+  const cell = render((v) => v);                 // grayscale
+  const binC = render((v) => (v <= t ? 0 : 255)); // binary
+  const invC = render((v) => (v <= t ? 255 : 0)); // inverted
+
+
+  await worker.setParameters({
+    tessedit_pageseg_mode: "10",
+    tessedit_char_whitelist: "0123456789",
+    user_defined_dpi: "300"
+  });
+  const readIt = async (canvas) => {
+    try {
+      const r = await worker.recognize(canvas);
+      const txt = (r.data.text || "").trim();
+      const d = txt.replace(/\D/g, "");
+      const conf = Number(r.data.confidence || 0);
+      if (d.length >= 1 && conf > 0) return { digit: d[0], confidence: conf };
+    } catch (e) { /* ignore */ }
+    return null;
+  };
+
+  const votes = {};
+  const consider = (r) => {
+    if (!r) return;
+    const v = votes[r.digit] || (votes[r.digit] = { sum: 0, max: 0, n: 0 });
+    v.sum += r.confidence; v.max = Math.max(v.max, r.confidence); v.n++;
+  };
+  consider(await readIt(binC));
+  consider(await readIt(cell));
+  consider(await readIt(invC));
+  let best = null;
+  for (const d of Object.keys(votes)) {
+    const v = votes[d];
+    if (!best || v.sum > best.sc) best = { digit: d, confidence: v.max, sc: v.sum };
+  }
+  if (!best) return null;
+  return { digit: best.digit, confidence: best.confidence };
+}
+
+/* Column-density profile within a band. */
+
+function _colDensity(gray, band) {
+  const { g, w } = gray;
+  const bw = band.right - band.left + 1;
+  const bh = band.bottom - band.top + 1;
+  const den = new Float64Array(bw);
+  for (let x = 0; x < bw; x++) {
+    let c = 0;
+    const wx = band.left + x;
+    for (let y = band.top; y <= band.bottom; y++) if (g[y * w + wx] <= band.thr) c++;
+    den[x] = c / bh;
+  }
+  const sm = new Float64Array(bw);
+  for (let x = 0; x < bw; x++) {
+    let s = 0, n = 0;
+    for (let d = -3; d <= 3; d++) {
+      const xx = x + d;
+      if (xx >= 0 && xx < bw) { s += den[xx]; n++; }
+    }
+    sm[x] = s / n;
+  }
+  return sm;
+}
+
+/* Equal-width cell boundaries across the band. */
+
+function _cellBounds(gray, band, n) {
+  const bw = band.right - band.left + 1;
+  const cw = bw / n;
+  const bounds = [];
+  for (let i = 0; i < n; i++) bounds.push([band.left + i * cw, band.left + (i + 1) * cw]);
+  return bounds;
+}
+
+async function runCellBasedOCR(sourceCanvas) {
+  const worker = await getOCRWorker();
+  let gray = _grayFromCanvas(sourceCanvas);
+  const angle = _gradientSkew(gray);
+  let work = sourceCanvas;
+  if (Math.abs(angle) > 0.75) {
+    work = _rotateCanvasWhite(sourceCanvas, angle);
+    gray = _grayFromCanvas(work);
+  }
+  let bands = _findBands(gray);
+  if (!bands.length) {
+    const prep = _prepareBand(gray, { top: 0, bottom: gray.h - 1 });
+    if (prep) bands = [prep];
+  }
+  if (!bands.length) return { success: false, reading: "", angle: angle };
+
+  const attempts = [];
+  for (let bi = 0; bi < bands.length; bi++) {
+    const band = bands[bi];
+    for (const n of [7, 6]) {
+      if ((band.right - band.left + 1) / n < 12) continue;
+      const bounds = _cellBounds(gray, band, n);
+      const cells = [];
+      for (let i = 0; i < n; i++) {
+        cells.push(await _recognizeCellRegion(
+          work, bounds[i][0], bounds[i][1], band.top, band.bottom, worker
+        ));
+      }
+      const present = cells.filter(function (c) { return c && c.digit; });
+      const mean = present.length
+        ? present.reduce(function (s, c) { return s + c.confidence; }, 0) / present.length
+        : 0;
+      const score = mean - (n - present.length) * 40;
+      attempts.push({ n: n, cells: cells, mean: mean, score: score, complete: present.length === n });
+    }
+  }
+  attempts.sort(function (a, b) { return b.score - a.score; });
+  const best = attempts[0];
+  if (!best || !best.complete) return { success: false, reading: "", angle: angle };
+
+  const reading = best.cells.map(function (c) { return c.digit; }).join("");
+  const digitConfidences = best.cells.map(function (c) { return Math.round(c.confidence); });
+  const minConf = Math.min.apply(null, digitConfidences);
+  const success = best.mean >= 65 && minConf >= 45;
+  return {
+    reading: success ? reading : "",
+    success: success,
+    angle: angle,
+    digitCount: reading.length,
+    confidence: Math.round(best.mean),
+    digitConfidences: digitConfidences
+  };
+}
+
+
+
+/* ============================================================
    MAIN METER OCR
    ============================================================ */
 
@@ -3475,6 +3963,12 @@ async function recognizeMeterDigits(
 
   lastMeterOCRRawResults =
     [];
+
+  lastMeterOCRDigitConfidences =
+    [];
+
+  lastMeterOCRMethod =
+    "";
 
   try {
 
@@ -3571,6 +4065,78 @@ async function recognizeMeterDigits(
       sourceCanvas.height
     );
 
+    /*
+     * Primary path for roller-drum meters:
+     * deskew, locate the digit band, split into
+     * 6/7 cells and read each drum separately.
+     * Accepted only when EVERY cell is confident,
+     * so no digits are invented or padded.
+     */
+    showOCRLoading(
+      "جاري تحليل خانات الأرقام..."
+    );
+
+    let cellResult = null;
+
+    try {
+      cellResult =
+        await runCellBasedOCR(
+          sourceCanvas
+        );
+    } catch (cellError) {
+      console.error(
+        "CELL OCR ERROR:",
+        cellError
+      );
+    }
+
+    if (
+      cellResult &&
+      cellResult.success &&
+      cellResult.reading
+    ) {
+      lastMeterOCRReading =
+        cellResult.reading;
+
+      lastMeterOCRText =
+        cellResult.reading;
+
+      lastMeterOCRRawResults =
+        [];
+
+      lastMeterOCRDigitConfidences =
+        cellResult.digitConfidences || [];
+
+      lastMeterOCRMethod =
+        "cells";
+
+      return {
+        reading:
+          cellResult.reading,
+
+        text:
+          cellResult.reading,
+
+        success:
+          true,
+
+        digitCount:
+          cellResult.reading.length,
+
+        confidence:
+          cellResult.confidence,
+
+        digitConfidences:
+          cellResult.digitConfidences || [],
+
+        method:
+          "cells",
+
+        rawResults:
+          []
+      };
+    }
+
     showOCRLoading(
       "جاري قراءة شاشة الأرقام..."
     );
@@ -3586,9 +4152,6 @@ async function recognizeMeterDigits(
     const rawResults =
       whole.rawResults || [];
 
-    /*
-     * Save all whole OCR text.
-     */
     lastMeterOCRRawResults =
       rawResults.slice();
 
@@ -3601,17 +4164,23 @@ async function recognizeMeterDigits(
         .join(" | ");
 
     /*
-     * First try direct 6 or 7 digit OCR.
+     * Accept a reading only when a single OCR
+     * pass actually read a full 6/7 digit number
+     * with high confidence. We deliberately do NOT
+     * assemble a reading from scattered per-position
+     * guesses: that is what produced confident but
+     * wrong numbers on real meter photos.
      */
-    const direct =
+    let direct =
       selectBestDirectCandidate(candidates);
 
     if (
       direct &&
-      (direct.confidence >= 55 || direct.count >= 2)
+      (direct.confidence >= 75 ||
+        (direct.count >= 3 && direct.confidence >= 65))
     ) {
-
       lastMeterOCRReading = direct.value;
+      lastMeterOCRMethod = "line";
 
       return {
         reading: direct.value,
@@ -3619,38 +4188,15 @@ async function recognizeMeterDigits(
         success: true,
         digitCount: direct.value.length,
         confidence: direct.confidence,
+        method: "line",
         rawResults: rawResults
       };
     }
 
     /*
-     * Try position solving for both supported digit counts.
-     */
-    let solution =
-      chooseBestSolution([
-        solveMeterDigits(candidates, sourceCanvas.width, 7),
-        solveMeterDigits(candidates, sourceCanvas.width, 6)
-      ]);
-
-    if (
-      solution.success &&
-      solution.confidence >= 50
-    ) {
-
-      lastMeterOCRReading = solution.reading;
-
-      return {
-        reading: solution.reading,
-        text: lastMeterOCRText,
-        success: true,
-        digitCount: solution.reading.length,
-        confidence: solution.confidence,
-        rawResults: rawResults
-      };
-    }
-
-    /*
-     * Now use overlapping windows.
+     * Overlapping windows give clean displays a
+     * second chance, still via a direct full-number
+     * candidate (never positional guesswork).
      */
     showOCRLoading(
       "جاري تحليل الأرقام بشكل أدق..."
@@ -3662,109 +4208,43 @@ async function recognizeMeterDigits(
       rawResults
     );
 
-    /*
-     * Try again.
-     */
-    solution =
-      chooseBestSolution([
-        solveMeterDigits(candidates, sourceCanvas.width, 7),
-        solveMeterDigits(candidates, sourceCanvas.width, 6)
-      ]);
+    lastMeterOCRRawResults =
+      rawResults;
+
+    lastMeterOCRText =
+      rawResults
+        .map(function(item) {
+          return item.text || "";
+        })
+        .filter(Boolean)
+        .join(" | ");
+
+    direct =
+      selectBestDirectCandidate(candidates);
 
     if (
-      solution.success
+      direct &&
+      (direct.confidence >= 75 ||
+        (direct.count >= 3 && direct.confidence >= 65))
     ) {
-
-      lastMeterOCRReading =
-        solution.reading;
-
-      lastMeterOCRRawResults =
-        rawResults;
-
-      lastMeterOCRText =
-        rawResults
-          .map(function(item) {
-            return item.text || "";
-          })
-          .filter(Boolean)
-          .join(" | ");
+      lastMeterOCRReading = direct.value;
+      lastMeterOCRMethod = "line";
 
       return {
-        reading:
-          solution.reading,
-
-        text:
-          lastMeterOCRText,
-
-        success:
-          true,
-
-        rawResults:
-          rawResults
+        reading: direct.value,
+        text: lastMeterOCRText,
+        success: true,
+        digitCount: direct.value.length,
+        confidence: direct.confidence,
+        method: "line",
+        rawResults: rawResults
       };
     }
 
     /*
-     * Last fallback:
-     * search for any 6 or 7 digit sequence
-     * returned by Tesseract.
-     */
-    const sequences =
-      candidates
-        .filter(function(item) {
-          return (
-            item &&
-            item.digitSequence
-          );
-        })
-        .map(function(item) {
-          return {
-            value:
-              digitsOnly(
-                item.digitSequence
-              ),
-
-            confidence:
-              Number(
-                item.confidence || 0
-              )
-          };
-        })
-        .filter(function(item) {
-          return (
-            item.value.length === 6 ||
-            item.value.length === 7
-          );
-        })
-        .sort(function(a, b) {
-          return (
-            b.confidence -
-            a.confidence
-          );
-        });
-
-    if (sequences.length) {
-
-      lastMeterOCRReading =
-        sequences[0].value;
-
-      return {
-        reading:
-          sequences[0].value,
-
-        text:
-          lastMeterOCRText,
-
-        success:
-          true,
-
-        rawResults:
-          rawResults
-      };
-    }
-
-    /*
-     * Failed.
+     * Could not read the display reliably.
+     * Return failure instead of inventing digits;
+     * the review screen lets the user type it.
      */
     lastMeterOCRRawResults =
       rawResults;
@@ -3859,6 +4339,16 @@ function getLastMeterOCRRawResults() {
 }
 
 
+function getLastMeterOCRDigitConfidences() {
+  return lastMeterOCRDigitConfidences;
+}
+
+
+function getLastMeterOCRMethod() {
+  return lastMeterOCRMethod;
+}
+
+
 /* ============================================================
    GLOBAL API
    ============================================================ */
@@ -3880,6 +4370,12 @@ window.getLastMeterOCRReading =
 
 window.getLastMeterOCRRawResults =
   getLastMeterOCRRawResults;
+
+window.getLastMeterOCRDigitConfidences =
+  getLastMeterOCRDigitConfidences;
+
+window.getLastMeterOCRMethod =
+  getLastMeterOCRMethod;
 
 /* ============================================================
    TESSERACT ON DEMAND
