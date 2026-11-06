@@ -47,7 +47,7 @@ class _ImageVariantSpec {
 }
 
 /// ============================================================
-/// قراءة عداد المياه - استخراج 7 أرقام مع فحص الجودة والمراجعة
+/// قراءة عداد المياه - استخراج 6 أو 7 أرقام مع فحص الجودة والمراجعة
 /// مثال: 0650040
 /// ============================================================
 
@@ -135,7 +135,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                     Icon(Icons.document_scanner, color: Colors.blue),
                     SizedBox(width: 8),
                     Text(
-                      'Photograph the water meter (7 digits)',
+                      'Photograph the water meter (6 or 7 digits)',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -174,7 +174,7 @@ Future<ImageSource?> _showCaptureSourceSheet(BuildContext context) async {
                         style: TextStyle(fontSize: 12),
                       ),
                       Text(
-                        '• When cropping, select only the seven digits, without the meter casing.',
+                        '• When cropping, select only the 6 or 7 integer digits, without the meter casing or red fractional drums.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
@@ -276,7 +276,7 @@ Future<String?> _cropAndReadLoop(
       compressQuality: 100,
       uiSettings: [
         AndroidUiSettings(
-          toolbarTitle: 'Select the seven digits only',
+          toolbarTitle: 'Select the 6 or 7 digits only',
           toolbarColor: const Color(0xFF1565C0),
           toolbarWidgetColor: Colors.white,
           lockAspectRatio: false,
@@ -284,7 +284,7 @@ Future<String?> _cropAndReadLoop(
           backgroundColor: Colors.black,
         ),
         IOSUiSettings(
-          title: 'Select the seven digits only',
+          title: 'Select the 6 or 7 digits only',
           aspectRatioLockEnabled: false,
         ),
       ],
@@ -302,7 +302,7 @@ Future<String?> _cropAndReadLoop(
       previousReading: previousReading,
     );
 
-    // إذا كان context متوفراً، نعرض نافذة مراجعة جودة الصورة والخانات السبع
+    // إذا كان context متوفراً، نعرض نافذة مراجعة جودة الصورة وخانات العداد
     if (context != null && context.mounted) {
       final OcrReviewOutcome? outcome =
           await showDialog<OcrReviewOutcome>(
@@ -322,7 +322,11 @@ Future<String?> _cropAndReadLoop(
       }
 
       if (outcome.action == OcrReviewAction.confirm) {
-        return outcome.reading;
+        final String reading = outcome.reading ?? '';
+        if (!MeterAnalyzer.isValid(reading)) {
+          throw Exception('The confirmed reading must contain 6 or 7 digits.');
+        }
+        return reading;
       }
 
       if (outcome.action == OcrReviewAction.recrop) {
@@ -427,7 +431,7 @@ Future<_MobileOcrRunOutput> _runOCRWithQuality(
         }
 
         // 2. إعادة بناء الخانات مكانياً من العناصر المرتبة من اليسار لليمين
-        // يعالج حالة تقسيم ML Kit للأرقام السبعة إلى كتلتين متجاورتين أفقياً
+        // يعالج حالة تقسيم ML Kit لأرقام العداد إلى كتلتين متجاورتين أفقياً
         final String? spatialLine =
             _reconstructHorizontalDigits(recognized);
         if (spatialLine != null && spatialLine.isNotEmpty) {
@@ -552,6 +556,85 @@ class _VariantsCreationResult {
   });
 }
 
+/// ============================================================
+/// تقدير زاوية ميل الصورة من اتجاه الحواف المهيمنة (Gradient Skew).
+/// نعيد زاوية التدوير باتجاه عقارب الساعة التي تجعل صف الأرقام أفقياً،
+/// وهي نفس الإشارة التي يستخدمها تدوير Canvas في نسخة الويب.
+/// ============================================================
+
+double _estimateSkewAngle(img.Image image) {
+  final img.Image gray = img.grayscale(image.clone());
+  final int w = gray.width;
+  final int h = gray.height;
+  if (w < 24 || h < 24) {
+    return 0;
+  }
+
+  final List<double> bins = List<double>.filled(180, 0);
+  for (int y = 2; y < h - 2; y += 2) {
+    for (int x = 2; x < w - 2; x += 2) {
+      final num gx =
+          gray.getPixel(x + 1, y).r - gray.getPixel(x - 1, y).r;
+      final num gy =
+          gray.getPixel(x, y + 1).r - gray.getPixel(x, y - 1).r;
+      final double m = math.sqrt((gx * gx + gy * gy).toDouble());
+      if (m < 40) {
+        continue;
+      }
+      double a = math.atan2(gy.toDouble(), gx.toDouble()) * 180 / math.pi;
+      a = ((a % 180) + 180) % 180;
+      bins[a.floor() % 180] += m;
+    }
+  }
+
+  // تنعيم دائري للنافذة 5
+  final List<double> sm = List<double>.filled(180, 0);
+  for (int i = 0; i < 180; i++) {
+    sm[i] = bins[(i + 178) % 180] +
+        bins[(i + 179) % 180] +
+        bins[i] +
+        bins[(i + 1) % 180] +
+        bins[(i + 2) % 180];
+  }
+
+  int peak = 0;
+  for (int i = 1; i < 180; i++) {
+    if (sm[i] > sm[peak]) {
+      peak = i;
+    }
+  }
+
+  // متوسط دائري مرجّح حول الذروة (زوايا مضاعفة لمعالجة modulo 180)
+  double sx = 0;
+  double sy = 0;
+  double sw = 0;
+  for (int d = -4; d <= 4; d++) {
+    final int i = (peak + d + 180) % 180;
+    final double wt = sm[i];
+    final double ang = (peak + d) * 2 * math.pi / 180;
+    sx += wt * math.cos(ang);
+    sy += wt * math.sin(ang);
+    sw += wt;
+  }
+  if (sw <= 0) {
+    return 0;
+  }
+
+  double theta = math.atan2(sy, sx) * 180 / (2 * math.pi);
+  theta = ((theta % 180) + 180) % 180;
+  double rot = -theta;
+  if (rot <= -90) {
+    rot += 180;
+  }
+  if (rot > 90) {
+    rot -= 180;
+  }
+  if (rot.abs() > 35) {
+    return 0;
+  }
+  return rot;
+}
+
 Future<_VariantsCreationResult> _createImageVariants(
   File original,
   Uint8List originalBytes,
@@ -577,7 +660,7 @@ Future<_VariantsCreationResult> _createImageVariants(
 
     final img.Image oriented = img.bakeOrientation(decoded);
 
-    // تكبير الصورة إذا كانت صغيرة لضمان دقة التعرف على الخانات السبع
+    // تكبير الصورة إذا كانت صغيرة لضمان دقة التعرف على خانات العداد
     img.Image baseWorking = oriented.clone();
     if (baseWorking.width < 1400) {
       baseWorking = img.copyResize(
@@ -585,6 +668,24 @@ Future<_VariantsCreationResult> _createImageVariants(
         width: 1400,
         interpolation: img.Interpolation.cubic,
       );
+    }
+
+    // تعديل ميل الصورة: نقيس زاوية الحواف المهيمنة وندير الصورة حتى يصبح
+    // صف الأرقام أفقياً (نفس خوارزمية الويب). النسخة الأصلية تبقى ضمن
+    // النسخ احتياطياً، ولا نطبق التدوير إلا عند وجود ميل واضح.
+    try {
+      final double skewAngle = _estimateSkewAngle(baseWorking);
+      if (skewAngle.abs() > 1.0) {
+        baseWorking.backgroundColor = img.ColorUint8.rgba(255, 255, 255, 255);
+        baseWorking = img.copyRotate(
+          baseWorking,
+          angle: skewAngle,
+          interpolation: img.Interpolation.cubic,
+        );
+        debugPrint('Deskew angle: ${skewAngle.toStringAsFixed(1)}°');
+      }
+    } catch (e) {
+      debugPrint('Deskew skipped: $e');
     }
 
     // إضافة هامش هادئ حول الصورة لمنع ضياع الصفر الأول على الطرف الأيسر

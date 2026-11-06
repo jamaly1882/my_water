@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../ocr/meter_analysis.dart';
 import '../ocr/ocr_service.dart';
 import '../widgets/my_app_bar.dart';
 
@@ -340,7 +341,7 @@ class _PreviousReadingScreenState
       if (!mounted) return;
 
       setState(() {
-        if (_isSevenDigits(
+        if (_isValidMeterReading(
           currentReading.toString(),
         )) {
           currentController.text =
@@ -362,17 +363,13 @@ class _PreviousReadingScreenState
   }
 
   // ============================================================
-  // التحقق من 7 خانات
+  // التحقق من 6 أو 7 خانات
   // ============================================================
 
-  bool _isSevenDigits(
+  bool _isValidMeterReading(
     String value,
   ) {
-    return RegExp(
-      r'^\d{7}$',
-    ).hasMatch(
-      value.trim(),
-    );
+    return MeterAnalyzer.isValid(value);
   }
 
   // القراءة اليدوية: أي عدد من الأرقام، بدون شرط 7 خانات
@@ -484,7 +481,7 @@ Future<void> readMeterImage() async {
 
     if (result.trim().isEmpty) {
       showMessage(
-        'No 7-digit reading was found',
+        'No 6 or 7 digit reading was found',
         error: true,
       );
       return;
@@ -496,10 +493,10 @@ Future<void> readMeterImage() async {
 
     debugPrint('NORMALIZED READING: $number');
 
-    // التحقق من أن القراءة سبعة أرقام بالضبط.
-    if (!_isSevenDigits(number)) {
+    // التحقق من أن القراءة 6 أو 7 أرقام بالضبط.
+    if (!_isValidMeterReading(number)) {
       showMessage(
-        'القراءة يجب أن تكون 7 خانات بالضبط\n'
+        'القراءة يجب أن تكون 6 أو 7 خانات بالضبط\n'
         'Extracted reading: $number',
         error: true,
       );
@@ -939,7 +936,7 @@ Future<void> readMeterImage() async {
                       ),
                       subtitle:
                           const Text(
-                        'Crop the photo, then 7 digits are read automatically',
+                        'Crop the photo, then 6 or 7 digits are read automatically',
                         style: TextStyle(
                           color:
                               Colors.white70,

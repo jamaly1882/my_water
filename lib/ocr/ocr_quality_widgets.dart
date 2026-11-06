@@ -1,12 +1,14 @@
 // ============================================================
 // ocr_quality_widgets.dart
-// مكونات واجهة فحص جودة الصورة ومراجعة الخانات السبع لقراءة العداد
+// مكونات واجهة فحص جودة الصورة ومراجعة خانات العداد (6 أو 7)
 // تعمل على جميع المنصات (Mobile / Web)
 // ============================================================
 
 import 'dart:typed_data';
+import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'image_quality_analyzer.dart';
 import 'meter_analysis.dart';
@@ -277,48 +279,78 @@ class ImageQualityCard extends StatelessWidget {
 }
 
 // ============================================================
-// محرر ومراجع الخانات السبع التفاعلي (مثل بكرات العداد)
+// محرر ومراجعة خانات العداد (6 أو 7) مع إدخال يدوي آمن
 // ============================================================
 
-class SevenDigitRollerEditor extends StatelessWidget {
+class MeterReadingEditor extends StatefulWidget {
   final String reading;
+  final int digitCount;
   final List<double> digitConfidences;
   final List<String> alternatives;
   final int? previousReading;
   final ValueChanged<String> onChanged;
+  final ValueChanged<int> onDigitCountChanged;
 
-  const SevenDigitRollerEditor({
+  const MeterReadingEditor({
     super.key,
     required this.reading,
+    required this.digitCount,
+    required this.onChanged,
+    required this.onDigitCountChanged,
     this.digitConfidences = const <double>[],
     this.alternatives = const <String>[],
     this.previousReading,
-    required this.onChanged,
   });
 
-  List<int> _getDigits() {
-    final String clean = reading.replaceAll(RegExp(r'\D'), '');
-    final String padded = clean.padLeft(7, '0');
-    final String seven =
-        padded.length > 7 ? padded.substring(padded.length - 7) : padded;
+  @override
+  State<MeterReadingEditor> createState() => _MeterReadingEditorState();
+}
 
-    return List<int>.generate(
-      7,
-      (i) => int.tryParse(seven[i]) ?? 0,
-    );
+class _MeterReadingEditorState extends State<MeterReadingEditor> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.reading);
+  }
+
+  @override
+  void didUpdateWidget(covariant MeterReadingEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.reading != _controller.text) {
+      _controller.text = widget.reading;
+      _controller.selection = TextSelection.collapsed(
+        offset: _controller.text.length,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _setReading(String value) {
+    _controller.text = value;
+    _controller.selection = TextSelection.collapsed(offset: value.length);
+    widget.onChanged(value);
   }
 
   void _updateDigit(int index, int delta) {
-    final List<int> digits = _getDigits();
+    final String clean = MeterAnalyzer.normalize(_controller.text);
+    if (clean.length != widget.digitCount) return;
+    final List<int> digits = clean.split('').map(int.parse).toList();
     digits[index] = (digits[index] + delta + 10) % 10;
-    onChanged(digits.join());
+    _setReading(digits.join());
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<int> digits = _getDigits();
-    final String currentStr = digits.join();
-    final int? currentInt = int.tryParse(currentStr);
+    final String clean = MeterAnalyzer.normalize(_controller.text);
+    final bool hasFullLength = clean.length == widget.digitCount;
+    final int? currentInt = hasFullLength ? int.tryParse(clean) : null;
 
     final bool hasPrevious = previousReading != null && previousReading! >= 0;
     final bool isLessThanPrevious = hasPrevious &&
@@ -332,45 +364,89 @@ class SevenDigitRollerEditor extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Column(
         children: [
-          const Text(
-            'Check the seven digits against the photo (use the arrows to fix any digit):',
+          Text(
+            'Check the ${widget.digitCount} digits against the photo. '
+            'Leading zeros are kept exactly as shown.',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 10),
-
-          // شريط الخانات السبع من اليسار إلى اليمين كما في العداد الحقيقي
-          Directionality(
+          SegmentedButton<int>(
+            segments: const [
+              ButtonSegment<int>(value: 6, label: Text('6 digits')),
+              ButtonSegment<int>(value: 7, label: Text('7 digits')),
+            ],
+            selected: {widget.digitCount},
+            onSelectionChanged: (selection) {
+              widget.onDigitCountChanged(selection.first);
+            },
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
             textDirection: TextDirection.ltr,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List<Widget>.generate(7, (index) {
-                  final double conf = index < digitConfidences.length
-                      ? digitConfidences[index]
-                      : 90.0;
-                  final bool isUncertain = conf < 72.0;
+            textAlign: TextAlign.center,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(widget.digitCount),
+            ],
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 4,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+            decoration: InputDecoration(
+              labelText: 'Meter reading',
+              hintText: widget.digitCount == 6 ? '065004' : '0650040',
+              counterText: '',
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: widget.onChanged,
+          ),
+          const SizedBox(height: 10),
+          if (hasFullLength)
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List<Widget>.generate(widget.digitCount, (index) {
+                    final double conf = index < widget.digitConfidences.length
+                        ? widget.digitConfidences[index]
+                        : 90.0;
+                    final bool isUncertain = conf < 72.0;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: _buildDigitRoller(
-                      index: index,
-                      digit: digits[index],
-                      isUncertain: isUncertain,
-                    ),
-                  );
-                }),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: _buildDigitRoller(
+                        index: index,
+                        digit: int.parse(clean[index]),
+                        isUncertain: isUncertain,
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            )
+          else
+            Text(
+              'Enter all ${widget.digitCount} digits shown in the meter window. '
+              'Do not add zeros that are not on the meter.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.orange.shade900,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-
-          // تنبيه إذا كانت إحدى الخانات غير مؤكدة
-          if (digitConfidences.any((c) => c < 72.0)) ...[
+          if (hasFullLength && widget.digitConfidences.any((c) => c < 72.0)) ...[
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -394,9 +470,7 @@ class SevenDigitRollerEditor extends StatelessWidget {
               ],
             ),
           ],
-
-          // القراءات البديلة المقترحة إن وجدت
-          if (alternatives.isNotEmpty) ...[
+          if (widget.alternatives.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -412,7 +486,9 @@ class SevenDigitRollerEditor extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                ...alternatives.map(
+                ...widget.alternatives
+                    .where((alt) => MeterAnalyzer.isValid(alt))
+                    .map(
                   (alt) => ActionChip(
                     label: Text(
                       alt,
@@ -422,14 +498,15 @@ class SevenDigitRollerEditor extends StatelessWidget {
                         letterSpacing: 1.5,
                       ),
                     ),
-                    onPressed: () => onChanged(alt),
+                    onPressed: () {
+                      widget.onDigitCountChanged(alt.length);
+                      _setReading(alt);
+                    },
                   ),
                 ),
               ],
             ),
           ],
-
-          // مقارنة مع القراءة السابقة إن وجدت
           if (hasPrevious) ...[
             const SizedBox(height: 12),
             Container(
@@ -463,7 +540,7 @@ class SevenDigitRollerEditor extends StatelessWidget {
                   Expanded(
                     child: Text(
                       isLessThanPrevious
-                          ? 'Warning: the current reading ($currentStr) is lower than the previous one ($previousReading)!'
+                          ? 'Warning: the current reading ($clean) is lower than the previous one ($previousReading)!'
                           : 'Previous reading: $previousReading  |  Consumption: $consumption units',
                       style: TextStyle(
                         fontSize: 13,
@@ -603,20 +680,25 @@ class MeterOcrReviewDialog extends StatefulWidget {
 
 class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
   late String _currentReading;
+  late int _digitCount;
   bool _showEnhanced = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.analysisResult.reading.length == 7) {
-      _currentReading = widget.analysisResult.reading;
-    } else if (widget.analysisResult.partialReading.isNotEmpty) {
-      _currentReading =
-          widget.analysisResult.partialReading.padLeft(7, '0');
+    final String reading = widget.analysisResult.reading;
+    if (MeterAnalyzer.isValid(reading)) {
+      _currentReading = reading;
+      _digitCount = reading.length;
     } else {
-      _currentReading = '0000000';
+      // لا نخمّن رقمًا ولا نضيف أصفارًا: نترك الحقل فارغًا للمراجعة.
+      _currentReading = '';
+      _digitCount = MeterAnalyzer.maxDigits;
     }
   }
+
+  bool get _canApprove =>
+      MeterAnalyzer.isValid(_currentReading, expectedDigits: _digitCount);
 
   @override
   Widget build(BuildContext context) {
@@ -750,15 +832,21 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                 else
                   const SizedBox(height: 10),
 
-                // محرر الخانات السبع
-                SevenDigitRollerEditor(
+                // محرر خانات العداد (6 أو 7)
+                MeterReadingEditor(
                   reading: _currentReading,
+                  digitCount: _digitCount,
                   digitConfidences: widget.analysisResult.digitConfidences,
                   alternatives: widget.analysisResult.alternatives,
                   previousReading: widget.previousReading,
                   onChanged: (val) {
                     setState(() {
                       _currentReading = val;
+                    });
+                  },
+                  onDigitCountChanged: (count) {
+                    setState(() {
+                      _digitCount = count;
                     });
                   },
                 ),
@@ -778,17 +866,21 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop(
-                        OcrReviewOutcome(
-                          action: OcrReviewAction.confirm,
-                          reading: _currentReading,
-                        ),
-                      );
-                    },
+                    onPressed: _canApprove
+                        ? () {
+                            Navigator.of(context).pop(
+                              OcrReviewOutcome(
+                                action: OcrReviewAction.confirm,
+                                reading: _currentReading,
+                              ),
+                            );
+                          }
+                        : null,
                     icon: const Icon(Icons.check_circle),
                     label: Text(
-                      'Approve the reading ($_currentReading)',
+                      _canApprove
+                          ? 'Approve the reading ($_currentReading)'
+                          : 'Enter the full $_digitCount-digit reading',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

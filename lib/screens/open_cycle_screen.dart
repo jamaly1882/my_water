@@ -5,12 +5,13 @@
 //
 // التعديل:
 // - الإدخال اليدوي يقبل أي عدد من الأرقام.
-// - OCR: تصوير العداد ثم قص شاشة الأرقام يدويًا ثم قراءة 7 أرقام بالضبط.
+// - OCR: تصوير العداد ثم قص شاشة الأرقام يدويًا ثم قراءة 6 أو 7 أرقام بالضبط.
 // ============================================================
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../ocr/meter_analysis.dart';
 import '../ocr/ocr_service.dart';
 import '../widgets/my_app_bar.dart';
 
@@ -341,7 +342,7 @@ class _OpenCycleScreenState extends State<OpenCycleScreen>
   // OCR
   //
   // المسار: الكاميرا -> القص اليدوي -> OCR.
-  // OCR يشترط 7 أرقام بالضبط.
+  // OCR يشترط 6 أو 7 أرقام بالضبط.
   // ============================================================
 
 Future<void> readMeterImage() async {
@@ -378,12 +379,12 @@ Future<void> readMeterImage() async {
 
     debugPrint("OCR NORMALIZED: $number");
 
-    // يجب أن تكون القراءة سبعة أرقام بالضبط.
-    if (!RegExp(r'^\d{7}$').hasMatch(number)) {
+    // يجب أن تكون القراءة 6 أو 7 أرقام بالضبط، دون إضافة أصفار.
+    if (!MeterAnalyzer.isValid(number)) {
       showMessage(
         "تمت قراءة:\n$number\n\n"
-        "قراءة العداد بالصورة يجب أن تكون 7 خانات بالضبط.\n\n"
-        "Retake the photo and make sure every digit is visible.",
+        "قراءة العداد بالصورة يجب أن تكون 6 أو 7 خانات بالضبط.\n\n"
+        "Retake the photo and make sure every integer digit is visible.",
         color: Colors.orange,
       );
       return;
@@ -1123,7 +1124,7 @@ Future<void> readMeterImage() async {
 
                 const Text(
                   "يمكنك إدخال القراءة يدويًا بأي عدد من الخانات،\n"
-                  "Or photograph the meter and crop the digit window manually; the reading must be 7 digits.",
+                  "Or photograph the meter and crop the digit window manually; the reading must be 6 or 7 digits.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.grey,
@@ -1455,7 +1456,7 @@ Future<void> readMeterImage() async {
 
           const Text(
             "صوّر العداد ثم حدد شاشة الأرقام بالقص اليدوي.\n"
-            "After cropping the digits are read automatically; it must be 7 digits.",
+            "After cropping the digits are read automatically; it must be 6 or 7 digits.",
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.grey,
