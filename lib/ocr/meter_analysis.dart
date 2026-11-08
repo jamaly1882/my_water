@@ -208,6 +208,13 @@ class MeterAnalyzer {
     ).allMatches(normalized);
 
     for (final match in separatedMatches) {
+      // A run of 8 or more spaced digits must not become a 7-digit reading.
+      final String before = normalized.substring(0, match.start);
+      final String after = normalized.substring(match.end);
+      if (RegExp(r'\d[\s.,:;|_/\-\[\]()]+$').hasMatch(before) ||
+          RegExp(r'^[\s.,:;|_/\-\[\]()]+\d').hasMatch(after)) {
+        continue;
+      }
       final String digits = match.group(1)!.replaceAll(RegExp(r'\D'), '');
       if (!allowedLength(digits.length)) continue;
       final bool alreadyDirect = results.any((c) => c.text == digits);
@@ -490,6 +497,16 @@ class MeterAnalyzer {
 
     final String bestReading = sortedCandidates.first.key;
     final int bestCount = candidateCounts[bestReading] ?? 1;
+
+    // Display confidence for the chosen digit, not for a different digit
+    // that won the positional vote.
+    for (int i = 0; i < digitCount; i++) {
+      final votes = positionalVotes[i];
+      final total = votes.values.fold<double>(0, (sum, value) => sum + value);
+      digitConfidences[i] = total > 0
+          ? ((votes[bestReading[i]] ?? 0) / total * 100).clamp(0.0, 100.0)
+          : 0.0;
+    }
 
     final double avgDigitConfidence = digitConfidences.isEmpty
         ? 50.0
