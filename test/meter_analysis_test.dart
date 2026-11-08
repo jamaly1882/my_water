@@ -57,6 +57,11 @@ void main() {
       expect(candidates.where((c) => c.text.length == 7), isEmpty);
     });
 
+    test('does not truncate eight separated digits to seven', () {
+      final candidates = MeterAnalyzer.extractCandidatesFromText('1 2 3 4 5 6 7 8');
+      expect(candidates, isEmpty);
+    });
+
     test('respects expectedDigits', () {
       final candidates = MeterAnalyzer.extractCandidatesFromText(
         '065004 0650040',

@@ -506,7 +506,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
     final bool hasFullLength = clean.length == widget.digitCount;
     final int? currentInt = hasFullLength ? int.tryParse(clean) : null;
 
-    final bool hasPrevious =
+  final bool hasPrevious =
         widget.previousReading != null && widget.previousReading! >= 0;
     final bool isLessThanPrevious = hasPrevious &&
         currentInt != null &&
@@ -548,7 +548,11 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.center,
             inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9٠-٩۰-۹]')),
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                final normalized = MeterAnalyzer.normalize(newValue.text);
+                return newValue.copyWith(text: normalized);
+              }),
               LengthLimitingTextInputFormatter(widget.digitCount),
             ],
             style: const TextStyle(
@@ -874,6 +878,7 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
   late String _currentReading;
   late int _digitCount;
   bool _showEnhanced = false;
+  bool _reviewedUncertainReading = false;
 
   @override
   void initState() {
@@ -889,8 +894,12 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
     }
   }
 
+  bool get _needsExplicitReview => widget.analysisResult.isValid &&
+      !widget.analysisResult.isHighConfidence;
+
   bool get _canApprove =>
-      MeterAnalyzer.isValid(_currentReading, expectedDigits: _digitCount);
+      MeterAnalyzer.isValid(_currentReading, expectedDigits: _digitCount) &&
+      (!_needsExplicitReview || _reviewedUncertainReading);
 
   @override
   Widget build(BuildContext context) {
@@ -1023,11 +1032,13 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                   onChanged: (val) {
                     setState(() {
                       _currentReading = val;
+                      _reviewedUncertainReading = false;
                     });
                   },
                   onDigitCountChanged: (count) {
                     setState(() {
                       _digitCount = count;
+                      _reviewedUncertainReading = false;
                     });
                   },
                 ),
@@ -1041,6 +1052,16 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                 ),
 
                 const SizedBox(height: 16),
+
+                if (_needsExplicitReview)
+                  CheckboxListTile(
+                    value: _reviewedUncertainReading,
+                    onChanged: (value) => setState(() {
+                      _reviewedUncertainReading = value ?? false;
+                    }),
+                    title: const Text('القراءة غير مؤكدة؛ راجعت جميع الأرقام مع الصورة'),
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
 
                 // أزرار الإجراءات
                 SizedBox(
@@ -1061,7 +1082,9 @@ class _MeterOcrReviewDialogState extends State<MeterOcrReviewDialog> {
                     label: Text(
                       _canApprove
                           ? 'Approve the reading ($_currentReading)'
-                          : 'Enter the full $_digitCount-digit reading',
+                          : (_needsExplicitReview && !_reviewedUncertainReading
+                              ? 'راجع الأرقام وأكد مراجعتها'
+                              : 'Enter the full $_digitCount-digit reading'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

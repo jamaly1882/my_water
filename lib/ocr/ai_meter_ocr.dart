@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import 'ai_meter_response.dart';
 import 'image_quality_analyzer.dart';
 import 'meter_analysis.dart';
 
@@ -82,7 +83,8 @@ Rules:
 - Keep every leading zero. Do not pad, truncate, or reorder digits.
 - Ignore serial numbers, labels, barcodes, and the red fractional drums.
 - If any integer digit is hidden, blurred, or ambiguous, return an empty reading instead of guessing.
-- Return JSON only: {"reading":"0650040","digit_count":7,"confidence":0.0}
+- Return JSON only: {"reading":"0650040","digit_count":7,"confidence":0.95}
+- Confidence must be a number between 0 and 1; use 0 if unreadable.
 - "reading" must be a string of 6 or 7 ASCII digits, or "" when unreadable.
 ''';
 
@@ -125,9 +127,9 @@ Rules:
 
       final dynamic decoded = jsonDecode(response.body);
       final String rawText = _extractOutputText(decoded);
-      final String number = _parseReading(rawText, expectedDigits);
+      final String? number = parseAiMeterResponse(rawText, expectedDigits: expectedDigits);
 
-      if (number.isEmpty) {
+      if (number == null) {
         return null;
       }
 
@@ -137,27 +139,6 @@ Rules:
       debugPrintStack(stackTrace: stackTrace);
       return null;
     }
-  }
-
-  static String _parseReading(String rawText, int? expectedDigits) {
-    String candidate = rawText.trim();
-
-    // النموذج قد يرجع JSON كما طلبنا، أو نصًا يحتوي الرقم فقط.
-    try {
-      final dynamic decoded = jsonDecode(candidate);
-      if (decoded is Map && decoded['reading'] is String) {
-        candidate = (decoded['reading'] as String).trim();
-      }
-    } catch (_) {
-      // ليس JSON: نكمل بالتنظيف المحافظ أدناه.
-    }
-
-    // لا نحوّل الحروف إلى أرقام هنا: نموذج الرؤية يجب أن يرجع أرقامًا صريحة.
-    final String digits = candidate.replaceAll(RegExp(r'[^0-9]'), '');
-    if (!MeterAnalyzer.isValid(digits, expectedDigits: expectedDigits)) {
-      return '';
-    }
-    return digits;
   }
 
   static String _extractOutputText(dynamic decoded) {

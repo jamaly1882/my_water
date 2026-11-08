@@ -348,7 +348,7 @@ Future<String?> _cropAndReadLoop(
     }
 
     // في حال عدم تمرير context نعتمد النتيجة الأفضل مباشرة
-    if (!output.analysis.isValid) {
+    if (!output.analysis.isValid || !output.analysis.isHighConfidence) {
       throw Exception(
         '${output.analysis.message}\n${output.qualityReport.summaryMessage}',
       );

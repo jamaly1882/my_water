@@ -880,6 +880,7 @@ let meterOCRWorkerPromise = null;
 
 let lastMeterOCRText = "";
 let lastMeterOCRReading = "";
+let lastMeterOCRSuggestion = "";
 let lastMeterOCRRawResults = [];
 let lastMeterOCRDigitConfidences = [];
 let lastMeterOCRMethod = "";
@@ -3829,7 +3830,7 @@ async function _recognizeCellRegion(work, x0, x1, y0, y1, worker) {
       const txt = (r.data.text || "").trim();
       const d = txt.replace(/\D/g, "");
       const conf = Number(r.data.confidence || 0);
-      if (d.length >= 1 && conf > 0) return { digit: d[0], confidence: conf };
+      if (d.length === 1 && conf > 0) return { digit: d, confidence: conf };
     } catch (e) { /* ignore */ }
     return null;
   };
@@ -3849,7 +3850,10 @@ async function _recognizeCellRegion(work, x0, x1, y0, y1, worker) {
     if (!best || v.sum > best.sc) best = { digit: d, confidence: v.max, sc: v.sum };
   }
   if (!best) return null;
-  return { digit: best.digit, confidence: best.confidence };
+  const total = Object.values(votes).reduce((sum, v) => sum + v.sum, 0);
+  const agreement = total > 0 ? best.sc / total : 0;
+  const support = votes[best.digit].n >= 2 ? 1 : 0.7;
+  return { digit: best.digit, confidence: best.confidence * agreement * support };
 }
 
 /* Column-density profile within a band. */
@@ -3887,10 +3891,17 @@ function _cellBounds(gray, band, n) {
   return bounds;
 }
 
-async function runCellBasedOCR(sourceCanvas) {
+function _ambiguousCellCount(attempts, best, minMean = 65) {
+  return attempts.some(function (attempt) {
+    return attempt.complete && attempt.n !== best.n &&
+      attempt.mean >= minMean && Math.abs(best.score - attempt.score) < 8;
+  });
+}
+
+async function runCellBasedOCR(sourceCanvas, angleScale = 1) {
   const worker = await getOCRWorker();
   let gray = _grayFromCanvas(sourceCanvas);
-  const angle = _gradientSkew(gray);
+  const angle = _gradientSkew(gray) * angleScale;
   let work = sourceCanvas;
   if (Math.abs(angle) > 0.75) {
     work = _rotateCanvasWhite(sourceCanvas, angle);
@@ -3923,9 +3934,18 @@ async function runCellBasedOCR(sourceCanvas) {
       attempts.push({ n: n, cells: cells, mean: mean, score: score, complete: present.length === n });
     }
   }
+  return _chooseCellResult(attempts, angle);
+}
+
+function _chooseCellResult(attempts, angle) {
   attempts.sort(function (a, b) { return b.score - a.score; });
   const best = attempts[0];
   if (!best || !best.complete) return { success: false, reading: "", angle: angle };
+  // Similar scores for different digit counts do not establish the number of
+  // drums. Fall back to whole-line OCR rather than guess 6 versus 7.
+  if (_ambiguousCellCount(attempts, best)) {
+    return { success: false, reading: "", angle: angle };
+  }
 
   const reading = best.cells.map(function (c) { return c.digit; }).join("");
   const digitConfidences = best.cells.map(function (c) { return Math.round(c.confidence); });
@@ -3933,6 +3953,10 @@ async function runCellBasedOCR(sourceCanvas) {
   const success = best.mean >= 65 && minConf >= 45;
   return {
     reading: success ? reading : "",
+    // A complete but uncertain reading is only a suggestion. Never send it
+    // through the trusted-reading API; the user must review it against the photo.
+    suggestion: best.mean >= 45 && minConf >= 20 &&
+      !_ambiguousCellCount(attempts, best, 45) ? reading : "",
     success: success,
     angle: angle,
     digitCount: reading.length,
@@ -3960,6 +3984,8 @@ async function recognizeMeterDigits(
 
   lastMeterOCRReading =
     "";
+
+  lastMeterOCRSuggestion = "";
 
   lastMeterOCRRawResults =
     [];
@@ -4241,6 +4267,21 @@ async function recognizeMeterDigits(
       };
     }
 
+    /* The dominant edge angle may over-correct slightly tilted roller windows.
+     * Try a gentler correction only after the trusted paths fail. A complete
+     * result is a review-only suggestion, never an accepted OCR reading. */
+    try {
+      const gentler = await runCellBasedOCR(sourceCanvas, 0.6);
+      const suggestion = gentler.suggestion || (cellResult && cellResult.suggestion);
+      const source = gentler.suggestion ? gentler : cellResult;
+      if (suggestion && source) {
+        lastMeterOCRSuggestion = suggestion;
+        lastMeterOCRDigitConfidences = source.digitConfidences || [];
+      }
+    } catch (cellError) {
+      console.warn("REVIEW OCR ERROR:", cellError);
+    }
+
     /*
      * Could not read the display reliably.
      * Return failure instead of inventing digits;
@@ -4333,6 +4374,10 @@ function getLastMeterOCRReading() {
   return lastMeterOCRReading;
 }
 
+function getLastMeterOCRSuggestion() {
+  return lastMeterOCRSuggestion;
+}
+
 
 function getLastMeterOCRRawResults() {
   return lastMeterOCRRawResults;
@@ -4367,6 +4412,9 @@ window.getLastMeterOCRText =
 
 window.getLastMeterOCRReading =
   getLastMeterOCRReading;
+
+window.getLastMeterOCRSuggestion =
+  getLastMeterOCRSuggestion;
 
 window.getLastMeterOCRRawResults =
   getLastMeterOCRRawResults;
