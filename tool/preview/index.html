@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Azal Soft Platform — معاينة</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0f172a;
+      font-family: Arial, Tahoma, sans-serif;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 8px 12px;
+      background: #111c33;
+      border-bottom: 1px solid #22304d;
+      font-size: 13px;
+    }
+
+    .title {
+      font-weight: bold;
+      color: #7dd3fc;
+    }
+
+    .hint {
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    a.open {
+      margin-inline-start: auto;
+      color: #0f172a;
+      background: #38bdf8;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    a.open:hover {
+      background: #7dd3fc;
+    }
+
+    .stage {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      background: #f5f7fa;
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #f5f7fa;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!--
+    صفحة معاينة فقط — ليست جزءًا من التطبيق ولا تُنشر معه.
+
+    الغرض: فتح الموقع المنشور فعلًا (Firebase Hosting) داخل إطار،
+    لأن بناء Flutter للويب (build/web) لا يجري داخل بيئة التحرير.
+    المتصفح هو من يطلب الموقع مباشرة، فالنسخة المعروضة هي النسخة
+    الحقيقية على الإنترنت — لا محاكاة لها.
+  -->
+
+  <header>
+    <span class="title">معاينة حيّة</span>
+
+    <span class="hint">
+      تُعرض نسخة <strong>water-567bb.web.app</strong> المنشورة الآن.
+      تعديلات اليوم لا تظهر هنا حتى تنفّذ
+      <code>build_web.sh</code> ثم <code>firebase deploy</code>.
+    </span>
+
+    <a class="open"
+       href="https://water-567bb.web.app/"
+       target="_blank"
+       rel="noopener">
+      فتح في تبويب جديد
+    </a>
+  </header>
+
+  <div class="stage">
+    <iframe
+      src="https://water-567bb.web.app/"
+      title="Azal Soft Platform"
+      allow="clipboard-write; fullscreen">
+    </iframe>
+  </div>
+
+</body>
+
+</html>
