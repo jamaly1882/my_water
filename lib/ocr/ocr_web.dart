@@ -39,6 +39,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
   bool _isCropping = false;
   bool _isRecognizing = false;
+  bool _reviewedUncertainReading = false;
 
   String _status = 'Choose or photograph the water meter to start';
 
@@ -215,6 +216,8 @@ class _OcrWebPageState extends State<OcrWebPage> {
       setState(() {
         _isRecognizing = true;
         _reading = '';
+        _analysisResult = null;
+        _reviewedUncertainReading = false;
         _rawText = '';
         _status = 'Reading the meter digits and checking all 6 or 7…';
       });
@@ -227,6 +230,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       if (!mounted) return;
 
       final String jsReading = _getJsString('getLastMeterOCRReading');
+      final String jsSuggestion = _getJsString('getLastMeterOCRSuggestion');
       final String rawText = _getJsString('getLastMeterOCRText');
       final String jsMethod = _getJsString('getLastMeterOCRMethod');
       final List<double> jsDigitConfidences = _getJsDigitConfidences();
@@ -243,7 +247,11 @@ class _OcrWebPageState extends State<OcrWebPage> {
             : 80.0;
         analysis = MeterAnalysisResult(
           reading: cleanJsReading,
-          confidence: conf.clamp(0.0, 99.0),
+          // Even a high average can hide one unreliable digit.
+          confidence: (jsDigitConfidences.length == cleanJsReading.length &&
+                  jsDigitConfidences.every((c) => c >= 72))
+              ? conf.clamp(0.0, 99.0)
+              : conf.clamp(0.0, 80.0),
           occurrences: 1,
           totalAttempts: 1,
           isValid: true,
@@ -251,36 +259,42 @@ class _OcrWebPageState extends State<OcrWebPage> {
               'The ${cleanJsReading.length}-digit reading was recognised drum by drum.',
           digitConfidences: jsDigitConfidences,
         );
-      } else {
-        final List<String> rawParts = rawText
-            .split('|')
-            .map((s) => s.trim())
-            .where((s) => s.isNotEmpty)
-            .toList();
-
-        final List<WeightedOcrCandidate> weighted = <WeightedOcrCandidate>[];
-        if (jsReading.trim().isNotEmpty) {
-          weighted.add(
-            WeightedOcrCandidate(
-              text: jsReading.trim(),
-              weight: 2.5,
-              source: 'js-line',
-            ),
-          );
-        }
-
+      } else if (MeterAnalyzer.isValid(cleanJsReading)) {
+        // Only the candidate accepted by the browser OCR gate is shown.
+        // Raw OCR attempts may include serial numbers and low-confidence guesses.
         analysis = MeterAnalyzer.analyze(
-          rawParts,
+          <String>[cleanJsReading],
           previousReading: widget.previousReading,
-          weightedCandidates: weighted,
+        );
+      } else if (MeterAnalyzer.isValid(jsSuggestion)) {
+        // This is not an accepted OCR result. It must be explicitly checked
+        // by the user before it can leave this screen.
+        analysis = MeterAnalysisResult(
+          reading: jsSuggestion,
+          confidence: jsDigitConfidences.isEmpty
+              ? 0
+              : (jsDigitConfidences.reduce((a, b) => a + b) /
+                      jsDigitConfidences.length)
+                  .clamp(0.0, 60.0),
+          occurrences: 1,
+          totalAttempts: 1,
+          isValid: true,
+          message: 'قراءة مقترحة غير مؤكدة — راجع كل خانة مع الصورة قبل الاعتماد.',
+          digitConfidences: jsDigitConfidences,
+        );
+      } else {
+        analysis = const MeterAnalysisResult(
+          reading: '',
+          confidence: 0,
+          occurrences: 0,
+          isValid: false,
+          message: 'No reliable reading was found. Enter the digits or crop again.',
         );
       }
 
       String finalReading = '';
       if (analysis.isValid) {
         finalReading = analysis.reading;
-      } else if (MeterAnalyzer.isValid(cleanJsReading)) {
-        finalReading = cleanJsReading;
       }
 
       setState(() {
@@ -306,7 +320,12 @@ class _OcrWebPageState extends State<OcrWebPage> {
 
       setState(() {
         _isRecognizing = false;
-        _status = 'Automatic digit recognition failed';
+        _reading = '';
+        _analysisResult = const MeterAnalysisResult(
+          reading: '', confidence: 0, occurrences: 0, isValid: false,
+          message: 'Automatic recognition failed. Enter the reading manually or try again.',
+        );
+        _status = 'Automatic digit recognition failed — enter the reading manually or try again.';
       });
 
       _showMessage('OCR error: $e');
@@ -321,6 +340,12 @@ class _OcrWebPageState extends State<OcrWebPage> {
     final String clean = MeterAnalyzer.normalize(_reading);
     if (!MeterAnalyzer.isValid(clean, expectedDigits: _digitCount)) {
       _showMessage('The reading must be exactly $_digitCount digits');
+      return;
+    }
+    if (_analysisResult?.isValid == true &&
+        _analysisResult?.isHighConfidence == false &&
+        !_reviewedUncertainReading) {
+      _showMessage('راجع جميع الأرقام مع الصورة وأكد المراجعة أولاً');
       return;
     }
     Navigator.of(context).pop(clean);
@@ -453,6 +478,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
       _isRecognizing = false;
       _status = 'Choose or photograph the water meter to start';
       _digitCount = MeterAnalyzer.maxDigits;
+      _reviewedUncertainReading = false;
     });
   }
 
@@ -710,10 +736,12 @@ class _OcrWebPageState extends State<OcrWebPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  _analysisResult?.isValid == true
+                  _analysisResult?.isValid == true &&
+                          _analysisResult?.isHighConfidence == true
                       ? Icons.check_circle
                       : Icons.edit_note,
-                  color: _analysisResult?.isValid == true
+                  color: _analysisResult?.isValid == true &&
+                          _analysisResult?.isHighConfidence == true
                       ? Colors.green
                       : Colors.orange,
                   size: 28,
@@ -765,14 +793,26 @@ class _OcrWebPageState extends State<OcrWebPage> {
               onChanged: (val) {
                 setState(() {
                   _reading = val;
+                  _reviewedUncertainReading = false;
                 });
               },
               onDigitCountChanged: (count) {
                 setState(() {
                   _digitCount = count;
+                  _reviewedUncertainReading = false;
                 });
               },
             ),
+            if (_analysisResult?.isValid == true &&
+                _analysisResult?.isHighConfidence == false)
+              CheckboxListTile(
+                value: _reviewedUncertainReading,
+                onChanged: (value) => setState(() {
+                  _reviewedUncertainReading = value ?? false;
+                }),
+                title: const Text('القراءة غير مؤكدة؛ راجعت جميع الأرقام مع الصورة'),
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
             const SizedBox(height: 18),
             SizedBox(
               width: double.infinity,
@@ -781,14 +821,19 @@ class _OcrWebPageState extends State<OcrWebPage> {
                 onPressed: MeterAnalyzer.isValid(
                   _reading,
                   expectedDigits: _digitCount,
-                )
+                ) && (_analysisResult?.isValid != true ||
+                    _analysisResult!.isHighConfidence || _reviewedUncertainReading)
                     ? _confirmAndReturn
                     : null,
                 icon: const Icon(Icons.check_circle),
                 label: Text(
-                  MeterAnalyzer.isValid(_reading, expectedDigits: _digitCount)
-                      ? 'Approve the reading ($_reading)'
-                      : 'Enter the full $_digitCount-digit reading',
+                  !MeterAnalyzer.isValid(_reading, expectedDigits: _digitCount)
+                      ? 'Enter the full $_digitCount-digit reading'
+                      : (_analysisResult?.isValid == true &&
+                              _analysisResult?.isHighConfidence == false &&
+                              !_reviewedUncertainReading
+                          ? 'راجع الأرقام وأكد مراجعتها'
+                          : 'Approve the reading ($_reading)'),
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
