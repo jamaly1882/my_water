@@ -312,7 +312,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
               : 'A candidate reading was found — review it against the photo.';
         } else {
           _status =
-              'The 6 or 7 digits could not be read clearly — enter them below or crop again.';
+              'تعذرت قراءة الأرقام تلقائيًا. أدخلها في الحقل أو أعد قص نافذة الأرقام.';
         }
       });
     } catch (e) {
@@ -518,6 +518,11 @@ class _OcrWebPageState extends State<OcrWebPage> {
                     if (_qualityReport != null) ...[
                       const SizedBox(height: 18),
                       ImageQualityCard(report: _qualityReport!),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'جودة الصورة لا تعني أن قراءة الأرقام مؤكدة.',
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                     if (_analysisResult != null || _reading.isNotEmpty) ...[
                       const SizedBox(height: 18),

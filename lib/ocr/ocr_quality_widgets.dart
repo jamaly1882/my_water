@@ -486,7 +486,9 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
   }
 
   void _setReading(String value) {
-    _controller.text = value;
+    setState(() {
+      _controller.text = value;
+    });
     _controller.selection = TextSelection.collapsed(offset: value.length);
     widget.onChanged(value);
   }
@@ -506,7 +508,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
     final bool hasFullLength = clean.length == widget.digitCount;
     final int? currentInt = hasFullLength ? int.tryParse(clean) : null;
 
-  final bool hasPrevious =
+    final bool hasPrevious =
         widget.previousReading != null && widget.previousReading! >= 0;
     final bool isLessThanPrevious = hasPrevious &&
         currentInt != null &&
@@ -567,7 +569,12 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
               counterText: '',
               border: const OutlineInputBorder(),
             ),
-            onChanged: widget.onChanged,
+            onChanged: (value) {
+              // Refresh digit boxes immediately even when the parent does not
+              // rebuild in response to onChanged.
+              setState(() {});
+              widget.onChanged(value);
+            },
           ),
           const SizedBox(height: 10),
           // صف الخانات ظاهر دائمًا: الخانات المُدخلة كأزرار تمرير،
@@ -821,6 +828,7 @@ class _MeterReadingEditorState extends State<MeterReadingEditor> {
         child: Center(
           child: Text(
             '?',
+            semanticsLabel: 'Empty digit',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
