@@ -672,13 +672,17 @@
         return;
       }
 
-      var s = seconds();
-
-      // نص حقيقي عن الحالة بدل «جارٍ التحميل» الثابت
+      // نص حقيقي عن الحالة — بلا عدّاد ثوانٍ:
+      // العدّاد كان يوحي بانتظار محسوب، والحقيقة أن المدة
+      // تتوقف على سرعة الشبكة وحدها.
       if (statusText && !problemShown) {
-        statusText.textContent = engineStarted()
-          ? "جارٍ تشغيل التطبيق…  " + s + " ثانية"
-          : "جارٍ تحميل الملفات…  " + s + " ثانية";
+        var nextText = engineStarted()
+          ? "جارٍ تشغيل التطبيق…"
+          : "جارٍ تحميل الملفات…";
+
+        if (statusText.textContent !== nextText) {
+          statusText.textContent = nextText;
+        }
       }
 
       // خطأ فعلي مُلتقط
@@ -698,7 +702,13 @@
       }
     }
 
-    var timer = setInterval(tick, 1000);
+    // 250 جزء من الثانية لا 1000: كان الفحص كل ثانية يعني
+    // أن الواجهة قد تكون جاهزة ويبقى الغطاء فوقها حتى ثانية
+    // كاملة قبل أن يُزال.
+    var timer = setInterval(tick, 250);
+
+    // فحص فوري عند الإقلاع بدل انتظار أول دورة
+    tick();
 
     window.addEventListener("flutter-first-frame", hideGuard);
 

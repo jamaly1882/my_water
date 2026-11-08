@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'firebase_options.dart';
+import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
 
 // ============================================================
@@ -145,16 +146,20 @@ class MyWaterApp extends StatelessWidget {
       // البداية
       // =========================================================
       //
-      // مهم جدًا:
-      // لا نضع LoginScreen هنا.
-      // SplashScreen هو الذي يقرر:
+      // الويب: شاشة الدخول مباشرة بلا شاشة انتظار.
       //
-      // مستخدم مسجل → HomeScreen
-      // غير مسجل → LoginScreen
+      // السبب: على الويب الجلسة غير محفوظة (Persistence.NONE)،
+      // فلا يوجد مستخدم مسجّل عند فتح الصفحة أبدًا — أي أن
+      // SplashScreen كان يعرض دوّار «Loading sign-in…» ثم ينتظر
+      // استجابة Firebase Auth (حتى 5 ثوانٍ) ليعرض الشاشة نفسها
+      // التي كان يمكن رسمها في الإطار الأول.
+      //
+      // الجوال: يبقى SplashScreen كما هو لأنه هو الذي يقرر:
+      // مستخدم مسجل → HomeScreen · غير مسجل → LoginScreen.
       //
       // =========================================================
 
-      home: const SplashScreen(),
+      home: kIsWeb ? const LoginScreen() : const SplashScreen(),
     );
   }
 }
