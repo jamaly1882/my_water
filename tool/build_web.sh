@@ -6,13 +6,50 @@
 # الاستخدام:
 #   bash tool/build_web.sh
 #
+# موقع على مسار فرعي (GitHub Pages مثلًا):
+#   BASE_HREF=/my_water/ bash tool/build_web.sh
+#
 # يبني في build/web ثم يتحقق من الملفات التي
 # يؤدي غيابها إلى صفحة بيضاء عند النشر.
 # ============================================================
 
 set -euo pipefail
 
+# ============================================================
+# ويندوز — Git Bash / MSYS
+# ============================================================
+#
+# Git Bash يحوّل أي وسيط يبدأ بـ "/" إلى مسار ويندوز، فيصل
+# --base-href "/" إلى Flutter على شكل:
+#     --base-href "C:/Program Files/Git/"
+# ويرفضه Flutter. نوقف التحويل هنا قبل أي استدعاء.
+#
+# (على لينكس وماك لا أثر لهذين المتغيرين.)
+# ============================================================
+
+export MSYS_NO_PATHCONV=1
+export MSYS2_ARG_CONV_EXCL="*"
+
 cd "$(dirname "$0")/.."
+
+base_href="${BASE_HREF:-/}"
+
+case "$base_href" in
+  /*) ;;
+  *)
+    echo "!! BASE_HREF يجب أن يبدأ بـ / — القيمة الحالية: $base_href"
+    exit 1
+    ;;
+esac
+
+case "$base_href" in
+  */) ;;
+  *)
+    base_href="$base_href/"
+    ;;
+esac
+
+echo "==> المسار الأساسي: $base_href"
 
 echo "==> تنظيف البناء السابق"
 flutter clean
@@ -21,24 +58,41 @@ echo "==> جلب الحزم"
 flutter pub get
 
 echo "==> البناء"
-# --base-href "/"              : الموقع على جذر النطاق
+
+build_log="$(mktemp)"
+trap 'rm -f "$build_log"' EXIT
+
+# --base-href "$base_href"     : جذر النطاق افتراضيًا
 # --no-web-resources-cdn       : ملفات CanvasKit تُخدم من موقعك
 #                                بدل gstatic.com (شبكات تحجبها أو تُبطئها)
 # --dart2js-optimization O4    : أصغر ملف JS ممكن (بناء أبطأ قليلًا،
 #                                وفتح أسرع للمستخدم)
+#
+# إن رفضت نسخة Flutter الخيار O4 نُعيد البناء بدونه — أمّا أي خطأ
+# آخر فيتوقف السكربت عنده برسالته الحقيقية، بلا إعادة محاولة مضلِّلة.
 if ! flutter build web \
   --release \
-  --base-href "/" \
+  --base-href "$base_href" \
   --no-web-resources-cdn \
-  --dart2js-optimization O4; then
+  --dart2js-optimization O4 2>&1 | tee "$build_log"; then
 
-  # نسخ Flutter الأقدم لا تعرف O4 — البناء الافتراضي يكفي.
-  echo "    WARN لم يُقبل O4 في نسخة Flutter هذه — إعادة البناء بالإعداد الافتراضي"
+  if grep -qi "dart2js-optimization" "$build_log"; then
 
-  flutter build web \
-    --release \
-    --base-href "/" \
-    --no-web-resources-cdn
+    echo
+    echo "    WARN نسخة Flutter هذه لا تقبل O4 — إعادة البناء بالإعداد الافتراضي"
+
+    flutter build web \
+      --release \
+      --base-href "$base_href" \
+      --no-web-resources-cdn
+
+  else
+
+    echo
+    echo "!! فشل البناء — الرسالة الحقيقية أعلاه."
+    echo "   على Windows/Git Bash استخدم: MSYS_NO_PATHCONV=1 bash tool/build_web.sh"
+    exit 1
+  fi
 fi
 
 echo "==> فحص المخرجات"

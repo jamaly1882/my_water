@@ -53,7 +53,41 @@ flutter build web \
 | `--no-web-resources-cdn` | ينسخ CanvasKit داخل `build/web/canvaskit/` بدل تحميله من `gstatic.com` وقت التشغيل. **حجب `gstatic.com` = صفحة بيضاء بلا أي رسالة.** |
 
 > إن كان الموقع على مسار فرعي (مثل GitHub Pages: `/my_water/`) فاستخدم
-> `--base-href "/my_water/"` بدل `/`.
+> `--base-href "/my_water/"` بدل `/`، أو مع السكربت:
+> `BASE_HREF=/my_water/ bash tool/build_web.sh`.
+
+### ويندوز — Git Bash (خطأ `C:/Program Files/Git/`)
+
+إن ظهر:
+
+```
+Received a --base-href value of "C:/Program Files/Git/"
+--base-href should start and end with /
+```
+
+فالسبب أن Git Bash (MSYS) يحوّل كل وسيط يبدأ بـ `/` إلى مسار ويندوز قبل أن
+يصل إلى Flutter. ليس عيبًا في مشروعك ولا في نسخة Flutter.
+
+`tool/build_web.sh` صار يعطّل هذا التحويل بنفسه:
+
+```bash
+export MSYS_NO_PATHCONV=1
+export MSYS2_ARG_CONV_EXCL="*"
+```
+
+وإن شغّلت Flutter يدويًا فافعل الشيء نفسه:
+
+```bash
+MSYS_NO_PATHCONV=1 flutter build web --release --base-href "/" --no-web-resources-cdn
+```
+
+كذلك لم تعد الرسالة «لم يُقبل O4» تظهر إلا إذا كان الفشل متعلقًا فعلًا
+بخيار `--dart2js-optimization`؛ أي خطأ آخر يتوقف عنده السكربت برسالته الحقيقية.
+
+> رسالة `48 packages have newer versions incompatible with dependency constraints`
+> من `flutter pub get` معلومة فقط ولا تمنع البناء. لا تُحدِّث
+> `firebase_core`/`cloud_firestore`/`firebase_auth` إلى الإصدارات الكبرى
+> الجديدة قبل إعادة اختبار التطبيق كله: واجهاتها تتغيّر.
 
 ---
 
