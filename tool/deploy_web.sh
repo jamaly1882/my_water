@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
 # ============================================================
-# بناء ونشر نسخة الويب — على الموقع الصحيح دائمًا
+# بناء ونشر نسخة الويب — على جميع مواقع Hosting المعرّفة
 # ============================================================
 #
 # الاستخدام:
-#   bash tool/deploy_web.sh              # بناء ثم نشر
-#   SKIP_BUILD=1 bash tool/deploy_web.sh # نشر ما بنيته للتوّ
+#   bash tool/deploy_web.sh                                 # بناء ثم نشر على كل المواقع
+#   SKIP_BUILD=1 bash tool/deploy_web.sh                    # نشر ما بنيته للتوّ
+#   FIREBASE_SITE=azalsoftplatform bash tool/deploy_web.sh  # نشر على موقع واحد فقط
 #
-# لماذا هذا السكربت؟
-#   كان `firebase deploy --only hosting` ينشر كل إدخالات hosting
-#   في firebase.json. وإدخال واحد معطوب (target يشير إلى موقع غير
-#   موجود) يُفشل النشر كله برسالة 404:
-#
-#     Request to .../sites/https-water-app-2026-web-ap-26/versions
-#     had HTTP Error: 404, Requested entity was not found.
-#
-#   هنا نقرأ اسم الموقع الصحيح من firebase.json وننشر عليه وحده.
+# ملاحظة:
+#   كل معرّف "site" في firebase.json يجب أن يكون منشأً مسبقًا في مشروع Firebase:
+#     firebase hosting:sites:create azalsoftplatform --project water-567bb
 # ============================================================
 
 set -euo pipefail
@@ -27,14 +22,26 @@ export MSYS2_ARG_CONV_EXCL="*"
 cd "$(dirname "$0")/.."
 
 read_json_value() {
-  # $1 = اسم المفتاح
+  # $1 = اسم المفتاح (أول قيمة مطابقة)
   sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p" "$2" |
     head -1
 }
 
-site="$(read_json_value site firebase.json)"
+read_json_values() {
+  # $1 = اسم المفتاح (جميع القيم المطابقة)
+  sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p" "$2"
+}
 
-if [ -z "$site" ]; then
+sites=()
+if [ -n "${FIREBASE_SITE:-}" ]; then
+  sites=("$FIREBASE_SITE")
+else
+  while IFS= read -r s; do
+    [ -n "$s" ] && sites+=("$s")
+  done < <(read_json_values site firebase.json)
+fi
+
+if [ "${#sites[@]}" -eq 0 ] || [ -z "${sites[0]}" ]; then
   echo "!! لم أجد \"site\" في firebase.json"
   echo "   كل إدخال hosting يجب أن يحدد \"site\" باسم معرّف حقيقي"
   echo "   (انظر: firebase hosting:sites:list --project water-567bb)"
@@ -46,7 +53,7 @@ if [ -z "$project" ]; then
   project="$(read_json_value default .firebaserc)"
 fi
 
-echo "==> الموقع: $site"
+echo "==> المواقع: ${sites[*]}"
 
 if [ -n "$project" ]; then
   echo "==> المشروع: $project"
@@ -63,10 +70,29 @@ else
   echo "==> تجاوز البناء (SKIP_BUILD=1)"
 fi
 
-echo
-echo "==> النشر"
-if [ -n "$project" ]; then
-  firebase deploy --only "hosting:${site}" --project "$project"
-else
-  firebase deploy --only "hosting:${site}"
+failed_sites=()
+for site in "${sites[@]}"; do
+  echo
+  echo "==> النشر على الموقع: $site"
+  if [ -n "$project" ]; then
+    if ! firebase deploy --only "hosting:${site}" --project "$project"; then
+      failed_sites+=("$site")
+      echo "!! تعذّر النشر على الموقع \"$site\"."
+      echo "   إذا ظهرت رسالة 404 Requested entity was not found، أنشئ الموقع أولًا عبر:"
+      echo "   firebase hosting:sites:create \"$site\" --project \"$project\""
+    fi
+  else
+    if ! firebase deploy --only "hosting:${site}"; then
+      failed_sites+=("$site")
+      echo "!! تعذّر النشر على الموقع \"$site\"."
+      echo "   إذا ظهرت رسالة 404 Requested entity was not found، أنشئ الموقع أولًا عبر:"
+      echo "   firebase hosting:sites:create \"$site\""
+    fi
+  fi
+done
+
+if [ "${#failed_sites[@]}" -gt 0 ]; then
+  echo
+  echo "!! فشل النشر على المواقع التالية: ${failed_sites[*]}"
+  exit 1
 fi
