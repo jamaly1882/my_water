@@ -59,7 +59,7 @@ function loadMeterOcrHelpers() {
     script +
       "\n;globalThis.__meterOcrTestExports = {" +
       "normalizeDigits, digitsOnly, clamp, solveMeterDigits," +
-      "chooseBestSolution, selectBestDirectCandidate, _ambiguousCellCount, _chooseCellResult};",
+      "chooseBestSolution, selectBestDirectCandidate, _ambiguousCellCount, _chooseCellResult, _findReviewCellSuggestion};",
     sandbox,
     { filename: "web/index.html<meter-ocr>" }
   );
@@ -171,4 +171,34 @@ test("partial and ambiguous cell results cannot produce suggestions", () => {
     { n: 6, cells: digits.slice(0, 6), mean: 58, score: 58, complete: true }
   ], 0);
   assert.equal(ambiguous.suggestion, "");
+});
+
+
+test("tries a second gentler angle only when the first produces no suggestion", async () => {
+  const calls = [];
+  const suggestion = { success: false, suggestion: "9142037", digitConfidences: [60, 60, 60, 60, 60, 60, 60] };
+  const result = await helpers._findReviewCellSuggestion({}, { angle: -2 }, async (_, scale, angle) => {
+    calls.push([scale, angle]);
+    return scale === 0.8 ? suggestion : { suggestion: "" };
+  });
+  assert.deepEqual(calls, [[0.6, null], [0.8, null]]);
+  assert.equal(result, suggestion);
+});
+
+test("when skew is undetermined, review fallback tries both directions", async () => {
+  const calls = [];
+  const suggestion = { success: true, reading: "9142037", suggestion: "9142037" };
+  const result = await helpers._findReviewCellSuggestion({}, { angle: 0 }, async (_, scale, angle) => {
+    calls.push([scale, angle]);
+    return angle === 3 ? suggestion : { suggestion: "" };
+  });
+  assert.deepEqual(calls, [[1, -3], [1, 3]]);
+  assert.equal(result.suggestion, "9142037");
+});
+
+test("review fallback never creates a suggestion from an incomplete result", async () => {
+  const result = await helpers._findReviewCellSuggestion({}, { angle: 0 }, async () => ({
+    reading: "914203", success: false, suggestion: ""
+  }));
+  assert.equal(result, null);
 });

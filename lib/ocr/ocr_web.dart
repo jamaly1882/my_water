@@ -327,7 +327,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
               'تعذّرت القراءة التلقائية: $ocrError';
         } else {
           _status =
-              'تعذّرت قراءة الأرقام تلقائيًا. أدخلها في الحقل أو أعد قص نافذة الأرقام.';
+              'تعذرت قراءة الأرقام تلقائيًا. أدخلها في الحقل أو أعد قص نافذة الأرقام.';
         }
       });
     } catch (e) {
@@ -538,6 +538,11 @@ class _OcrWebPageState extends State<OcrWebPage> {
                     if (_qualityReport != null) ...[
                       const SizedBox(height: 18),
                       ImageQualityCard(report: _qualityReport!),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'جودة الصورة لا تعني أن قراءة الأرقام مؤكدة.',
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                     if (_analysisResult != null || _reading.isNotEmpty) ...[
                       const SizedBox(height: 18),

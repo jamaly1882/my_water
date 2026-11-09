@@ -16,8 +16,21 @@ void main() {
         ),
       ),
     ));
+    expect(find.text('?'), findsNWidgets(7));
     await tester.enterText(find.byType(TextField), '٠٦٥٠٠٤٠');
     await tester.pump();
     expect(value, '0650040');
+    expect(find.text('?'), findsNothing);
+    expect(find.text('0'), findsNWidgets(4));
+    expect(find.text('6'), findsOneWidget);
+    expect(find.text('5'), findsOneWidget);
+    expect(find.text('4'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '91');
+    await tester.pump();
+    expect(value, '91');
+    expect(find.text('?'), findsNWidgets(5));
+    expect(find.text('9'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
   });
 }
