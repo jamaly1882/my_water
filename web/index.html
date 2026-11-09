@@ -521,21 +521,21 @@
         </div>
 
         <div id="bootGuardSubtitle">
-          منصة أزال سوفت لإدارة المياه
+          Sign in to continue
         </div>
 
         <div class="boot-field">
-          <span>اسم المستخدم</span>
+          <span>Username or email</span>
           <div></div>
         </div>
 
         <div class="boot-field">
-          <span>كلمة المرور</span>
+          <span>Password</span>
           <div></div>
         </div>
 
         <div id="bootGuardButton">
-          تسجيل الدخول
+          Sign in
         </div>
 
         <div id="bootGuardProgress">
@@ -543,12 +543,12 @@
         </div>
 
         <div id="bootGuardText">
-          جارٍ تحميل التطبيق…
+          Loading the app…
         </div>
 
         <div id="bootGuardHint">
-          يحدث هذا عند أول فتح فقط — بعدها تُخزَّن الملفات
-          وتُفتح الصفحة أسرع. لا حاجة لإدخال أي شيء الآن.
+          This happens on the first visit only — the files are then
+          cached and the page opens faster. Nothing to type for now.
         </div>
 
       </div>
@@ -839,8 +839,8 @@
       // نص حقيقي عن الحالة بدل «جارٍ التحميل» الثابت
       if (statusText && !problemShown) {
         statusText.textContent = engineStarted()
-          ? "جارٍ فتح شاشة الدخول…  " + s + " ثانية"
-          : "جارٍ تحميل التطبيق…  " + s + " ثانية";
+          ? "Opening the sign-in page…  " + s + "s"
+          : "Loading the app…  " + s + "s";
       }
 
       // خطأ فعلي مُلتقط
@@ -879,7 +879,7 @@
         if (problemBox) problemBox.style.display = "none";
         if (loadingBox) loadingBox.style.display = "block";
         if (guard) guard.style.display = "flex";
-        if (statusText) statusText.textContent = "جارٍ تحميل التطبيق…";
+        if (statusText) statusText.textContent = "Loading the app…";
       });
     }
 
