@@ -21,13 +21,25 @@ echo "==> جلب الحزم"
 flutter pub get
 
 echo "==> البناء"
-# --base-href "/"            : الموقع على جذر النطاق
-# --no-web-resources-cdn     : ملفات CanvasKit تُخدم من موقعك
-#                              بدل gstatic.com (شبكات تحجبها)
-flutter build web \
+# --base-href "/"              : الموقع على جذر النطاق
+# --no-web-resources-cdn       : ملفات CanvasKit تُخدم من موقعك
+#                                بدل gstatic.com (شبكات تحجبها أو تُبطئها)
+# --dart2js-optimization O4    : أصغر ملف JS ممكن (بناء أبطأ قليلًا،
+#                                وفتح أسرع للمستخدم)
+if ! flutter build web \
   --release \
   --base-href "/" \
-  --no-web-resources-cdn
+  --no-web-resources-cdn \
+  --dart2js-optimization O4; then
+
+  # نسخ Flutter الأقدم لا تعرف O4 — البناء الافتراضي يكفي.
+  echo "    WARN لم يُقبل O4 في نسخة Flutter هذه — إعادة البناء بالإعداد الافتراضي"
+
+  flutter build web \
+    --release \
+    --base-href "/" \
+    --no-web-resources-cdn
+fi
 
 echo "==> فحص المخرجات"
 
@@ -71,6 +83,26 @@ if [ "$fail" -ne 0 ]; then
   echo
   echo "!! البناء غير مكتمل — لا تنشر هذه النسخة."
   exit 1
+fi
+
+echo
+echo "==> أحجام الملفات (ما ينزّله المستخدم قبل ظهور شاشة الدخول)"
+
+if command -v du >/dev/null 2>&1; then
+  du -h build/web/main.dart.js | awk '{print "    main.dart.js        " $1}'
+
+  # الأجزاء المؤجَّلة: شاشات ما بعد الدخول. لا تُنزَّل عند الفتح.
+  parts_total=0
+  for part in build/web/main.dart.js_*.part.js; do
+    [ -f "$part" ] || continue
+    parts_total=$((parts_total + $(du -k "$part" | cut -f1)))
+  done
+
+  if [ "$parts_total" -gt 0 ]; then
+    echo "    deferred parts      ${parts_total}K  (تُنزَّل بعد الدخول فقط)"
+  fi
+
+  du -sh build/web/canvaskit 2>/dev/null | awk '{print "    canvaskit/          " $1 "  (تُخزَّن سنة كاملة)"}'
 fi
 
 echo
