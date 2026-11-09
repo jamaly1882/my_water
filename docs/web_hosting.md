@@ -29,10 +29,11 @@
 أغلب حالات الصفحة البيضاء سببها نشر نسخة ناقصة أو نسخة قديمة.
 
 ```bash
-# 1) بناء موثوق (يفحص المخرجات بنفسه)
-bash tool/build_web.sh
+# أمر واحد: بناء + نشر على الموقع الصحيح
+bash tool/deploy_web.sh
 
-# 2) النشر
+# أو خطوتان
+bash tool/build_web.sh
 firebase deploy --only hosting
 ```
 
@@ -371,3 +372,42 @@ du -ch build/web/main.dart.js_*.part.js | tail -1
 ثم في المتصفح: `F12 ← Network`، وبعد الضغط على **Sign in** ستظهر طلبات
 `main.dart.js_*.part.js` فوق الزر مباشرة — هذا هو Firestore والشاشات
 وهما يُنزَّلان في اللحظة التي ينتظر فيها المستخدم أصلًا.
+
+
+---
+
+## خطأ النشر `404 Requested entity was not found`
+
+إن ظهر:
+
+```
+Request to https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/
+https-water-app-2026-web-ap-26/versions had HTTP Error: 404
+Requested entity was not found.
+```
+
+فالسبب **إدخال hosting ثانٍ في `firebase.json`** يشير إلى موقع غير موجود
+(كان `target: water2` مربوطًا في `.firebaserc` بالاسم
+`https-water-app-2026-web-ap-26` — وهو رابط `https://water-app-2026.web.app`
+بعد أن أزال CLI رموزه). اسم الموقع يجب أن يكون معرّفًا مجرّدًا، لا رابطًا.
+
+في هذه الحزمة:
+
+- حُذف الإدخال الثاني من `firebase.json`، وبقيت كل رؤوس التخزين المؤقت
+  الاثنا عشر كما هي على السايت الوحيد `water-567bb`.
+- حُذف مفتاح `targets` من `.firebaserc` (بقي `projects` فقط).
+- أُضيف `tool/deploy_web.sh` يقرأ اسم الموقع من `firebase.json` وينشر عليه
+  وحده، فلا يتكرر الخطأ:
+
+```bash
+bash tool/deploy_web.sh              # بناء + نشر
+SKIP_BUILD=1 bash tool/deploy_web.sh # نشر ما بُني للتوّ
+```
+
+للتحقق من المواقع الموجودة فعلًا في مشروعك:
+
+```bash
+firebase hosting:sites:list --project water-567bb
+```
+
+أي اسم في `firebase.json` أو `.firebaserc` غير ظاهر في هذه القائمة = 404.
