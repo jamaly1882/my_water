@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../home_screen.dart';
+import '../services/app_bootstrap.dart';
 import '../services/gm_dashboard_service.dart';
 import 'login_screen.dart';
-import 'set_up_mshrf/setup_mshrf_screen.dart';
+
+// الشاشات الثقيلة تُنزَّل عند الحاجة فقط (تحميل مؤجَّل)،
+// فلا تُبطئ الإقلاع ولا شاشة الدخول.
+import '../home_screen.dart' deferred as home_screen;
+import 'set_up_mshrf/setup_mshrf_screen.dart' deferred as setup_mshrf;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,9 +20,10 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  // قراءة عند الحاجة: الشاشة قد تُبنى قبل أن تكتمل تهيئة Firebase.
+  FirebaseAuth get auth => FirebaseAuth.instance;
 
-  final FirebaseFirestore firestore =
+  FirebaseFirestore get firestore =>
       FirebaseFirestore.instance;
 
   @override
@@ -33,6 +38,19 @@ class _SplashScreenState extends State<SplashScreen> {
   // ============================================================
 
   Future<void> checkLogin() async {
+    // الجوال ينتظر اكتمال التهيئة (تبدأ في main بالتوازي).
+    await AppBootstrap.start();
+
+    if (!mounted) return;
+
+    if (!AppBootstrap.isReady) {
+      message('Could not reach Firebase');
+
+      goToLogin();
+
+      return;
+    }
+
     // ==========================================================
     // ننتظر أول إشارة من Firebase عن حالة الدخول
     //
@@ -74,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // ==========================================================
 
     if (GmRoles.isMainSupervisorEmail(user.email)) {
-      goToAdmin();
+      await goToAdmin();
       return;
     }
 
@@ -116,7 +134,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // ========================================================
 
       if (GmRoles.isMainSupervisorRole(role)) {
-        goToAdmin();
+        await goToAdmin();
         return;
       }
 
@@ -178,10 +196,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (!mounted) return;
 
+      await home_screen.loadLibrary();
+
+      if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(
+          builder: (_) => home_screen.HomeScreen(
             isAdmin: false,
             supervisorId: supervisorId,
             provinceId: provinceId,
@@ -231,13 +253,17 @@ class _SplashScreenState extends State<SplashScreen> {
   // دخول المدير
   // ============================================================
 
-  void goToAdmin() {
+  Future<void> goToAdmin() async {
+    if (!mounted) return;
+
+    await setup_mshrf.loadLibrary();
+
     if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => const SetupMshrfScreen(),
+        builder: (_) => setup_mshrf.SetupMshrfScreen(),
       ),
     );
   }
