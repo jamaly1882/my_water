@@ -1,12 +1,26 @@
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../home_screen.dart';
+import '../services/app_bootstrap.dart';
 import '../services/gm_dashboard_service.dart';
 import '../widgets/my_app_bar.dart';
-import 'set_up_mshrf/setup_mshrf_screen.dart';
+
+// ============================================================
+// تحميل مؤجَّل للشاشات الثقيلة
+// ============================================================
+//
+// كانت شاشة الدخول تستورد HomeScreen و SetupMshrfScreen استيرادًا
+// مباشرًا، فيُضطر المتصفح إلى تنزيل كل الشاشات والتقارير وOCR
+// **قبل** أن تظهر شاشة الدخول. صار هذا الجزء يُنزَّل عند الضغط
+// على الدخول فقط، فصار الملف الأولي أصغر بكثير.
+// ============================================================
+
+import '../home_screen.dart' deferred as home_screen;
+import 'set_up_mshrf/setup_mshrf_screen.dart' deferred as setup_mshrf;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,10 +30,65 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  // ============================================================
+  // Firebase تُقرأ عند الحاجة لا عند إنشاء الشاشة
+  // ============================================================
+  //
+  // كان `FirebaseAuth.instance` يُقرأ في أوّل سطر من الحالة، وهذا
+  // يرمي استثناءً إن لم تكتمل التهيئة بعد. صار القراءة عند
+  // الضغط على الدخول فقط — بعد أن يصبح AppBootstrap جاهزًا.
+  // ============================================================
 
-  final FirebaseFirestore firestore =
+  FirebaseAuth get auth => FirebaseAuth.instance;
+
+  FirebaseFirestore get firestore =>
       FirebaseFirestore.instance;
+
+  Timer? _prefetchTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // إن أُعيد تحميل الشاشة دون أن يكون main قد بدأ التهيئة.
+    AppBootstrap.start();
+
+    AppBootstrap.state.addListener(_onBootstrapChanged);
+
+    if (AppBootstrap.isReady) {
+      schedulePrefetch();
+    }
+  }
+
+  void _onBootstrapChanged() {
+    if (AppBootstrap.isReady) {
+      schedulePrefetch();
+    }
+  }
+
+  // ============================================================
+  // تحميل صامت لشاشات ما بعد الدخول
+  // ============================================================
+  //
+  // الانتظار بعد جهوزية الاتصال، ثم تنزيل جزء الشاشات في الخلفية.
+  // النتيجة: عند الضغط على «تسجيل الدخول» يكون الجزء موجودًا،
+  // فيكون الانتقال فوريًا بدل أن ينتظر التنزيل.
+  // ============================================================
+
+  void schedulePrefetch() {
+    _prefetchTimer?.cancel();
+
+    _prefetchTimer = Timer(
+      const Duration(seconds: 5),
+      () {
+        if (!mounted || !AppBootstrap.isReady) return;
+
+        home_screen.loadLibrary().catchError((_) {});
+
+        setup_mshrf.loadLibrary().catchError((_) {});
+      },
+    );
+  }
 
   final TextEditingController usernameController =
       TextEditingController();
@@ -29,6 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool loading = false;
   bool obscurePassword = true;
+
+  /// نص المرحلة الحالية (مثل «جارٍ تحميل الشاشات…») يظهر على الزر.
+  String stage = '';
 
   // ============================================================
   // بيانات الحساب التجريبي
@@ -58,6 +130,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> login({bool demo = false}) async {
     if (loading) return;
+
+    // Firebase قد تكون ما زالت تُهيَّأ (بدأت في الخلفية مع أول إطار).
+    if (!AppBootstrap.isReady) {
+      AppBootstrap.start();
+
+      message('Preparing the connection… try again in a moment');
+
+      return;
+    }
 
     final username = demo
         ? demoUsername
@@ -106,14 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // ========================================================
 
       if (GmRoles.isMainSupervisorEmail(user.email)) {
-        if (!mounted) return;
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const SetupMshrfScreen(),
-          ),
-        );
+        await openAdminScreens();
 
         return;
       }
@@ -160,14 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // ========================================================
 
       if (GmRoles.isMainSupervisorRole(role)) {
-        if (!mounted) return;
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const SetupMshrfScreen(),
-          ),
-        );
+        await openAdminScreens();
 
         return;
       }
@@ -255,10 +322,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
+      // تنزيل جزء الشاشات (مؤجَّل) — يحدث مرة واحدة في كل جلسة.
+      await showLoading('Loading the dashboard…');
+
+      await home_screen.loadLibrary();
+
+      if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(
+          builder: (_) => home_screen.HomeScreen(
             isAdmin: false,
             supervisorId: supervisorId,
             provinceId: provinceId,
@@ -326,9 +400,41 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() {
           loading = false;
+          stage = '';
         });
       }
     }
+  }
+
+  // ============================================================
+  // تحميل جزء مؤجَّل ثم فتح الشاشة
+  // ============================================================
+  //
+  // جزء الشاشات يُنزَّل عند أول انتقال فقط؛ بعد ذلك يكون في الذاكرة
+  // (أو في كاش المتصفح) فيكون الانتقال فوريًا في الجلسات التالية.
+  // ============================================================
+
+  Future<void> showLoading(String text) async {
+    if (!mounted) return;
+
+    setState(() {
+      stage = text;
+    });
+  }
+
+  Future<void> openAdminScreens() async {
+    await showLoading('Loading the admin screens…');
+
+    await setup_mshrf.loadLibrary();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => setup_mshrf.SetupMshrfScreen(),
+      ),
+    );
   }
 
   // ============================================================
@@ -367,6 +473,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _prefetchTimer?.cancel();
+
+    AppBootstrap.state.removeListener(_onBootstrapChanged);
+
     usernameController.dispose();
     passwordController.dispose();
 
@@ -390,7 +500,15 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
 
         body: SafeArea(
-          child: Center(
+          // نستمع لحالة Firebase: تظهر شاشة الدخول فورًا،
+          // وتُفعَّل الأزرار لحظة جهوزيتها.
+          child: ValueListenableBuilder<BootstrapState>(
+            valueListenable: AppBootstrap.state,
+            builder: (context, bootState, _) {
+              final bool ready =
+                  bootState == BootstrapState.ready;
+
+              return Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
 
@@ -411,6 +529,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+
+                        // ======================================
+                        // حالة التهيئة
+                        //
+                        // الشاشة ظاهرة بالفعل؛ هذا شريط صغير يقول
+                        // إن الاتصال ما زال يُجهَّز، أو خطأ + إعادة
+                        // محاولة. لا يحجب النموذج ولا يؤخّره.
+                        // ======================================
+
+                        if (!ready) ...[
+                          _BootstrapNotice(state: bootState),
+                          const SizedBox(height: 18),
+                        ],
 
                         // ======================================
                         // أيقونة المياه
@@ -538,7 +669,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 52,
 
                           child: ElevatedButton.icon(
-                            onPressed: loading
+                            onPressed: (loading || !ready)
                                 ? null
                                 : () => login(),
 
@@ -555,7 +686,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             label: Text(
                               loading
-                                  ? 'Signing in…'
+                                  ? (stage.isEmpty
+                                      ? 'Signing in…'
+                                      : stage)
                                   : 'Sign in',
 
                               style: const TextStyle(
@@ -586,7 +719,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 52,
 
                           child: OutlinedButton.icon(
-                            onPressed: loading
+                            onPressed: (loading || !ready)
                                 ? null
                                 : loginDemo,
 
@@ -643,9 +776,105 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
+              );
+            },
           ),
         ),
       ),
+    );
+  }
+}
+
+// ============================================================
+// شريط حالة التهيئة
+// ============================================================
+
+class _BootstrapNotice extends StatelessWidget {
+  const _BootstrapNotice({
+    required this.state,
+  });
+
+  final BootstrapState state;
+
+  @override
+  Widget build(BuildContext context) {
+    // فشل التهيئة: سبب واضح وزر إعادة محاولة.
+    if (state == BootstrapState.failed) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF4E5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: const Color(0xFFFFB74D),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'تعذّر الاتصال بخدمات Firebase',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6B3D00),
+              ),
+            ),
+            if (AppBootstrap.lastError != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                AppBootstrap.lastError!,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                  color: Color(0xFF6B3D00),
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 38,
+              child: FilledButton.icon(
+                onPressed: () {
+                  AppBootstrap.retry();
+                },
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 18,
+                ),
+                label: const Text(
+                  'إعادة المحاولة',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // قيد التهيئة: شريط رفيع لا يحجب النموذج.
+    return Column(
+      children: [
+        const LinearProgressIndicator(
+          minHeight: 3,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'جارٍ تجهيز الاتصال… يمكنك كتابة بياناتك الآن',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ],
     );
   }
 }
