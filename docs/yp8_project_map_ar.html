@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مخطط المشروع — Azal Soft Platform · YP8 الأسبوع الأول</title>
+<style>
+  :root{
+    --ink:#10222e; --ink2:#41586a; --line:#d9e3ea; --bg:#f4f7fa;
+    --blue:#0f5c8c; --blue-soft:#e6f0f7; --teal:#0f7a6c; --teal-soft:#e4f3f0;
+    --amber:#9a6400; --amber-soft:#fdf3dc; --red:#a3242b; --red-soft:#fbe9ea;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","Noto Naskh Arabic","Amiri",Tahoma,Arial,sans-serif;
+    line-height:1.65; font-size:14.5px;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:26px 22px 60px}
+  header.hero{
+    background:linear-gradient(135deg,#0f5c8c,#0b3f61 60%,#083049);
+    color:#fff; border-radius:16px; padding:26px 28px; margin-bottom:22px;
+    box-shadow:0 10px 24px rgba(8,48,73,.18);
+  }
+  .hero .kicker{font-size:12.5px; letter-spacing:.5px; opacity:.85; margin:0 0 6px}
+  .hero h1{margin:0 0 6px; font-size:26px; line-height:1.35}
+  .hero p{margin:0; font-size:13.5px; opacity:.92; max-width:80ch}
+  .hero .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .chip{background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25);
+    border-radius:999px; padding:3px 11px; font-size:12px}
+
+  section{background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:20px 22px; margin-bottom:18px}
+  h2{font-size:18px; margin:0 0 14px; display:flex; align-items:center; gap:10px}
+  h2 .num{background:var(--blue); color:#fff; width:26px; height:26px; border-radius:8px;
+    display:inline-flex; align-items:center; justify-content:center; font-size:14px; flex:none}
+  h3{font-size:14.5px; margin:16px 0 8px; color:var(--blue)}
+  p{margin:8px 0}
+  small.note{color:var(--ink2)}
+
+  /* chain diagram */
+  .chain{display:grid; grid-template-columns:repeat(5,1fr); gap:0; align-items:stretch; margin:6px 0 4px}
+  .stage{position:relative; text-align:center; padding:14px 8px 12px; border:1px solid var(--line);
+    background:#fbfdff; font-size:12.8px}
+  .stage:first-child{border-radius:12px 0 0 12px}
+  .stage:last-child{border-radius:0 12px 12px 0}
+  .stage b{display:block; font-size:13.5px; margin-bottom:3px}
+  .stage span{color:var(--ink2)}
+  .stage.ours{background:var(--blue-soft); border-color:#9cc3da; box-shadow:inset 0 0 0 2px #0f5c8c22}
+  .stage.ours::after{content:"نعمل هنا"; position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    background:var(--blue); color:#fff; font-size:10.5px; padding:2px 9px; border-radius:999px; white-space:nowrap}
+  .arrow{align-self:center; text-align:center; color:#9db4c4; font-size:18px}
+
+  .gapbox{margin-top:14px; border:1px dashed #c9a26b; background:var(--amber-soft); border-radius:12px;
+    padding:12px 14px; font-size:13px}
+  .gapbox b{color:var(--amber)}
+
+  /* flow row */
+  .flow{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:12px}
+  .step{background:#eef4f9; border:1px solid #cfe0ec; border-radius:9px; padding:6px 10px; font-size:12.4px}
+  .step.hot{background:var(--teal-soft); border-color:#a9d6ce; color:#0b5a50; font-weight:600}
+  .sep{color:#9db4c4}
+
+  /* layers */
+  .layers{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .layer{border:1px solid var(--line); border-radius:12px; padding:12px 13px; background:#fcfdfe}
+  .layer .tag{font-size:11px; color:#fff; background:var(--teal); border-radius:6px; padding:1px 8px; display:inline-block}
+  .layer h4{margin:8px 0 6px; font-size:14px}
+  .layer ul{margin:0; padding-inline-start:18px; font-size:12.7px; color:var(--ink2)}
+  .layer li{margin:4px 0}
+  .layer .out{margin-top:9px; font-size:12.3px; background:#f2f7fa; border-radius:8px; padding:7px 9px}
+
+  table{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px}
+  th,td{border:1px solid var(--line); padding:7px 9px; vertical-align:top; text-align:right}
+  th{background:#eff5f9; font-weight:600; font-size:12.6px}
+  td code{background:#f0f4f7; padding:0 4px; border-radius:4px}
+
+  .cards6{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px}
+  .card6{border:1px solid var(--line); border-radius:11px; padding:11px 12px; background:#fcfdfe}
+  .card6 .n{font-size:11px; color:var(--blue); font-weight:700}
+  .card6 b{display:block; font-size:13px; margin:2px 0 4px}
+  .card6 p{margin:0; font-size:12.6px; color:var(--ink2)}
+
+  .status{font-size:11.5px; border-radius:999px; padding:1px 8px; white-space:nowrap}
+  .ok{background:var(--teal-soft); color:#0b5a50}
+  .warn{background:var(--amber-soft); color:var(--amber)}
+  .no{background:var(--red-soft); color:var(--red)}
+
+  .ask{background:#0f5c8c08; border-inline-start:4px solid var(--blue); border-radius:10px; padding:12px 14px}
+  .ask ol{margin:0; padding-inline-start:20px}
+  .ask li{margin:6px 0; font-size:13px}
+
+  .words{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .words div{border:1px solid var(--line); border-radius:11px; padding:12px 13px; font-size:13px; background:#fcfdfe}
+  .words .en{direction:ltr; text-align:left; font-family:Georgia,"Times New Roman",serif; line-height:1.6}
+
+  footer{color:var(--ink2); font-size:12px; text-align:center; padding:8px}
+  @media print{
+    body{background:#fff; font-size:10.5pt}
+    .wrap{max-width:none; padding:0}
+    section,header.hero{box-shadow:none; break-inside:avoid; page-break-inside:avoid}
+    header.hero{background:#0f5c8c !important; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    section{padding:10px 12px; margin-bottom:8px}
+    .cards6{grid-template-columns:repeat(3,1fr)}
+    @page{size:A3 portrait; margin:10mm}
+  }
+  @media (max-width:900px){
+    .chain{grid-template-columns:1fr; gap:6px}
+    .stage{border-radius:12px !important}
+    .layers,.cards6,.words{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <p class="kicker">Youth Pitches 8 · الأسبوع الأول · مشروع تحدّي المياه</p>
+  <h1>مخطط المشروع — Azal Soft Platform</h1>
+  <p>سجل تشغيل الآبار: من صورة العداد إلى الفاتورة إلى الصندوق. هذا المخطط يطابق صناديق المحاضرات الأربع (الاثنين 2 → الخميس 5 نوفمبر) ويُبيّن ما هو جاهز، وما يحتاج رقمًا من الميدان، وما هو فجوة يجب إغلاقها قبل تسليم <b>الجمعة 6 نوفمبر 12:00</b> — ملف من صفحتين يمثّل 30٪ من درجة أفضل 12.</p>
+  <div class="meta">
+    <span class="chip">النطاق: 10 آبار · 60 مشتركًا</span>
+    <span class="chip">المرحلة: منتج عامل</span>
+    <span class="chip">المستوى: 2 → 3</span>
+    <span class="chip">الحوار: Water for People</span>
+    <span class="chip">درجة الدليل: Tier 1</span>
+  </div>
+</header>
+
+<!-- 1 -->
+<section>
+  <h2><span class="num">1</span> أين نقع على سلسلة المياه</h2>
+  <div class="chain">
+    <div class="stage"><b>المصدر</b><span>البئر · المضخة</span></div>
+    <div class="stage"><b>المعالجة/التخزين</b><span>خزان · شبكة</span></div>
+    <div class="stage ours"><b>التوزيع</b><span>خطوط · عدادات</span></div>
+    <div class="stage ours"><b>الاستخدام</b><span>أسرة · مشترك</span></div>
+    <div class="stage"><b>الإعادة/الفاقد</b><span>غير مقيس اليوم</span></div>
+  </div>
+
+  <div class="gapbox">
+    <b>الفجوة التي نغلقها:</b> الأمتار المضخوخة لا تُقارن بالأمتار المُباعة، والمُباعة لا تُقارن بالصندوق. النتيجة: فاقد غير مرئي، وفاتورة بلا دليل، وعجز يُكتشف في نهاية الشهر. نعمل داخل مجموعة الشرائح <b>«فاقد المياه والبنية الرقمية»</b>، عند وصلة التوزيع→الاستخدام، لا عند المعالجة.
+  </div>
+
+  <h3>المسار الرقمي — سبع خطوات، كلها موجودة في الكود</h3>
+  <div class="flow">
+    <span class="step">صورة العداد</span><span class="sep">←</span>
+    <span class="step hot">بوابة الثقة<br><small>جودة + ثقة لكل خانة</small></span><span class="sep">←</span>
+    <span class="step">قراءة معتمدة<br><small>صورة · وقت · قارئ</small></span><span class="sep">←</span>
+    <span class="step">الاستهلاك</span><span class="sep">←</span>
+    <span class="step">الفاتورة</span><span class="sep">←</span>
+    <span class="step">التحصيل</span><span class="sep">←</span>
+    <span class="step">الصندوق</span><span class="sep">←</span>
+    <span class="step hot">تقرير يوقّعه رئيس اللجنة</span>
+  </div>
+</section>
+
+<!-- 2 -->
+<section>
+  <h2><span class="num">2</span> الطبقات الأربع — الخيط الناظم</h2>
+  <p style="margin-top:0"><small class="note">كل طبقة تُقاس بما قبلها: مشكلة حقيقية → ادعاء قابل للقياس بدليل مصنَّف → مؤسسة تستطيع أن تقول «نعم» → دافع يدفع مقابل نتيجة → تجربة تُنتج قرارًا. طبقة بلا سابقتها لا تُقيَّم.</small></p>
+  <div class="layers">
+    <div class="layer">
+      <span class="tag">الطبقة 1 · الاثنين</span>
+      <h4>أين نقع</h4>
+      <ul>
+        <li>مشكلة: إدارة ورقية، فاقد غير مرئي</li>
+        <li>المستفيد: الأسرة المشتركة</li>
+        <li>القرار: لجنة البئر</li>
+        <li>الدافع: اللجنة + مانح</li>
+        <li>المستوى: 2 اليوم → 3 بعد 3 سنوات</li>
+      </ul>
+      <div class="out"><b>المخرج:</b> جملة مشكلة + جدول الفاعلين الثلاثة</div>
+    </div>
+    <div class="layer">
+      <span class="tag">الطبقة 2 · الثلاثاء</span>
+      <h4>ادعاؤنا</h4>
+      <ul>
+        <li>الرقم: الفاقد من «غير معروف» إلى نسبة لكل بئر</li>
+        <li>الآلية: التحقق ينتقل إلى لحظة القراءة</li>
+        <li>الدليل: Tier 1 (منتج عامل)</li>
+        <li>الاختبار: 240 قراءة · 4 دورات</li>
+      </ul>
+      <div class="out"><b>المخرج:</b> بطاقة ادعاء من 6 صناديق</div>
+    </div>
+    <div class="layer">
+      <span class="tag">الطبقة 3 · الأربعاء</span>
+      <h4>المؤسسة</h4>
+      <ul>
+        <li>«نعم» من: اللجنة + المجلس المحلي</li>
+        <li>«لا» من: المنظّم · المرفق</li>
+        <li>البوابات: التعهد → الخطة → البرنامج → المسار → التوقيع</li>
+        <li>التجربة = قرار، لا عرض</li>
+      </ul>
+      <div class="out"><b>المخرج:</b> أول طلب في 6 أسطر، بلا مال</div>
+    </div>
+    <div class="layer">
+      <span class="tag">الطبقة 4 · الخميس</span>
+      <h4>من يدفع</h4>
+      <ul>
+        <li>آلية: اشتراك من التحصيل + بند برنامج</li>
+        <li>السعر: 150 $/بئر/سنة (افتراض)</li>
+        <li>السوق: 100 بئر × 150 × 10٪</li>
+        <li>أول عميل: البئر الأولى</li>
+      </ul>
+      <div class="out"><b>المخرج:</b> لوحة الدافع + 100 كلمة</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <h2><span class="num">3</span> إطار الطبقة 1 — معبّأ</h2>
+  <table>
+    <tr><th style="width:26%">الحقل (من الشريحة)</th><th>إجابتنا</th></tr>
+    <tr><td>Domain · Stage</td><td>رقمي — تشغيل شبكات الآبار · منتج عامل في إطلاق تجريبي محدود (10 آبار / 60 مشتركًا / 100٪ من عدادات النطاق)</td></tr>
+    <tr><td>Initiative type</td><td>منتج رقمي + نموذج تشغيل خدمي — لا جهاز ولا محطة</td></tr>
+    <tr><td>Water focus</td><td><b>Primary</b> — المياه هي موضوع الخدمة نفسها، لا مجالًا مجاورًا</td></tr>
+    <tr><td>Primary dialogue</td><td><b>(a) Water for People</b> — الخدمة، والفاتورة العادلة، وإمكان الاعتراض على رقم</td></tr>
+    <tr><td>Secondary dialogue</td><td><b>(b) Water for Prosperity</b> — المشتركون يستخدمون الماء في معيشتهم، ووضوح الكلفة يحمي استمرار الخدمة<br><small class="note">بديل مشروع: (f) Investments for Water — لأن مخرجنا شفافية مالية؛ لكنه لا يُطرح كأساس: طلب التمويل ليس تحديًا مائيًا.</small></td></tr>
+    <tr><td>Level today / in 3 years</td><td><b>2 Community</b> اليوم → <b>3 Policy</b> إذا تبنّت المؤسسة المحلية تقرير القراءة الموثقة صيغةً لتقاريرها الشهرية (عبر تجربة موقّعة على 10 آبار)</td></tr>
+    <tr><td>Problem sentence</td><td><b>الآن:</b> القراءة على ورق ثم تُنسخ، والفاقد بين المضخوخ والمُباع لا يراه أحد، والصندوق منفصل عن الأرقام. <b>بعد:</b> سلسلة واحدة (قراءة موثقة → استهلاك → فاتورة → تحصيل → صندوق) يتحقق منها الجميع بالرقم نفسه</td></tr>
+    <tr><td>Where it fails / where we intervene</td><td>تفشل عند الوصلة بين المُباع والصندوق · نتدخل في لحظة القراءة ولحظة إقفال الدورة</td></tr>
+    <tr><td>What we must find out</td><td>كم من الفجوة «تجاري» (قراءة/تحصيل) وكم «فيزيائي» (تسرّب)؟ ومن يملك بيانات الضخ؟</td></tr>
+  </table>
+  <p style="margin-bottom:0"><b>خطأ تتجنبه الشريحة:</b> «مشكلتنا أن الناس لا يستخدمون تطبيقنا». المشكلة موجودة قبل منتجك — إن اختفى منتجك غدًا تبقى المشكلة قائمة.</p>
+</section>
+
+<!-- 4 -->
+<section>
+  <h2><span class="num">4</span> بطاقة الادعاء — 6 صناديق</h2>
+  <div class="cards6">
+    <div class="card6"><span class="n">1 · WHAT IT DOES</span><b>يُصدر قراءة معتمدة</b><p>صورة العداد لا تصل إلى الفاتورة إلا بعد اجتياز بوابة ثقة، ثم تُربط بالاستهلاك والحساب.</p></div>
+    <div class="card6"><span class="n">2 · BY HOW MUCH</span><b>الفاقد: من «غير معروف» إلى نسبة</b><p>لكل بئر بعد 4 دورات · ومرافقها: ≥85٪ قبول آلي و≥95٪ تغطية للستين عدادًا.</p></div>
+    <div class="card6"><span class="n">3 · HOW IT WORKS</span><b>جملة واحدة</b><p>صورة → فحص جودة → تقطيع 7 خانات → ثقة لكل خانة وتطبيع → قرار (قبول/إعادة/مراجعة) → فاتورة → صندوق.</p></div>
+    <div class="card6"><span class="n">4 · EVIDENCE &amp; TIER</span><b>Tier 1 — self-reported</b><p>تطبيق عامل، دورة كاملة مغلقة، خط OCR ببوابة جودة، تقارير قابلة للتوقيع. ما يرفعها إلى Tier 2: 240 قراءة موثقة.</p></div>
+    <div class="card6"><span class="n">5 · QUESTION WE COULD NOT ANSWER</span><b>تجاري أم فيزيائي؟</b><p>هل الفجوة بين المضخوخ والمُباع فاقد قراءة وتحصيل، أم تسرّب في الشبكة؟ ومن يملك بيانات الضخ أصلًا؟</p></div>
+    <div class="card6"><span class="n">6 · THE ONE TEST</span><b>10 آبار × 60 عدادًا × 4 دورات</b><p>الحقيقة المرجعية قراءتان يدويتان مستقلتان قبل التعرّف الآلي — نقيس خطأ الورق قبل خطأ الآلة.</p></div>
+  </div>
+  <h3>المقياس المختار من الخمسة، ولماذا</h3>
+  <p><b>Losses avoided (m³/يوم أو نقاط NRW)</b>، ومساندًا <b>cost to deliver (USD/m³)</b>. زمن القراءة يخدم المشرف لا اللجنة؛ الرقم الذي يحرّك القرار هو كم مترًا لم يكن accounted for.</p>
+  <h3>الأسئلة الأربعة التي يحكم بها المشرف</h3>
+  <table>
+    <tr><th style="width:30%">السؤال</th><th>جوابنا</th></tr>
+    <tr><td>ما الآلية؟</td><td>القراءة غير الموثقة تفقد قيمتها المحاسبية؛ فنُقرب نقطة التحقق من لحظة القراءة بدل آخر الشهر</td></tr>
+    <tr><td>هل تصمد في الظروف الحقيقية؟</td><td>شمس مباشرة، غبار، شاشة متعرجة: بوابة الجودة قبل التعرّف، والرفض قرار لا خطأ</td></tr>
+    <tr><td>أفضل من ماذا؟</td><td>من الدفتر: لا خط أساس، ولا أثر، ولا مقارنة بين دورتين</td></tr>
+    <tr><td>ما الاختبار الذي يصمد للنقد؟</td><td>قراءتان يدويتان مستقلتان تُسجَّلان قبل التعرّف الآلي — فيُقاس خطأ الإنسان أولًا</td></tr>
+  </table>
+  <p style="margin-bottom:0"><small class="note"><b>حدود الاستدلال تُقال صراحة:</b> 60 عدادًا × 4 دورات تكفي لكشف فرق واضح (≈3 نقاط مئوية)، ولا تكفي لادعاء دقة 0.1٪.</small></p>
+</section>
+
+<!-- 5 -->
+<section>
+  <h2><span class="num">5</span> المؤسسات وأول طلب</h2>
+  <table>
+    <tr><th>النوع (من الستة)</th><th>من هو عندنا</th><th>يقول «نعم»؟</th><th>كيف يشتري</th></tr>
+    <tr><td>وزارة / جهة وطنية</td><td>وزارة المياه والبيئة</td><td><span class="status warn">توجيهًا فقط</span></td><td>موازنة برامج — دورة طويلة</td></tr>
+    <tr><td>منظّم</td><td>الهيئة العامة للموارد المائية · المواصفات</td><td><span class="status no">مشروط / لا</span></td><td>لا يشتري خدمة</td></tr>
+    <tr><td>مرفق / مشغّل</td><td>المؤسسة المحلية للمياه</td><td><span class="status warn">إن كان البئر في نطاقها</span></td><td>عقد خدمة / مناقصة</td></tr>
+    <tr><td>بلدية / مالك موقع</td><td><b>المجلس المحلي (المديرية)</b></td><td><span class="status ok">نعم — الوصول</span></td><td>ميزانية محلية صغيرة</td></tr>
+    <tr><td>مشغّل صناعي</td><td>صاحب بئر / مزرعة</td><td><span class="status ok">نعم — الأسرع</span></td><td>شراء مباشر تحت سقف</td></tr>
+    <tr><td>شريك تنموي</td><td>مانح / برنامج مياه (SFD · UNICEF-WASH)</td><td><span class="status ok">نعم — يدفع مقابل القياس</span></td><td>برنامج تجريبي مدفوع</td></tr>
+  </table>
+  <p><small class="note">من الستة تحتاج <b>جوابين لا ستة</b>: «نعم» من مالك الموقع (وصول) والمشغّل (قرار ودفع)، و«لا» من المنظّم والمرفق — يُتركان لمرحلة التوسع. <b>اختبار المشرف:</b> أي جهة تستطيع أن تقول «لا»؟ اكتب اسمها لا صفتها.</small></p>
+
+  <h3>التجربة = قرار مؤسسي، لا عرض تقني</h3>
+  <table>
+    <tr><th style="width:24%">العنصر</th><th>صياغتنا</th></tr>
+    <tr><td>القرار المطلوب</td><td>«هل نعتمد سجل القراءة الرقمي أساسًا للفاتورة في هذا البئر؟»</td></tr>
+    <tr><td>الموقع وخط الأساس</td><td>البئر الأولى + دورة ورقية كاملة مسجّلة قبل البدء</td></tr>
+    <tr><td>الوصول والموافقات</td><td>خطاب اللجنة + إذن المجلس + جهة بيانات الضخ</td></tr>
+    <tr><td>المقياس والطريقة</td><td>4 مؤشرات · حقيقة مرجعية بقراءتين · 4 دورات</td></tr>
+    <tr><td>القرار التالي</td><td>تحقّق ← إدخال الآبار التسعة وعرض على المؤسسة المحلية</td></tr>
+  </table>
+  <p><b>ثلاثة قتلة للتجارب:</b> بلا إذن مكتوب · بلا خط أساس · بلا قاعدة قرار مسبقة.</p>
+
+  <h3>أول طلب — ستة أسطر (جاهز للنسخ)</h3>
+  <div class="ask">
+    <ol>
+      <li><b>الشريك والموقع:</b> لجنة بئر «______» في مديرية «______» — 6 مشتركين بعدادات قائمة.</li>
+      <li><b>المدة:</b> أربع دورات قراءة شهرية تبدأ «__/11/2026».</li>
+      <li><b>ما تقدّمه اللجنة:</b> إذن الوصول، مشرف واحد للتدريب، السجل الورقي للدورة السابقة (خط الأساس)، ورقم الضخ الشهري.</li>
+      <li><b>ما نقدّمه:</b> تشغيل الدورة كاملة، تدريب قارئ العداد (40 دقيقة)، وتقرير تدقيق من صفحتين يوقّعه رئيس اللجنة.</li>
+      <li><b>ما يقيسه الطرفان:</b> زمن القراءة، نسبة القراءات الموثقة، الفرق بين المُباع والمضخوخ، ونسبة التحصيل — بالطريقة نفسها ولنفس الفترة.</li>
+      <li><b>ما يحدث بعد ذلك:</b> اجتماع واحد في نهاية الدورة الرابعة: إدخال الآبار التسعة، أو تعديل القياس، أو إيقاف التجربة.</li>
+    </ol>
+  </div>
+  <p style="margin-bottom:0"><small class="note"><b>محظوران:</b> لا نطلب مالًا · لا نَعِد بنتيجة قبل القياس («نوفّر 30٪» ممنوعة؛ الصحيح: «نقيس الفاقد ونعرف إن كان قابلًا للتخفيض»).</small></p>
+</section>
+
+<!-- 6 -->
+<section>
+  <h2><span class="num">6</span> من يدفع — السوق من الأسفل</h2>
+  <div class="layers">
+    <div class="layer"><span class="tag">الدافع</span><h4>من يدفع</h4><ul><li>اللجنة من رسوم التحصيل (تشغيليًا)</li><li>مانح / برنامج مياه (التجربة)</li><li>الآلية: اشتراك + بند برنامج</li><li>٣Ts: Tariffs + Transfers</li></ul></div>
+    <div class="layer"><span class="tag">4 اختبارات</span><h4>هل السوق مدفوع؟</h4><ul><li>مال؟ نعم — صندوق البئر</li><li>آلية؟ نعم — اشتراك/بند</li><li>يُقاس عليه؟ نعم — فاقد/زمن/تحصيل</li><li>سعر؟ 150 $ (افتراض)</li></ul></div>
+    <div class="layer"><span class="tag">4 أرقام</span><h4>السوق</h4><ul><li>100 بئر (المديرية)</li><li>1 اشتراك/سنة</li><li>150 $</li><li>10٪ حصة = 10 آبار</li><li><b>= 1,500 $/سنة</b></li></ul></div>
+    <div class="layer"><span class="tag">أول عميل</span><h4>البئر الأولى</h4><ul><li>الألم: نزاع/عجز موثّق</li><li>الميزانية: يتحمّل 150 $</li><li>السلطة: الرئيس يوقّع</li><li>السرعة: البدء في أسبوعين</li></ul></div>
+  </div>
+  <p style="margin-top:14px; margin-bottom:0; background:var(--red-soft); border-radius:10px; padding:10px 12px; font-size:13px">
+    <b>الحكم الذي يُقال بصوت عالٍ:</b> بنطاق 10 آبار و60 مشتركًا <b>لا يوجد سوق بعد — يوجد دليل</b>. عشرة آبار × 150 $ = 1,500 $ سنويًا، لا تغطي راتب شهر. لذلك تُموَّل هذه المرحلة كـ<b>برنامج تجريبي مدفوع يولّد دليلًا</b>، لا كاشتراك تجاري. من يبيعها كـ«سوق» يخسر مصداقيته أمام اللجنة.
+  </p>
+</section>
+
+<!-- 7 -->
+<section>
+  <h2><span class="num">7</span> المئة كلمة</h2>
+  <div class="words">
+    <div>
+      في عشرة آبار وستين مشتركًا تُقرأ العدادات بالورق، وتُنسخ الأرقام لاحقًا، ويُدار صندوق البئر بعيدًا عنها: فاقد لا يراه أحد، وفاتورة لا يمكن الاعتراض عليها بدليل، وعجز يُكتشف في نهاية الشهر. يحوّل Azal Soft Platform هذه السلسلة إلى سجل واحد: صورة العداد تُقرأ آليًا، وبوابة ثقة ترفض الرقم المشكوك فيه قبل الفاتورة، ثم الاستهلاك، ثم الفاتورة، ثم التحصيل، ثم الصندوق. نشغّله الآن على الآبار العشرة والمشتركين الستين، ونقيس أربعة أرقام: زمن القراءة، نسبة القراءات الموثقة، الفرق بين المضخوخ والمُباع، ونسبة التحصيل. نطلب أربع دورات وأربعين دقيقة لتدريب قارئ العداد، لنُثبت الرقم قبل أن نطلبه من أحد.
+    </div>
+    <div class="en">
+      Across ten wells and sixty subscribers, meters are read on paper and the numbers are copied later, while the well's fund is kept apart from them. The result is losses nobody can see, a bill a household cannot contest with evidence, and a shortfall discovered at month end. Azal Soft Platform turns that chain into one record: a meter photo read automatically, a trust gate that blocks any doubtful number before it reaches a bill, then consumption, invoice, collection and fund. We are running it on all ten wells and all sixty subscribers, measuring four numbers: reading time, share of verified readings, the gap between pumped and billed water, and collection rate. We ask for four cycles and forty minutes to train one reader, to prove the number before asking more.
+    </div>
+  </div>
+  <p style="margin-bottom:0"><small class="note"><b>قاعدة:</b> الأربع طبقات بالترتيب · بلا صفات · «نتوقع/سنختبر» لا «نوفّر».</small></p>
+</section>
+
+<!-- 8 -->
+<section>
+  <h2><span class="num">8</span> الفجوات والتسليم</h2>
+  <table>
+    <tr><th>#</th><th>البيان الناقص</th><th>من يملكه</th><th>الحالة</th></tr>
+    <tr><td>1</td><td>عدد الآبار الفعلي في المديرية</td><td>المجلس المحلي / المؤسسة</td><td><span class="status no">فجوة</span></td></tr>
+    <tr><td>2</td><td>الأمتار المضخوخة شهريًا لكل بئر</td><td>مشغّل المضخة / اللجنة</td><td><span class="status no">فجوة</span></td></tr>
+    <tr><td>3</td><td>الأمتار المُباعة والتحصيل (آخر دورة)</td><td>اللجنة — السجل الورقي</td><td><span class="status no">فجوة</span></td></tr>
+    <tr><td>4</td><td>تكلفة المتر المكعب (ديزل + عامل + صيانة ÷ مُباع)</td><td>اللجنة — تقرير الطاقة</td><td><span class="status warn">جزئي</span></td></tr>
+    <tr><td>5</td><td>اسم البئر الأولى ورئيس لجنتها</td><td>الميدان</td><td><span class="status warn">جزئي</span></td></tr>
+    <tr><td>6</td><td>سقف الشراء المباشر</td><td>المجلس / المؤسسة</td><td><span class="status warn">جزئي</span></td></tr>
+    <tr><td>7</td><td>موافقة مكتوبة على الوصول</td><td>اللجنة + المجلس</td><td><span class="status no">فجوة</span></td></tr>
+  </table>
+  <h3>ما يُنقص الدرجة</h3>
+  <p style="margin:0">مشكلة مكتوبة كأنها غياب منتجك · ادعاء بلا رقم ووحدة · دليل من اختصاص آخر يُسند ادعاءك · طلب مال أو وعد بنتيجة قبل القياس · مؤسسة بصفة عامة بدل اسم · سوق محسوب من الأعلى · صفات في الـ100 كلمة · تجربة بلا خط أساس وبلا قاعدة قرار.</p>
+</section>
+
+<footer>
+  Azal Soft Platform · مخطط مشروع YP8 — الأسبوع الأول · التفصيل الكامل في <code>docs/water_challenge_brief_ar.md</code>
+</footer>
+
+</div>
+</body>
+</html>
