@@ -137,6 +137,8 @@ Flutter web يستخدم Service Worker. بعد كل نشر قد يبقى الم
 
 - `water-567bb.web.app`
 - `water-567bb.firebaseapp.com`
+- `azalsoftplatform.web.app`
+- `azalsoftplatform.firebaseapp.com`
 - أي نطاق مخصص تستخدمه
 
 > غياب نطاق لا يمنع ظهور الشاشة، بل يمنع الدخول برسالة
@@ -391,17 +393,23 @@ Requested entity was not found.
 `https-water-app-2026-web-ap-26` — وهو رابط `https://water-app-2026.web.app`
 بعد أن أزال CLI رموزه). اسم الموقع يجب أن يكون معرّفًا مجرّدًا، لا رابطًا.
 
-في هذه الحزمة:
+في التهيئة الحالية:
 
-- حُذف الإدخال الثاني من `firebase.json`، وبقيت كل رؤوس التخزين المؤقت
-  الاثنا عشر كما هي على السايت الوحيد `water-567bb`.
-- حُذف مفتاح `targets` من `.firebaserc` (بقي `projects` فقط).
-- أُضيف `tool/deploy_web.sh` يقرأ اسم الموقع من `firebase.json` وينشر عليه
-  وحده، فلا يتكرر الخطأ:
+- يتضمن `firebase.json` موقعَي Hosting بنفس إعدادات `build/web` ورؤوس التخزين المؤقت الاثني عشر:
+  - `water-567bb` (`https://water-567bb.web.app`)
+  - `azalsoftplatform` (`https://azalsoftplatform.web.app`)
+- قبل أول نشر على الموقع الثاني، يجب التأكد من إنشائه مرة واحدة في مشروع Firebase:
 
 ```bash
-bash tool/deploy_web.sh              # بناء + نشر
-SKIP_BUILD=1 bash tool/deploy_web.sh # نشر ما بُني للتوّ
+firebase hosting:sites:create azalsoftplatform --project water-567bb
+```
+
+- ينشر `tool/deploy_web.sh` على جميع المواقع المعرّفة في `firebase.json` (أو على موقع محدد عبر `FIREBASE_SITE`):
+
+```bash
+bash tool/deploy_web.sh                                 # بناء + نشر على الموقعين
+SKIP_BUILD=1 bash tool/deploy_web.sh                    # نشر ما بُني للتوّ
+FIREBASE_SITE=azalsoftplatform bash tool/deploy_web.sh  # نشر على azalsoftplatform فقط
 ```
 
 للتحقق من المواقع الموجودة فعلًا في مشروعك:
