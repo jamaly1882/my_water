@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/app_bootstrap.dart';
-import '../services/gm_dashboard_service.dart';
+import '../services/sign_in_result.dart';
 import 'login_screen.dart';
 
-// الشاشات الثقيلة تُنزَّل عند الحاجة فقط (تحميل مؤجَّل)،
-// فلا تُبطئ الإقلاع ولا شاشة الدخول.
+// كل ما يحتاج Firestore يُنزَّل عند الحاجة فقط (تحميل مؤجَّل)،
+// فلا يدخل cloud_firestore في حزمة الإقلاع ولا شاشة الدخول.
 import '../home_screen.dart' deferred as home_screen;
+import '../services/sign_in_flow.dart' deferred as sign_in_flow;
 import 'set_up_mshrf/setup_mshrf_screen.dart' deferred as setup_mshrf;
 
 class SplashScreen extends StatefulWidget {
@@ -22,9 +22,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   // قراءة عند الحاجة: الشاشة قد تُبنى قبل أن تكتمل تهيئة Firebase.
   FirebaseAuth get auth => FirebaseAuth.instance;
-
-  FirebaseFirestore get firestore =>
-      FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -88,62 +85,51 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     // ==========================================================
-    // المدير الرئيسي
-    // ==========================================================
-
-    if (GmRoles.isMainSupervisorEmail(user.email)) {
-      await goToAdmin();
-      return;
-    }
-
-    // ==========================================================
-    // المشرف
+    // تحديد الوجهة — Firestore يأتي من مكتبة مؤجَّلة
     // ==========================================================
 
     try {
-      final DocumentSnapshot userDoc =
-          await firestore
-              .collection("users")
-              .doc(user.uid)
-              .get();
+      await sign_in_flow.loadLibrary();
 
-      if (!userDoc.exists) {
-        await auth.signOut();
+      if (!mounted) return;
 
-        if (!mounted) return;
+      final SignInResult result =
+          await sign_in_flow.resolveProfile(
+        uid: user.uid,
+        email: user.email,
+      );
 
-        message("User record not found");
+      if (!mounted) return;
 
-        goToLogin();
-
-        return;
-      }
-
-      final data =
-          userDoc.data() as Map<String, dynamic>;
-
-      // ========================================================
-      // الصلاحية
-      // ========================================================
-
-      final String role =
-          data["role"]?.toString() ?? "";
-
-      // ========================================================
-      // المشرف الرئيسي حسب الدور
-      // ========================================================
-
-      if (GmRoles.isMainSupervisorRole(role)) {
+      if (result.outcome == SignInOutcome.admin) {
         await goToAdmin();
         return;
       }
 
-      if (role != "supervisor") {
+      final SupervisorProfile? profile = result.profile;
+
+      if (result.outcome != SignInOutcome.supervisor ||
+          profile == null) {
         await auth.signOut();
 
         if (!mounted) return;
 
-        message("You do not have access permission");
+        switch (result.outcome) {
+          case SignInOutcome.userNotFound:
+            message("User record not found");
+            break;
+
+          case SignInOutcome.inactive:
+            message("This account is not activated");
+            break;
+
+          case SignInOutcome.notSupervisor:
+            message("You do not have access permission");
+            break;
+
+          default:
+            message("Could not verify your sign-in");
+        }
 
         goToLogin();
 
@@ -151,50 +137,8 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       // ========================================================
-      // بيانات المشرف
-      // ========================================================
-
-      final String supervisorId = user.uid;
-
-      final String provinceId =
-          data["provinceId"]?.toString() ?? "";
-
-      final String districtId =
-          data["districtId"]?.toString() ?? "";
-
-      final String hamletId =
-          data["hamletId"]?.toString() ?? "";
-
-      final String villageId =
-          data["villageId"]?.toString() ?? "";
-
-      final String wellId =
-          data["wellId"]?.toString() ?? "";
-
-      final String wellName =
-          data["wellName"]?.toString() ?? "";
-
-      // ========================================================
-      // أسماء الموقع — تُمرَّر مع المعرّفات
-      // ========================================================
-
-      final String provinceName =
-          data["provinceName"]?.toString() ?? "";
-
-      final String districtName =
-          data["districtName"]?.toString() ?? "";
-
-      final String hamletName =
-          data["hamletName"]?.toString() ?? "";
-
-      final String villageName =
-          data["villageName"]?.toString() ?? "";
-
-      // ========================================================
       // الدخول مباشرة إلى الرئيسية
       // ========================================================
-
-      if (!mounted) return;
 
       await home_screen.loadLibrary();
 
@@ -205,17 +149,17 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(
           builder: (_) => home_screen.HomeScreen(
             isAdmin: false,
-            supervisorId: supervisorId,
-            provinceId: provinceId,
-            provinceName: provinceName,
-            districtId: districtId,
-            districtName: districtName,
-            hamletId: hamletId,
-            hamletName: hamletName,
-            villageId: villageId,
-            villageName: villageName,
-            wellId: wellId,
-            wellName: wellName,
+            supervisorId: profile.uid,
+            provinceId: profile.provinceId,
+            provinceName: profile.provinceName,
+            districtId: profile.districtId,
+            districtName: profile.districtName,
+            hamletId: profile.hamletId,
+            hamletName: profile.hamletName,
+            villageId: profile.villageId,
+            villageName: profile.villageName,
+            wellId: profile.wellId,
+            wellName: profile.wellName,
           ),
         ),
       );

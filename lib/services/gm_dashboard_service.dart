@@ -3,46 +3,17 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ============================================================
-// أدوار المشرف الرئيسي (المدير العام)
+// أدوار المشرف الرئيسي — انتقلت إلى gm_roles.dart
+// ============================================================
+//
+// الفئة هنا تُعاد تصديرها فقط، حتى تبقى كل الاستيرادات القديمة
+// (import 'gm_dashboard_service.dart') تعمل كما هي.
+//
+// السبب: هذا الملف يستورد cloud_firestore، وشاشة الدخول تحتاج
+// فحص الدور وحده — فصارت تستورد gm_roles.dart الصغير.
 // ============================================================
 
-class GmRoles {
-  /// البريد الرئيسي للمشرف العام في النظام.
-  static const String mainSupervisorEmail = 'ahmedul2020@gmail.com';
-
-  /// أدوار تعامل كمدير عام وتملك كل الصلاحيات.
-  static const Set<String> mainRoles = <String>{
-    'main_supervisor',
-    'general_manager',
-    'admin',
-    'manager',
-  };
-
-  static bool isMainSupervisorEmail(String? email) {
-    return (email ?? '').trim().toLowerCase() ==
-        mainSupervisorEmail;
-  }
-
-  static bool isMainSupervisorRole(String? role) {
-    final String value =
-        (role ?? '').trim().toLowerCase();
-
-    if (value.isEmpty) return false;
-
-    return mainRoles.contains(value) ||
-        value == 'مدير عام' ||
-        value == 'المشرف الرئيسي' ||
-        value == 'مدير';
-  }
-
-  static bool isMainSupervisor({
-    String? email,
-    String? role,
-  }) {
-    return isMainSupervisorEmail(email) ||
-        isMainSupervisorRole(role);
-  }
-}
+export 'gm_roles.dart';
 
 // ============================================================
 // تنسيق الأرقام والتواريخ

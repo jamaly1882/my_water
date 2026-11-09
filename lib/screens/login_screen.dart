@@ -3,10 +3,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/app_bootstrap.dart';
-import '../services/gm_dashboard_service.dart';
+import '../services/sign_in_result.dart';
 import '../widgets/my_app_bar.dart';
 
 // ============================================================
@@ -20,6 +19,7 @@ import '../widgets/my_app_bar.dart';
 // ============================================================
 
 import '../home_screen.dart' deferred as home_screen;
+import '../services/sign_in_flow.dart' deferred as sign_in_flow;
 import 'set_up_mshrf/setup_mshrf_screen.dart' deferred as setup_mshrf;
 
 class LoginScreen extends StatefulWidget {
@@ -40,9 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
   // ============================================================
 
   FirebaseAuth get auth => FirebaseAuth.instance;
-
-  FirebaseFirestore get firestore =>
-      FirebaseFirestore.instance;
 
   Timer? _prefetchTimer;
 
@@ -86,6 +83,10 @@ class _LoginScreenState extends State<LoginScreen> {
         home_screen.loadLibrary().catchError((_) {});
 
         setup_mshrf.loadLibrary().catchError((_) {});
+
+        // Firestore + قراءة وثيقة المستخدم: أثقل جزء، يُنزَّل صامتًا
+        // هنا حتى يكون الدخول فوريًا حين يضغط المستخدم الزر.
+        sign_in_flow.loadLibrary().catchError((_) {});
       },
     );
   }
@@ -166,13 +167,13 @@ class _LoginScreenState extends State<LoginScreen> {
       // تسجيل الدخول في Firebase
       // ========================================================
 
-      final UserCredential result =
+      final UserCredential credential =
           await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      final User? user = result.user;
+      final User? user = credential.user;
 
       if (user == null) {
         message('Could not load user data');
@@ -180,174 +181,82 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // ========================================================
-      // المدير الرئيسي
+      // قراءة وثيقة المستخدم — من مكتبة مؤجَّلة
+      // ========================================================
       //
-      // يُتعرف عليه من البريد الرئيسي أو من الدور
-      // داخل مجموعة users.
+      // Firestore لا يُنزَّل إلا الآن، أي بعد أن أثبت المستخدم
+      // كلمة السر. قبل هذا السطر لا يعرف المتصفح شيئًا عن
+      // cloud_firestore، فصفحة الدخول تصل أسرع.
       // ========================================================
 
-      if (GmRoles.isMainSupervisorEmail(user.email)) {
-        await openAdminScreens();
+      await showLoading('Checking your account…');
 
-        return;
-      }
-
-      // ========================================================
-      // قراءة بيانات المستخدم من Firestore
-      // ========================================================
-
-      final DocumentSnapshot userDoc = await firestore
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      if (!userDoc.exists) {
-        await auth.signOut();
-
-        message('User record not found');
-        return;
-      }
-
-      final data =
-          userDoc.data() as Map<String, dynamic>;
-
-      // ========================================================
-      // التحقق من حالة الحساب
-      // ========================================================
-
-      if (data['active'] == false) {
-        await auth.signOut();
-
-        message('This account is not activated');
-        return;
-      }
-
-      // ========================================================
-      // التحقق من الصلاحية
-      // ========================================================
-
-      final String role =
-          data['role']?.toString() ?? '';
-
-      // ========================================================
-      // المشرف الرئيسي من خلال الدور
-      // ========================================================
-
-      if (GmRoles.isMainSupervisorRole(role)) {
-        await openAdminScreens();
-
-        return;
-      }
-
-      if (role != 'supervisor') {
-        await auth.signOut();
-
-        message('You do not have access permission');
-        return;
-      }
-
-      // ========================================================
-      // التحقق من الحساب التجريبي
-      // ========================================================
-
-      if (demo && data['isDemo'] != true) {
-        await auth.signOut();
-
-        message('This is not a demo account');
-        return;
-      }
-
-      // ========================================================
-      // بيانات المشرف
-      // ========================================================
-
-      final String supervisorId = user.uid;
-
-      final String provinceId =
-          data['provinceId']?.toString() ?? '';
-
-      final String districtId =
-          data['districtId']?.toString() ?? '';
-
-      final String hamletId =
-          data['hamletId']?.toString() ?? '';
-
-      final String villageId =
-          data['villageId']?.toString() ?? '';
-
-      final String wellId =
-          data['wellId']?.toString() ?? '';
-
-      final String wellName =
-          data['wellName']?.toString() ?? '';
-
-      // ========================================================
-      // أسماء الموقع
-      //
-      // وثيقة المشرف تخزّن الأسماء إلى جانب المعرّفات، وكانت
-      // الشاشة تمرّر المعرّفات فقط، فتصل صفحة الزبون بلا اسم
-      // محافظة ولا مديرية ولا عزلة.
-      // ========================================================
-
-      final String provinceName =
-          data['provinceName']?.toString() ?? '';
-
-      final String districtName =
-          data['districtName']?.toString() ?? '';
-
-      final String hamletName =
-          data['hamletName']?.toString() ?? '';
-
-      final String villageName =
-          data['villageName']?.toString() ?? '';
-
-      // ========================================================
-      // التحقق من اكتمال بيانات الموقع
-      // ========================================================
-
-      if (provinceId.isEmpty ||
-          districtId.isEmpty ||
-          hamletId.isEmpty ||
-          villageId.isEmpty ||
-          wellId.isEmpty) {
-        await auth.signOut();
-
-        message('Supervisor location data is incomplete');
-        return;
-      }
-
-      // ========================================================
-      // الانتقال إلى الصفحة الرئيسية
-      // ========================================================
+      await sign_in_flow.loadLibrary();
 
       if (!mounted) return;
 
-      // تنزيل جزء الشاشات (مؤجَّل) — يحدث مرة واحدة في كل جلسة.
-      await showLoading('Loading the dashboard…');
-
-      await home_screen.loadLibrary();
-
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => home_screen.HomeScreen(
-            isAdmin: false,
-            supervisorId: supervisorId,
-            provinceId: provinceId,
-            provinceName: provinceName,
-            districtId: districtId,
-            districtName: districtName,
-            hamletId: hamletId,
-            hamletName: hamletName,
-            villageId: villageId,
-            villageName: villageName,
-            wellId: wellId,
-            wellName: wellName,
-          ),
-        ),
+      final SignInResult signIn =
+          await sign_in_flow.resolveProfile(
+        uid: user.uid,
+        email: user.email,
+        demo: demo,
+        requireLocation: true,
       );
+
+      if (!mounted) return;
+
+      switch (signIn.outcome) {
+
+        // ======================================================
+        // المدير الرئيسي
+        // ======================================================
+
+        case SignInOutcome.admin:
+          await openAdminScreens();
+          return;
+
+        // ======================================================
+        // مشرف — إلى الرئيسية
+        // ======================================================
+
+        case SignInOutcome.supervisor:
+          await openSupervisorHome(signIn.profile);
+          return;
+
+        // ======================================================
+        // رفض الدخول — كل حالة برسالتها السابقة
+        // ======================================================
+
+        case SignInOutcome.userNotFound:
+          await failSignIn('User record not found');
+          return;
+
+        case SignInOutcome.inactive:
+          await failSignIn('This account is not activated');
+          return;
+
+        case SignInOutcome.notSupervisor:
+          await failSignIn('You do not have access permission');
+          return;
+
+        case SignInOutcome.notDemo:
+          await failSignIn('This is not a demo account');
+          return;
+
+        case SignInOutcome.incompleteLocation:
+          await failSignIn(
+            'Supervisor location data is incomplete',
+          );
+          return;
+
+        case SignInOutcome.error:
+          await failSignIn(
+            signIn.message.isEmpty
+                ? 'Could not verify your sign-in'
+                : 'Could not verify your sign-in: ${signIn.message}',
+          );
+          return;
+      }
     }
 
     // ==========================================================
@@ -404,6 +313,59 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  // ============================================================
+  // فتح الرئيسية للمشرف (تنزيل جزء الشاشات أولًا)
+  // ============================================================
+
+  Future<void> openSupervisorHome(SupervisorProfile? profile) async {
+    if (profile == null) {
+      await failSignIn('Could not verify your sign-in');
+      return;
+    }
+
+    await showLoading('Loading the dashboard…');
+
+    await home_screen.loadLibrary();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => home_screen.HomeScreen(
+          isAdmin: false,
+          supervisorId: profile.uid,
+          provinceId: profile.provinceId,
+          provinceName: profile.provinceName,
+          districtId: profile.districtId,
+          districtName: profile.districtName,
+          hamletId: profile.hamletId,
+          hamletName: profile.hamletName,
+          villageId: profile.villageId,
+          villageName: profile.villageName,
+          wellId: profile.wellId,
+          wellName: profile.wellName,
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // فشل التحقق: خروج صريح ثم رسالة
+  // ============================================================
+
+  Future<void> failSignIn(String text) async {
+    try {
+      await auth.signOut();
+    } catch (_) {
+      // لا شيء: الرسالة أهم من نجاح الخروج.
+    }
+
+    if (!mounted) return;
+
+    message(text);
   }
 
   // ============================================================
