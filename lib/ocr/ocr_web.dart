@@ -34,6 +34,9 @@ class _OcrWebPageState extends State<OcrWebPage> {
   int _digitCount = MeterAnalyzer.maxDigits;
   String _rawText = '';
 
+  /// تشخيص القراءة (المحرك، المصدر، آخر خطأ) — يظهر للمستخدم عند الفشل.
+  String _diagnostics = '';
+
   ImageQualityReport? _qualityReport;
   MeterAnalysisResult? _analysisResult;
 
@@ -86,6 +89,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
           _status = 'Loading the image…';
           _reading = '';
           _rawText = '';
+          _diagnostics = '';
           _croppedImageData = null;
           _qualityReport = null;
           _analysisResult = null;
@@ -219,6 +223,7 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _analysisResult = null;
         _reviewedUncertainReading = false;
         _rawText = '';
+        _diagnostics = '';
         _status = 'Reading the meter digits and checking all 6 or 7…';
       });
 
@@ -234,6 +239,8 @@ class _OcrWebPageState extends State<OcrWebPage> {
       final String rawText = _getJsString('getLastMeterOCRText');
       final String jsMethod = _getJsString('getLastMeterOCRMethod');
       final List<double> jsDigitConfidences = _getJsDigitConfidences();
+      final String ocrError = _getJsString('getLastMeterOCRError');
+      final String diagnostics = _getJsString('getMeterOCRDiagnostics');
 
       final String cleanJsReading = MeterAnalyzer.normalize(jsReading);
 
@@ -306,13 +313,21 @@ class _OcrWebPageState extends State<OcrWebPage> {
         _rawText = rawText;
         _analysisResult = analysis;
 
+        _diagnostics = <String>[
+          if (ocrError.isNotEmpty) 'error: $ocrError',
+          if (diagnostics.isNotEmpty) diagnostics,
+        ].join('\n');
+
         if (finalReading.isNotEmpty) {
           _status = analysis.isValid
               ? analysis.message
               : 'A candidate reading was found — review it against the photo.';
+        } else if (ocrError.isNotEmpty) {
+          _status =
+              'تعذّرت القراءة التلقائية: $ocrError';
         } else {
           _status =
-              'The 6 or 7 digits could not be read clearly — enter them below or crop again.';
+              'تعذّرت قراءة الأرقام تلقائيًا. أدخلها في الحقل أو أعد قص نافذة الأرقام.';
         }
       });
     } catch (e) {
@@ -325,7 +340,12 @@ class _OcrWebPageState extends State<OcrWebPage> {
           reading: '', confidence: 0, occurrences: 0, isValid: false,
           message: 'Automatic recognition failed. Enter the reading manually or try again.',
         );
-        _status = 'Automatic digit recognition failed — enter the reading manually or try again.';
+        _status = 'تعذّر تشغيل قارئ الأرقام. أدخل القراءة يدويًا أو أعد المحاولة.';
+
+        _diagnostics = <String>[
+          'exception: $e',
+          _getJsString('getMeterOCRDiagnostics'),
+        ].where((String line) => line.trim().isNotEmpty).join('\n');
       });
 
       _showMessage('OCR error: $e');
@@ -860,6 +880,42 @@ class _OcrWebPageState extends State<OcrWebPage> {
                     child: SelectableText(
                       _rawText,
                       textDirection: TextDirection.ltr,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            // ==========================================
+            // تشخيص القراءة
+            //
+            // كان الفشل صامتًا: سبع علامات استفهام بلا سبب.
+            // الآن يظهر سبب الفشل (المحرك، المصدر، آخر خطأ)
+            // ليُعالج أو يُرسل للدعم كما هو.
+            // ==========================================
+            if (_diagnostics.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              ExpansionTile(
+                title: const Text('تفاصيل القراءة (للدعم)'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SelectableText(
+                        _diagnostics,
+                        textDirection: TextDirection.ltr,
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11.5,
+                          height: 1.6,
+                          color: Color(0xFFE2E8F0),
+                        ),
+                      ),
                     ),
                   ),
                 ],

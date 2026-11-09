@@ -46,3 +46,10 @@ app.*.map.json
 
 # Firebase CLI deploy cache (rewritten on every deploy)
 .firebase/
+
+# ============================================================
+# محرك OCR المحلي (يُولَّد بـ tool/fetch_ocr_assets.sh)
+# ============================================================
+
+/web/ocr/*
+!/web/ocr/README.md

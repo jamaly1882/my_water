@@ -1047,6 +1047,12 @@ let lastMeterOCRRawResults = [];
 let lastMeterOCRDigitConfidences = [];
 let lastMeterOCRMethod = "";
 
+/* سبب فشل آخر محاولة — يظهر للمستخدم بدل صمت تام. */
+let lastMeterOCRError = "";
+
+/* أي مصدر نجح في تحميل المحرك (يظهر في التشخيص). */
+let meterOCREngineSource = "";
+
 
 /* ============================================================
    BASIC HELPERS
@@ -2150,75 +2156,92 @@ async function getOCRWorker() {
     return meterOCRWorkerPromise;
   }
 
-  /*
-   * Tesseract.js صار يُحمّل بـ defer حتى لا يعطّل
-   * إقلاع التطبيق عند بطء الشبكة أو حجب الـ CDN.
-   * لذا ننتظره هنا بدلًا من الفشل الفوري.
-   */
-  try {
-    await ensureTesseract();
-  } catch (_) {
-    // الرسالة أدناه تشرح السبب.
-  }
-
-  if (!window.Tesseract) {
-    throw new Error(
-      window.__tesseractFailed
-        ? "تعذّر تحميل محرك قراءة العدادات (Tesseract) — تحقّق من الاتصال بالإنترنت"
-        : "Tesseract.js غير محمل"
-    );
-  }
-
   meterOCRWorkerPromise =
     (async function() {
 
-      const worker =
-        await Tesseract.createWorker(
-          "eng",
-          1,
-          {
-            logger: function(message) {
-
-              if (
-                message &&
-                message.status
-              ) {
-
-                console.log(
-                  "TESSERACT:",
-                  message.status,
-                  message.progress
-                );
-              }
-            }
-          }
+      /*
+       * Tesseract.js لا يُحمَّل مع الصفحة (كان ~1 ميغابايت بلا فائدة
+       * عند فتح شاشة الدخول). نطلبه هنا عند أول قراءة عداد.
+       */
+      try {
+        await ensureTesseract();
+      } catch (error) {
+        throw new Error(
+          "محرك القراءة غير متاح: " + error.message
         );
+      }
 
-      await worker.setParameters({
+      let lastError = null;
 
-        tessedit_char_whitelist:
-          "0123456789",
+      for (const paths of TESSERACT_ENGINE_PATHS) {
 
-        user_defined_dpi:
-          "300",
+        try {
 
-        preserve_interword_spaces:
-          "1"
-      });
+          const worker = await withTimeout(
+            Tesseract.createWorker(
+              "eng",
+              1,
+              {
+                workerPath: paths.workerPath,
+                corePath: paths.corePath,
+                langPath: paths.langPath,
 
-      meterOCRWorker =
-        worker;
+                logger: function(message) {
 
-      return worker;
+                  if (message && message.status) {
+                    console.log(
+                      "TESSERACT:",
+                      message.status,
+                      message.progress
+                    );
+                  }
+                }
+              }
+            ),
+            45000,
+            "تجاوز الوقت المسموح (" + paths.name + ")"
+          );
+
+          await worker.setParameters({
+
+            tessedit_char_whitelist: "0123456789",
+
+            user_defined_dpi: "300",
+
+            preserve_interword_spaces: "1"
+          });
+
+          meterOCREngineSource =
+            meterOCREngineSource || paths.name;
+
+          meterOCRWorker = worker;
+
+          return worker;
+
+        } catch (error) {
+
+          lastError = error;
+
+          console.warn(
+            "TESSERACT ENGINE FAILED:",
+            paths.name,
+            error
+          );
+        }
+      }
+
+      window.__tesseractFailed = true;
+
+      throw new Error(
+        "تعذّر تشغيل محرك القراءة" +
+          (lastError ? ": " + lastError.message : "")
+      );
     })();
 
   try {
     return await meterOCRWorkerPromise;
-  }
-
-  finally {
-    meterOCRWorkerPromise =
-      null;
+  } finally {
+    meterOCRWorkerPromise = null;
   }
 }
 
@@ -4158,6 +4181,9 @@ async function recognizeMeterDigits(
   lastMeterOCRMethod =
     "";
 
+  lastMeterOCRError =
+    "";
+
   try {
 
     const image =
@@ -4445,6 +4471,28 @@ async function recognizeMeterDigits(
     }
 
     /*
+     * لا نُعيد سبع علامات استفهام: إن رفضنا كل القراءات الموثوقة
+     * لكن لدينا نص من 6/7 أرقام ولو بثقة منخفضة، نعرضه **مقترحًا
+     * للمراجعة**. لا يُعتمد تلقائيًا: الشاشة تُلزم المستخدم بمقارنة
+     * كل خانة مع الصورة قبل الاعتماد.
+     */
+    if (!lastMeterOCRSuggestion) {
+
+      const bestEffort =
+        direct || selectBestDirectCandidate(candidates);
+
+      if (
+        bestEffort &&
+        bestEffort.value &&
+        (bestEffort.value.length === 6 ||
+          bestEffort.value.length === 7)
+      ) {
+        lastMeterOCRSuggestion =
+          bestEffort.value;
+      }
+    }
+
+    /*
      * Could not read the display reliably.
      * Return failure instead of inventing digits;
      * the review screen lets the user type it.
@@ -4472,6 +4520,9 @@ async function recognizeMeterDigits(
       "METER OCR ERROR:",
       error
     );
+
+    lastMeterOCRError =
+      String(error && error.message ? error.message : error);
 
     return {
       reading:
@@ -4556,6 +4607,66 @@ function getLastMeterOCRMethod() {
 }
 
 
+function getLastMeterOCRError() {
+  return lastMeterOCRError;
+}
+
+
+/*
+ * ملخّص تشخيصي يُعرض للمستخدم عند الفشل:
+ * هل المحرك متاح؟ من أي مصدر؟ وما آخر خطأ؟
+ */
+function getMeterOCRDiagnostics() {
+
+  const lines = [];
+
+  lines.push(
+    "engine: " +
+      (window.Tesseract
+        ? "loaded"
+        : (window.__tesseractFailed ? "failed" : "not loaded"))
+  );
+
+  lines.push(
+    "worker: " +
+      (meterOCRWorker ? "ready" : "not created")
+  );
+
+  if (meterOCREngineSource) {
+    lines.push(
+      "source: " + meterOCREngineSource
+    );
+  }
+
+  if (lastMeterOCRError) {
+    lines.push(
+      "error: " + lastMeterOCRError
+    );
+  }
+
+  if (lastMeterOCRMethod) {
+    lines.push(
+      "method: " + lastMeterOCRMethod
+    );
+  }
+
+  if (lastMeterOCRDigitConfidences.length) {
+    lines.push(
+      "digit confidence: " +
+        lastMeterOCRDigitConfidences.join(", ")
+    );
+  }
+
+  if (lastMeterOCRText) {
+    lines.push(
+      "raw: " + lastMeterOCRText.slice(0, 300)
+    );
+  }
+
+  return lines.join("\n");
+}
+
+
 /* ============================================================
    GLOBAL API
    ============================================================ */
@@ -4587,16 +4698,138 @@ window.getLastMeterOCRDigitConfidences =
 window.getLastMeterOCRMethod =
   getLastMeterOCRMethod;
 
+window.getLastMeterOCRError =
+  getLastMeterOCRError;
+
+window.getMeterOCRDiagnostics =
+  getMeterOCRDiagnostics;
+
 /* ============================================================
    TESSERACT ON DEMAND
    ============================================================ */
 
 let tesseractPromise = null;
 
-function ensureTesseract() {
+/*
+ * مسارات المحرك: تبدأ بالشبكة العامة (jsDelivr) ثم بدائل.
+ * كل مصدر يُجرَّب وحده، فلا يعطّل حجب مصدرٍ واحد قراءة العدادات.
+ * المسار النسبي "ocr/" يُجرَّب أولًا إن كان المستخدم قد استضاف
+ * الملفات محليًا داخل مجلد web/ocr (opt-in، لا شيء إلزامي).
+ */
+/* العنوان المطلق لمجلد web/ocr — يعمل سواء كان الموقع على الجذر أو مسار فرعي. */
+const OCR_LOCAL_BASE = (function () {
+  try {
+    return new URL("ocr/", document.baseURI).href;
+  } catch (_) {
+    return "ocr/";
+  }
+})();
+
+const TESSERACT_SCRIPT_SOURCES = [
+  OCR_LOCAL_BASE + "tesseract.min.js",
+  "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js",
+  "https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"
+];
+
+const TESSERACT_ENGINE_PATHS = [
+  {
+    name: "محلي (web/ocr)",
+    workerPath: OCR_LOCAL_BASE + "worker.min.js",
+    corePath: OCR_LOCAL_BASE + "core",
+    langPath: OCR_LOCAL_BASE + "lang"
+  },
+  {
+    name: "jsDelivr",
+    workerPath:
+      "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
+    corePath:
+      "https://cdn.jsdelivr.net/npm/tesseract.js-core@5",
+    langPath:
+      "https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int"
+  },
+  {
+    name: "jsDelivr/لغة بديلة",
+    workerPath:
+      "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js",
+    corePath:
+      "https://cdn.jsdelivr.net/npm/tesseract.js-core@5",
+    langPath:
+      "https://tessdata.projectnaptha.com/4.0.0"
+  },
+  {
+    name: "unpkg",
+    workerPath:
+      "https://unpkg.com/tesseract.js@5/dist/worker.min.js",
+    corePath:
+      "https://unpkg.com/tesseract.js-core@5",
+    langPath:
+      "https://unpkg.com/@tesseract.js-data/eng@1.0.0/4.0.0_best_int"
+  }
+];
+
+function withTimeout(promise, ms, message) {
+
+  return new Promise(function(resolve, reject) {
+
+    let done = false;
+
+    const timer = setTimeout(function() {
+
+      if (done) return;
+
+      done = true;
+
+      reject(new Error(message));
+    }, ms);
+
+    promise.then(
+      function(value) {
+        if (done) return;
+
+        done = true;
+        clearTimeout(timer);
+        resolve(value);
+      },
+      function(error) {
+        if (done) return;
+
+        done = true;
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
+function loadScriptSource(src) {
+
+  return new Promise(function(resolve, reject) {
+
+    const script = document.createElement("script");
+
+    script.src = src;
+    script.async = true;
+
+    script.onload = function() {
+      if (window.Tesseract) {
+        resolve(src);
+      } else {
+        reject(new Error("الملف حُمّل لكن Tesseract غير معرّف"));
+      }
+    };
+
+    script.onerror = function() {
+      reject(new Error("تعذّر تحميل " + src));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
+async function ensureTesseract() {
 
   if (window.Tesseract) {
-    return Promise.resolve(window.Tesseract);
+    return window.Tesseract;
   }
 
   if (tesseractPromise) {
@@ -4604,33 +4837,48 @@ function ensureTesseract() {
   }
 
   tesseractPromise =
-    new Promise(function(resolve, reject) {
+    (async function() {
 
-      const script =
-        document.createElement("script");
+      let lastError = null;
 
-      script.src =
-        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      for (const src of TESSERACT_SCRIPT_SOURCES) {
 
-      script.async = true;
+        try {
+          const used = await withTimeout(
+            loadScriptSource(src),
+            20000,
+            "تجاوز الوقت المسموح لتحميل " + src
+          );
 
-      script.onload = function() {
-        resolve(window.Tesseract);
-      };
+          meterOCREngineSource = used;
 
-      script.onerror = function() {
-        window.__tesseractFailed = true;
-        tesseractPromise = null;
+          return window.Tesseract;
 
-        reject(
-          new Error("Tesseract.js CDN failed")
-        );
-      };
+        } catch (error) {
 
-      document.head.appendChild(script);
-    });
+          lastError = error;
 
-  return tesseractPromise;
+          console.warn(
+            "TESSERACT SOURCE FAILED:",
+            src,
+            error
+          );
+        }
+      }
+
+      window.__tesseractFailed = true;
+
+      throw new Error(
+        "تعذّر تحميل محرك قراءة العدادات من كل المصادر" +
+          (lastError ? ": " + lastError.message : "")
+      );
+    })();
+
+  try {
+    return await tesseractPromise;
+  } finally {
+    tesseractPromise = null;
+  }
 }
 
 window.ensureTesseract = ensureTesseract;
