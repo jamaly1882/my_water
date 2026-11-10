@@ -36,7 +36,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> checkLogin() async {
     // الجوال ينتظر اكتمال التهيئة (تبدأ في main بالتوازي).
-    await AppBootstrap.start();
+    // ensureStarted تُعيد المحاولة إن كانت قد فشلت، بدل الاكتفاء
+    // بمرور سريع إلى شاشة الدخول وهي غير قابلة للاستخدام.
+    await AppBootstrap.ensureStarted();
 
     if (!mounted) return;
 

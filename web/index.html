@@ -713,6 +713,14 @@
 
       finished = true;
 
+      // التطبيق رسم إطاره الأول: نسمح بمحاولة إصلاح جديدة إن تكرر عطل
+      // لاحقًا في هذه الجلسة (لا حلقة إعادة تحميل).
+      try {
+        sessionStorage.removeItem("azal.hardReload");
+      } catch (error) {
+        // التخزين محجوب — لا شيء نفعله.
+      }
+
       if (!guard) return;
 
       // ذوبان قصير بدل اختفاء مفاجئ: الإحساس بأن الصفحة «فُتحت».
@@ -922,6 +930,74 @@
     }
 
   })();
+  </script>
+
+  <!-- ============================================================
+       HARD RELOAD / CACHE RESET
+       ============================================================
+
+       لماذا: بعض المتصفحات تحتفظ بنسخة قديمة من التطبيق (service
+       worker + Cache Storage) أو تحجب تحميل سكربتات Firebase، فيظهر
+       «تعذّر الاتصال بخدمات Firebase» في متصفح ويعمل الرابط في آخر.
+
+       هذه الدالة تمسح الكاش، تُلغي تسجيل service worker، ثم تعيد
+       تحميل الصفحة مرة واحدة فقط لكل جلسة — فلا يمكن أن تتحول إلى
+       حلقة إعادة تحميل لا تنتهي.
+
+       يُناديها Dart عبر AppBootstrap.hardReload()
+       (lib/services/web_recovery_web.dart).
+       ============================================================ -->
+
+  <script>
+  "use strict";
+
+  window.__azalHardReload = function () {
+
+    try {
+      if (sessionStorage.getItem("azal.hardReload") === "1") {
+        return false;
+      }
+
+      sessionStorage.setItem("azal.hardReload", "1");
+
+    } catch (error) {
+      // التخزين محجوب (وضع التصفح الخاص): نسمح بمحاولة واحدة.
+    }
+
+    (async function () {
+
+      try {
+        if (window.caches) {
+          var keys = await caches.keys();
+
+          await Promise.all(keys.map(function (key) {
+            return caches.delete(key);
+          }));
+        }
+      } catch (error) {
+        console.warn("cache clear failed", error);
+      }
+
+      try {
+        if (navigator.serviceWorker) {
+          var registrations = await navigator.serviceWorker.getRegistrations();
+
+          await Promise.all(registrations.map(function (registration) {
+            return registration.unregister();
+          }));
+        }
+      } catch (error) {
+        console.warn("service worker unregister failed", error);
+      }
+
+      setTimeout(function () {
+        location.reload();
+      }, 400);
+
+    })();
+
+    return true;
+  };
   </script>
 
   <!-- =========================

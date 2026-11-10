@@ -132,11 +132,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> login({bool demo = false}) async {
     if (loading) return;
 
-    // Firebase قد تكون ما زالت تُهيَّأ (بدأت في الخلفية مع أول إطار).
+    // Firebase قد تكون ما زالت تُهيَّأ (بدأت في الخلفية مع أول إطار)،
+    // أو فشلت تهيئتها — في هذه الحالة نعيد المحاولة بدل الاكتفاء
+    // برسالة اعتذار.
     if (!AppBootstrap.isReady) {
-      AppBootstrap.start();
+      AppBootstrap.ensureStarted();
 
-      message('Preparing the connection… try again in a moment');
+      message(
+        AppBootstrap.lastHint ??
+            'Preparing the connection… try again in a moment',
+      );
 
       return;
     }
@@ -760,7 +765,7 @@ class _BootstrapNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // فشل التهيئة: سبب واضح وزر إعادة محاولة.
+    // فشل التهيئة: سبب مفهوم + نص تقني + إجراءان.
     if (state == BootstrapState.failed) {
       return Container(
         width: double.infinity,
@@ -785,17 +790,57 @@ class _BootstrapNotice extends StatelessWidget {
                 color: Color(0xFF6B3D00),
               ),
             ),
+            const SizedBox(height: 2),
+            const Text(
+              'Could not reach Firebase',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: Color(0xFF8A5A12),
+              ),
+            ),
+
+            // سبب مفهوم — أهم من الرسالة التقنية للمستخدم العادي.
+            if (AppBootstrap.lastHint != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                AppBootstrap.lastHint!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  height: 1.45,
+                  color: Color(0xFF6B3D00),
+                ),
+              ),
+            ],
+
             if (AppBootstrap.lastError != null) ...[
               const SizedBox(height: 6),
               Text(
                 AppBootstrap.lastError!,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr,
                 style: const TextStyle(
                   fontSize: 11,
                   fontFamily: 'monospace',
-                  color: Color(0xFF6B3D00),
+                  color: Color(0xFF8A5A12),
+                ),
+              ),
+            ],
+            // حالة سكربتات Firebase في المتصفح: تعرف من الصورة وحدها
+            // إن كان العطل «السكربت لم يصل» أم «إعداد خاطئ».
+            if (AppBootstrap.sdkState != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'SDK: ${AppBootstrap.sdkState}',
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  fontFamily: 'monospace',
+                  color: Color(0xFF8A5A12),
                 ),
               ),
             ],
@@ -816,12 +861,48 @@ class _BootstrapNotice extends StatelessWidget {
                 ),
               ),
             ),
+
+            // مسح الكاش وإلغاء service worker: يحل أكثر حالات
+            // «يعمل هنا ولا يعمل هناك» (نسخة قديمة محفوظة).
+            if (AppBootstrap.canHardReload) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 36,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    if (!AppBootstrap.hardReload()) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'تم استخدام التنظيف مرة واحدة بالفعل — '
+                            'أغلق التبويب وافتحه من جديد.',
+                            textAlign: TextAlign.right,
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.cleaning_services_outlined,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    'مسح الكاش وإعادة التحميل',
+                    style: TextStyle(fontSize: 13.5),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       );
     }
 
     // قيد التهيئة: شريط رفيع لا يحجب النموذج.
+    final bool retrying = AppBootstrap.attempt > 1;
+
     return Column(
       children: [
         const LinearProgressIndicator(
@@ -829,7 +910,10 @@ class _BootstrapNotice extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'جارٍ تجهيز الاتصال… يمكنك كتابة بياناتك الآن',
+          retrying
+              ? 'جارٍ إعادة المحاولة (${AppBootstrap.attempt} من '
+                  '${AppBootstrap.maxAttempts})… يمكنك كتابة بياناتك الآن'
+              : 'جارٍ تجهيز الاتصال… يمكنك كتابة بياناتك الآن',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 12,
