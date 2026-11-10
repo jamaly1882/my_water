@@ -319,12 +319,46 @@ SECTIONS: Sequence[dict] = (
             "Vouchers.",
             "Use Account and Cycle Reports to check balances, transactions, and "
             "consumption.",
+            "Important: AI meter recognition is an assistance feature \u2014 "
+            "always verify the displayed digits before saving. Labels and "
+            "features may vary by account permissions and platform updates.",
+        ],
+        "note": None,
+    },
+
+    # --------------------------------------------------------
+    # ملحق في آخر الدليل
+    # --------------------------------------------------------
+    {
+        "title": "Appendix \u2013 Well agent",
+        "image": None,
+        "body": [
+            "The well agent screen gathers, for one well, everything the agent "
+            "needs in a single place. Open it by tapping the well on the Wells "
+            "screen.",
+        ],
+        "bullets": [
+            "Subscribers: how many subscribers are linked to this well, with "
+            "each one\u2019s last reading, consumption and number of cycles.",
+            "Accounts: the four balances of the well \u2014 Sales, Fund (the "
+            "well cash box), Expenses and Operator.",
+            "Metered water: the consumption already billed from closed cycles, "
+            "used as the denominator of the loss percentage.",
+            "Loss per cycle: entered manually. Type the loss volume in m\u00b3; "
+            "the percentage is calculated from the metered water if you leave "
+            "it empty. A note can explain the cause (leak repaired, meter "
+            "replaced).",
+            "Readings before the platform: add a photo of the old register "
+            "with its number and date. These entries form the baseline the "
+            "platform continues from, so the first cycle does not start from "
+            "zero.",
+            "Pull down to refresh after any change, or use the refresh icon in "
+            "the app bar.",
         ],
         "note": (
-            "Important: AI meter recognition is an assistance feature. Always "
-            "verify the displayed meter digits before saving. Screen labels and "
-            "available features may vary by account permissions and platform "
-            "updates."
+            "The loss is manual by design: only the agent knows what happened "
+            "at the well. Recording it next to the metered water turns an "
+            "estimate into a number that can be audited."
         ),
     },
 )
