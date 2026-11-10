@@ -9,10 +9,18 @@
 
 ## Screenshots
 
-`source_images/` holds the captures exactly as taken (they were recorded on the
-legacy host `water-567bb.web.app`). `images/` holds the same captures after the
-browser address pill is repainted with `azalsoftplatform.web.app`; the PDF is
-built from `images/`.
+`source_images/` holds the captures exactly as taken (recorded on the legacy
+host `water-567bb.web.app`). `images/` holds the same captures after the build
+step has:
+
+- **cropped the Android status bar** (clock, battery, network, notifications) —
+  it is phone chrome, not part of the platform; the browser address bar stays
+  because it carries the platform address. Captures go from 1080x2400 to
+  1080x2300.
+- **repainted the browser address pill** with `azalsoftplatform.web.app`.
+
+The PDF is built from `images/`, and the aspect ratio is read from the files
+(1080x2300), never hard-coded.
 
 ## Rebuilding
 

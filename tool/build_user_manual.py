@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Build the Azal Soft Platform user manual PDF.
 
-Two things this script guarantees:
+Things this script guarantees:
+
+0. The device status bar (clock, battery, network, notifications) is cropped
+   from every capture -- it is phone chrome, not part of the platform.  The
+   browser address bar stays, because it carries the platform address.
 
 1. Every screenshot shows the official platform address
    ``https://azalsoftplatform.web.app/`` in the browser address bar.
@@ -56,9 +60,16 @@ BAR_BG = (14, 20, 25)
 BAR_PILL = (47, 53, 59)
 BAR_TEXT = (226, 226, 229)
 
-# Address pill geometry, measured on the 1080x2400 captures.  The pill is
-# widened (was 296..931) so the longer domain fits without shrinking the text.
-PILL_BOX = (270, 141, 957, 236)  # left, top, right, bottom (inclusive)
+# The Android status bar (clock, battery, network, notifications) is device
+# chrome, not part of the platform: it is cut from every capture.  Rows
+# 0..124 are empty background on the 1080x2400 captures, so cropping at 100
+# keeps a clean 41px margin above the address pill.
+STATUS_BAR_HEIGHT = 100
+
+# Address pill geometry, measured on the 1080x2400 captures and shifted up by
+# STATUS_BAR_HEIGHT.  The pill is widened (was 296..931) so the longer domain
+# fits without shrinking the text.
+PILL_BOX = (270, 41, 957, 136)  # left, top, right, bottom (inclusive)
 PILL_RADIUS = 48
 PILL_MAX_TEXT_WIDTH = 640
 
@@ -80,13 +91,19 @@ def _fit_font(draw: ImageDraw.ImageDraw, text: str, max_width: int):
 
 
 def stamp_platform_url(image: Image.Image) -> Image.Image:
-    """Repaint the Chrome address pill so it shows ``PLATFORM_HOST``."""
-    image = image.convert("RGB").copy()
+    """Drop the device status bar and repaint the Chrome address pill."""
+    image = image.convert("RGB")
+
+    # 1) Status bar (clock / battery / network) out of the picture.
+    if image.height > STATUS_BAR_HEIGHT:
+        image = image.crop((0, STATUS_BAR_HEIGHT, image.width, image.height))
+
+    image = image.copy()
     draw = ImageDraw.Draw(image)
 
-    # Clear the old bar area.  The tab counter (ends at x=249) and the home
+    # 2) Clear the old bar area.  The tab counter (ends at x=249) and the home
     # button (starts at x=981) stay untouched.
-    draw.rectangle((256, 124, 978, 254), fill=BAR_BG)
+    draw.rectangle((256, 24, 978, 154), fill=BAR_BG)
 
     # Pill, drawn supersampled so the rounded caps stay smooth.
     left, top, right, bottom = PILL_BOX
@@ -409,6 +426,13 @@ def image_size(name: str, width: float) -> tuple[float, float]:
     return width, width * h / w
 
 
+def _aspect(name: str) -> float:
+    """width / height of a screenshot (the captures are 1080x2300 after the
+    status bar is removed, so this must not be hard-coded)."""
+    with Image.open(os.path.join(IMAGE_DIR, name)) as im:
+        return im.width / im.height
+
+
 def draw_cover(c: canvas.Canvas) -> None:
     centre = MARGIN + CONTENT_W / 2
 
@@ -549,7 +573,7 @@ def draw_section(c: canvas.Canvas, section: dict, page_no: int) -> None:
         image_top = last - 18
         max_height = image_top - (110 + block + 30)
         height = min(height, max(140.0, max_height))
-        width = height * 0.45
+        width = height * _aspect(section["image"])
         image_bottom = image_top - height
         bullets_top = image_bottom - 30
         c.drawImage(
