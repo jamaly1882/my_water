@@ -220,12 +220,20 @@ SECTIONS: Sequence[dict] = (
         "body": [
             "A reading cycle records the meter at the beginning and end of a "
             "service period.",
+            "Example: the meter reads 15000 when the subscriber starts. At the "
+            "end of the cycle you enter 15200, so the consumption is 200 m\u00b3 "
+            "and the subscriber is billed for 200 m\u00b3 only.",
         ],
         "bullets": [
             "Open Reading Cycle and select Opening reading to record the "
-            "initial meter value.",
+            "initial meter value — photograph the meter so the digits are kept "
+            "with the record.",
             "At the end of the period, select Closing reading for the same "
-            "subscriber.",
+            "subscriber. The closing reading must not be lower than the opening.",
+            "The closing reading becomes the opening reading of the next cycle: "
+            "closing at 15200 means the next cycle starts at 15200. The platform "
+            "fills this value in automatically and rejects any other number, so "
+            "no water is counted twice or lost between cycles.",
             "Use the camera/photo reading feature where available; AI can help "
             "extract the meter value from the image.",
             "Review the recognized value carefully and confirm it before saving.",
@@ -333,6 +341,7 @@ BODY_LEADING = 16.0
 BULLET_INDENT = 12.0
 BULLET_LEADING = 16.0
 BULLET_GAP = 6.0
+PARAGRAPH_GAP = 16.0
 
 FOOTER_BASELINE = 20.0
 FOOTER_RULE_Y = 32.0
@@ -546,7 +555,9 @@ def draw_section(c: canvas.Canvas, section: dict, page_no: int) -> None:
     last = y - 26
     for paragraph in section["body"]:
         last = draw_paragraph(c, last, paragraph)
-        last -= 4
+        last -= PARAGRAPH_GAP
+    # Undo the trailing gap: the next block sets its own distance.
+    last += PARAGRAPH_GAP
 
     if section.get("link"):
         link_y = last - 14
