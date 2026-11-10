@@ -218,29 +218,30 @@ SECTIONS: Sequence[dict] = (
         "title": "5. Reading Cycle",
         "image": "reading_cycle.png",
         "body": [
-            "A reading cycle records the meter at the beginning and end of a "
-            "service period.",
-            "Example: the meter reads 15000 when the subscriber starts. At the "
-            "end of the cycle you enter 15200, so the consumption is 200 m\u00b3 "
-            "and the subscriber is billed for 200 m\u00b3 only.",
+            "A reading cycle runs from one meter reading to the next for a "
+            "single subscriber. Open it when the subscriber starts, close it "
+            "at the end of the period, and the platform bills the difference.",
+            "Example: the meter reads 15000 when the subscriber starts and "
+            "15200 at the end, so the consumption is 200 m\u00b3 and the "
+            "subscriber is billed for 200 m\u00b3 only.",
         ],
         "bullets": [
-            "Open Reading Cycle and select Opening reading to record the "
-            "initial meter value — photograph the meter so the digits are kept "
-            "with the record.",
-            "Before saving, choose Well equipment: the equipment used to run "
-            "the well (pump, solar unit, generator). Each equipment entry "
-            "carries its own water price, so the consumption is priced "
-            "correctly.",
-            "At the end of the period, select Closing reading for the same "
-            "subscriber. The closing reading must not be lower than the opening.",
-            "The closing reading becomes the opening reading of the next cycle: "
-            "closing at 15200 means the next cycle starts at 15200. The platform "
-            "fills this value in automatically and rejects any other number, so "
-            "no water is counted twice or lost between cycles.",
-            "Use the camera/photo reading feature where available; AI can help "
-            "extract the meter value from the image.",
-            "Review the recognized value carefully and confirm it before saving.",
+            "1. Choose the well, then the subscriber on \u201cSelect well "
+            "subscriber\u201d \u2014 the subscriber whose cycle you open.",
+            "2. In Reading Cycle select Opening reading and photograph the "
+            "meter: AI extracts the digits and you confirm them. Typing the "
+            "number manually is still possible.",
+            "3. Choose Well equipment \u2014 the equipment that runs the well "
+            "(pump, solar unit, generator); each entry carries its own price.",
+            "4. Save: the cycle is now open for that subscriber (15000).",
+            "5. At the end of the period select Closing reading for the same "
+            "subscriber, again by photographing the meter.",
+            "6. Consumption = closing \u2212 opening (15200 \u2212 15000 = "
+            "200 m\u00b3), multiplied by the equipment price to give the amount.",
+            "7. Closing ends the period and the closing reading becomes the "
+            "next cycle\u2019s opening: 15200 in, 15200 out. The platform fills "
+            "it in and rejects any other number, so no water is counted twice "
+            "or lost between cycles.",
         ],
     },
     {
@@ -418,7 +419,11 @@ def draw_bullets(c: canvas.Canvas, y: float, bullets: Iterable[str]) -> float:
             c.setFillColorRGB(0, 0, 0)
             c.setFont("Helvetica", BODY_SIZE)
             if index == 0:
-                c.drawString(MARGIN + BULLET_INDENT, y, "\u2022")
+                # A bullet that starts with "1." / "2." carries its own marker,
+                # so the dot would only duplicate the number.
+                numbered = bullet.lstrip()[:1].isdigit()
+                if not numbered:
+                    c.drawString(MARGIN + BULLET_INDENT, y, "\u2022")
             c.drawString(MARGIN + BULLET_INDENT + 10, y, line)
             y -= BULLET_LEADING
         y -= BULLET_GAP
