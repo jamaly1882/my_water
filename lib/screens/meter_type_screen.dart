@@ -380,7 +380,7 @@ class _EquipmentTypeScreenState
       textInputAction:
           TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Meter type',
+        labelText: 'Equipment name',
         hintText: 'e.g. Diesel',
         border: OutlineInputBorder(),
         prefixIcon: Icon(
@@ -439,7 +439,7 @@ class _EquipmentTypeScreenState
 
     if (name.isEmpty) {
       showMessage(
-        'Enter the meter type',
+        'Enter the equipment name',
         error: true,
       );
       return;
@@ -532,7 +532,7 @@ class _EquipmentTypeScreenState
       if (!mounted) return;
 
       showMessage(
-        'Meter type added',
+        'Equipment added',
       );
 
       newRecord(
@@ -578,7 +578,7 @@ class _EquipmentTypeScreenState
 
     if (name.isEmpty) {
       showMessage(
-        'Enter the meter type',
+        'Enter the equipment name',
         error: true,
       );
       return;
@@ -666,7 +666,7 @@ class _EquipmentTypeScreenState
       if (!mounted) return;
 
       showMessage(
-        'Meter type updated',
+        'Equipment updated',
       );
 
       newRecord(
@@ -704,7 +704,7 @@ class _EquipmentTypeScreenState
             'Confirm delete',
           ),
           content: const Text(
-            'Delete the selected meter type?',
+            'Delete the selected equipment?',
           ),
           actions: [
             TextButton(
@@ -758,7 +758,7 @@ class _EquipmentTypeScreenState
       if (!mounted) return;
 
       showMessage(
-        'Meter type deleted',
+        'Equipment deleted',
       );
 
       newRecord(
@@ -802,8 +802,8 @@ class _EquipmentTypeScreenState
                 Expanded(
                   child: Text(
                     isEditing
-                        ? 'Edit meter type'
-                        : 'Add meter type',
+                        ? 'Edit equipment'
+                        : 'Add equipment',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight:
@@ -820,7 +820,7 @@ class _EquipmentTypeScreenState
               alignment:
                   Alignment.centerRight,
               child: Text(
-                'Pick the well, the meter type and the price',
+                'Pick the well, the equipment and the price',
                 style: TextStyle(
                   color:
                       Colors.grey.shade700,
@@ -948,7 +948,7 @@ class _EquipmentTypeScreenState
                     color: Colors.red,
                   ),
                   label: const Text(
-                    'Delete meter type',
+                    'Delete equipment',
                     style: TextStyle(
                       color: Colors.red,
                     ),
@@ -1066,7 +1066,7 @@ class _EquipmentTypeScreenState
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Could not load the meter types',
+                    'Could not load the equipment',
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight:
@@ -1106,7 +1106,7 @@ class _EquipmentTypeScreenState
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'No meter types yet',
+                    'No equipment yet',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight:
@@ -1117,8 +1117,8 @@ class _EquipmentTypeScreenState
                   const SizedBox(height: 5),
                   Text(
                     hasFixedWell
-                        ? 'No meter types on this well'
-                        : 'Add a new meter type',
+                        ? 'No equipment for this well'
+                        : 'Add new equipment',
                     textAlign:
                         TextAlign.center,
                     style: const TextStyle(
@@ -1391,7 +1391,7 @@ class _EquipmentTypeScreenState
       child: Scaffold(
         appBar: const MyAppBar(
           title:
-              'Meter types and prices setup',
+              'Well equipment and water prices',
           icon: Icons.precision_manufacturing,
         ),
         body: SingleChildScrollView(
@@ -1409,7 +1409,7 @@ class _EquipmentTypeScreenState
                   alignment:
                       Alignment.centerRight,
                   child: Text(
-                    'Registered meter types',
+                    'Registered equipment',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight:

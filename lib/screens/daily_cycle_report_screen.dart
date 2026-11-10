@@ -541,7 +541,7 @@ class _DailyCycleReportScreenState
                                 ),
                               ),
 
-                              // نوع العداد
+                              // نوع المعدة
                               DataCell(
                                 Text(
                                   "${data["meterTypeName"] ?? ""}",

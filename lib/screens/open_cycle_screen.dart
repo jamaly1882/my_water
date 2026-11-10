@@ -763,7 +763,7 @@ Future<void> readMeterImage() async {
               const SizedBox(height: 5),
 
               Text(
-                "Cannot show the meter types for this well.",
+                "Cannot show the equipment for this well.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey.shade700,
@@ -814,7 +814,7 @@ Future<void> readMeterImage() async {
                   const SizedBox(height: 8),
 
                   const Text(
-                    "Could not load the meter types",
+                    "Could not load the well equipment",
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
@@ -847,7 +847,7 @@ Future<void> readMeterImage() async {
               child: Column(
                 children: [
                   const Icon(
-                    Icons.speed_outlined,
+                    Icons.precision_manufacturing,
                     color: Colors.orange,
                     size: 45,
                   ),
@@ -855,7 +855,7 @@ Future<void> readMeterImage() async {
                   const SizedBox(height: 8),
 
                   const Text(
-                    "No meter types on this well",
+                    "No equipment registered for this well",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.orange,
@@ -897,7 +897,7 @@ Future<void> readMeterImage() async {
                 Row(
                   children: [
                     const Icon(
-                      Icons.speed,
+                      Icons.precision_manufacturing,
                       color: appColor,
                     ),
 
@@ -905,7 +905,7 @@ Future<void> readMeterImage() async {
 
                     Expanded(
                       child: Text(
-                        "Meter types in ${widget.wellName ?? "هذا البئر"}",
+                        "Well equipment · ${widget.wellName ?? "هذا البئر"}",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -922,11 +922,11 @@ Future<void> readMeterImage() async {
                   isExpanded: true,
                   decoration:
                       const InputDecoration(
-                    labelText: "Meter type",
+                    labelText: "Well equipment",
                     border:
                         OutlineInputBorder(),
                     prefixIcon: Icon(
-                      Icons.speed,
+                      Icons.precision_manufacturing,
                       color: appColor,
                     ),
                   ),
@@ -1118,7 +1118,7 @@ Future<void> readMeterImage() async {
 
         subtitle: Text(
           meterTypeName.isEmpty
-              ? "Choose the meter type for this well"
+              ? "Choose the equipment used to run this well"
               : meterTypeName,
         ),
 
@@ -2079,7 +2079,7 @@ Future<void> readMeterImage() async {
 
     if (meterTypeId.isEmpty) {
       showMessage(
-        "Choose the meter type for this well",
+        "Choose the equipment used to run this well",
         color: Colors.orange,
       );
 
