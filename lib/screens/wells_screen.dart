@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'well_agent_screen.dart';
+
 class WellsScreen extends StatefulWidget {
   const WellsScreen({super.key});
 
@@ -700,6 +702,20 @@ class _WellsScreenState extends State<WellsScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => WellAgentScreen(
+                        wellId: docs[index].id,
+                        wellName: name,
+                      ),
+                    ),
+                  );
+                },
+                trailing: const Icon(
+                  Icons.chevron_left,
+                  color: Colors.blue,
+                ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 15,
                   vertical: 8,
