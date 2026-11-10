@@ -119,6 +119,12 @@ class _OpenCycleScreenState extends State<OpenCycleScreen>
 
   String previousReading = "";
 
+  /// إغلاق الدور السابق لهذا المشترك.
+  ///
+  /// الدور الجديد يبدأ من هذا الرقم نفسه: مثال — أغلقنا الدور على 15200،
+  /// فبداية الدور التالي 15200 ولا يُسمح بأي رقم آخر (لا فجوة ولا تكرار).
+  int? carriedReading;
+
   int cycleNumber = 0;
 
   // ============================================================
@@ -180,6 +186,94 @@ class _OpenCycleScreenState extends State<OpenCycleScreen>
 
     cycleNumber =
         _readInt(data["cycleNumber"]);
+
+    // بداية الدور تُجلب من إغلاق الدور السابق (15000 ← 15200 ← 15200…).
+    loadCarriedReading();
+  }
+
+  // ============================================================
+  // READING ROLLOVER — إغلاق الدور السابق = بداية الدور الجديد
+  // ============================================================
+  //
+  // القاعدة التشغيلية:
+  //   1) يبدأ المشترك بدور، ونصوّر العداد عند 15000 فتكون البداية 15000.
+  //   2) عند إغلاق الدور ندخل 15200 والاستهلاك 200.
+  //   3) الدور التالي يبدأ من 15200 — الرقم نفسه، بلا إدخال جديد.
+  //
+  // نقرأ آخر دور مغلق للمشترك من مجموعة cycles ونعرض رقم إغلاقه.
+  // ============================================================
+
+  Future<void> loadCarriedReading() async {
+    try {
+      final snapshot = await firestore
+          .collection("cycles")
+          .where(
+            "customerId",
+            isEqualTo: customerId,
+          )
+          .get();
+
+      final int? last =
+          lastClosedReading(snapshot.docs);
+
+      if (!mounted || last == null) return;
+
+      setState(() {
+        carriedReading = last;
+
+        // يملأ الحقل تلقائيًا: لا يحتاج المستخدم إلى كتابة الرقم.
+        // ولو كتب رقمًا مختلفًا يمنعه الحفظ (انظر saveCycle).
+        if (readingController.text.trim().isEmpty) {
+          readingController.text = last.toString();
+          previousReading = last.toString();
+        }
+      });
+    } catch (error) {
+      debugPrint("CARRY READING: $error");
+    }
+  }
+
+  /// أعلى رقم دور مغلق، وقيمة إغلاقه (أو null إن لم يكن هناك دور مغلق).
+  int? lastClosedReading(
+    Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) {
+    int? lastNumber;
+    int? lastClosing;
+
+    for (final doc in docs) {
+      final data = doc.data();
+
+      final status =
+          data["status"]?.toString().trim().toLowerCase();
+
+      if (status != "closed") continue;
+
+      final closing = readReading(data["currentReading"]);
+
+      if (closing == null) continue;
+
+      final number = _readInt(data["cycleNumber"]);
+
+      if (lastNumber == null || number >= lastNumber) {
+        lastNumber = number;
+        lastClosing = closing;
+      }
+    }
+
+    return lastClosing;
+  }
+
+  /// قراءة رقمية من قيمة Firestore قد تكون نصًا أو رقمًا.
+  int? readReading(dynamic value) {
+    if (value is num) return value.toInt();
+
+    final text = value?.toString().trim() ?? "";
+
+    if (text.isEmpty) return null;
+
+    final normalized = normalizeMeterNumber(text);
+
+    return int.tryParse(normalized);
   }
 
   // ============================================================
@@ -1429,6 +1523,23 @@ Future<void> readMeterImage() async {
               });
             },
           ),
+
+          // الرقم موروث من إغلاق الدور السابق — نوضح ذلك حتى لا
+          // يظنه المستخدم إدخالًا جديدًا.
+          if (carriedReading != null) ...[
+            const SizedBox(height: 12),
+
+            Text(
+              "Previous cycle closed at $carriedReading.\n"
+              "The new cycle starts from $carriedReading.",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.orange,
+                fontSize: 12,
+                height: 1.5,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -2074,6 +2185,36 @@ Future<void> readMeterImage() async {
         showMessage(
           "This subscriber already has an open cycle",
           color: Colors.orange,
+        );
+
+        return;
+      }
+
+      // ========================================================
+      // READING ROLLOVER
+      //
+      // بداية الدور الجديد = إغلاق الدور السابق (15200 مثلًا).
+      // إن أدخل المستخدم رقمًا مختلفًا نوقفه برسالة واضحة بدل تسجيل
+      // دورة بفجوة أو تكرار في العداد.
+      // ========================================================
+
+      final int? expectedOpening =
+          lastClosedReading(customerCycles.docs);
+
+      if (expectedOpening != null &&
+          int.tryParse(reading) != expectedOpening) {
+        if (mounted) {
+          setState(() {
+            _isSaving = false;
+          });
+        }
+
+        showMessage(
+          "قراءة بداية الدور يجب أن تساوي إغلاق الدور السابق: "
+          "$expectedOpening\n"
+          "The opening reading must equal the previous cycle closing: "
+          "$expectedOpening",
+          color: Colors.red,
         );
 
         return;
