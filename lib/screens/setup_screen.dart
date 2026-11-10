@@ -123,12 +123,12 @@ class SetupScreen extends StatelessWidget {
             ),
 
             // ======================================================
-            // نوع العداد
+            // نوع المعدة المستخدمة في تشغيل البئر
             // ======================================================
 
             _item(
               context,
-              'Meter type',
+              'Well equipment',
               Icons.speed,
               Colors.orange,
 

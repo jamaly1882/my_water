@@ -515,7 +515,7 @@ class _YearlyCycleReportScreenState
 
                             DataColumn(
                               label:
-                                  Text("Meter type"),
+                                  Text("Equipment"),
                             ),
 
                             DataColumn(
@@ -620,7 +620,7 @@ class _YearlyCycleReportScreenState
                                     ),
                                   ),
 
-                                  // نوع العداد
+                                  // نوع المعدة
                                   DataCell(
                                     Text(
                                       "${data["meterTypeName"] ?? ""}",

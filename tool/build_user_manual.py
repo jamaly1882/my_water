@@ -181,7 +181,7 @@ SECTIONS: Sequence[dict] = (
         "body": ["The dashboard provides access to the platform\u2019s main modules."],
         "bullets": [
             "Reading Cycle: record opening and closing meter readings.",
-            "Setup: configure subscribers, wells, usage types, meter types, and "
+            "Setup: configure subscribers, wells, usage types, well equipment, and "
             "financial accounts.",
             "Reports: view subscriber account reports and well/cycle "
             "consumption reports.",
@@ -228,6 +228,10 @@ SECTIONS: Sequence[dict] = (
             "Open Reading Cycle and select Opening reading to record the "
             "initial meter value — photograph the meter so the digits are kept "
             "with the record.",
+            "Before saving, choose Well equipment: the equipment used to run "
+            "the well (pump, solar unit, generator). Each equipment entry "
+            "carries its own water price, so the consumption is priced "
+            "correctly.",
             "At the end of the period, select Closing reading for the same "
             "subscriber. The closing reading must not be lower than the opening.",
             "The closing reading becomes the opening reading of the next cycle: "
@@ -302,7 +306,7 @@ SECTIONS: Sequence[dict] = (
         "image": None,
         "body": ["Follow this order when a village joins the platform."],
         "bullets": [
-            "Configure the village, wells, usage types, meter types, and "
+            "Configure the village, wells, usage types, well equipment, and "
             "financial accounts.",
             "Register each subscriber and link them to the correct well.",
             "Record opening meter readings at the start of a cycle.",

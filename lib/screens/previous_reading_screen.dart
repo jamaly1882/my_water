@@ -247,7 +247,7 @@ class _PreviousReadingScreenState
 
       // ==========================================================
       // إذا لم يوجد meterTypeId داخل الدورة
-      // نحاول البحث عن نوع العداد بالاسم والبئر
+      // نحاول البحث عن نوع المعدة بالاسم والبئر
       // ==========================================================
 
       if (meterTypeId.isEmpty &&
@@ -307,7 +307,7 @@ class _PreviousReadingScreenState
                 meterWellId.isNotEmpty &&
                 meterWellId != wellId) {
               showMessage(
-                'This meter type does not belong to the well',
+                'This equipment does not belong to the well',
                 error: true,
               );
 
@@ -1201,7 +1201,7 @@ Future<void> readMeterImage() async {
               waterUsageTypeName,
             ),
             infoRow(
-              'Meter type',
+              'Equipment',
               meterTypeName,
             ),
             infoRow(
@@ -1544,7 +1544,7 @@ Future<void> readMeterImage() async {
 
     if (meterTypeId.isEmpty) {
       showMessage(
-        'The meter type ID is missing from the cycle',
+        'The equipment ID is missing from the cycle',
         error: true,
       );
       return;
@@ -1620,7 +1620,7 @@ Future<void> readMeterImage() async {
           }
 
           // ======================================================
-          // 2. قراءة نوع العداد
+          // 2. قراءة نوع المعدة
           // ======================================================
 
           final meterRef = firestore
@@ -1634,7 +1634,7 @@ Future<void> readMeterImage() async {
 
           if (!meterDoc.exists) {
             throw Exception(
-              'Meter type not found',
+              'Equipment not found',
             );
           }
 
@@ -1643,12 +1643,12 @@ Future<void> readMeterImage() async {
 
           if (meterData == null) {
             throw Exception(
-              'Meter type data not found',
+              'Equipment data not found',
             );
           }
 
           // ======================================================
-          // التأكد أن نوع العداد تابع لنفس البئر
+          // التأكد أن نوع المعدة تابع لنفس البئر
           // ======================================================
 
           final meterWellId =
@@ -1659,7 +1659,7 @@ Future<void> readMeterImage() async {
           if (meterWellId.isNotEmpty &&
               meterWellId != wellId) {
             throw Exception(
-              'This meter type does not belong to the selected well',
+              'This equipment does not belong to the selected well',
             );
           }
 
@@ -2102,7 +2102,7 @@ Future<void> readMeterImage() async {
       showMessage(
         'تم حفظ القراءة وإغلاق الدورة\n'
         'Consumption this cycle: $consumption units\n'
-        'Meter type units total: $meterUnitsCount units',
+        'Equipment units total: $meterUnitsCount units',
       );
 
       await Future.delayed(
