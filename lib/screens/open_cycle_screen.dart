@@ -450,9 +450,13 @@ Future<void> readMeterImage() async {
     debugPrint("======================================");
     debugPrint("START METER OCR");
 
-    // فتح واجهة OCR وتمرير context.
-    final String? result =
-        await OCRService.readNumber(context);
+    // فتح واجهة OCR وتمرير context والقراءة السابقة للتحقق السياقي.
+    final int? prev =
+        carriedReading ?? int.tryParse(previousReading);
+    final String? result = await OCRService.readNumber(
+      context,
+      previousReading: prev,
+    );
 
     debugPrint("OCR RAW RESULT: $result");
 
